@@ -1,4 +1,4 @@
-name: "Run TODO to Issue"
+name: "Run pytest with Pixi env"
 on: ["push"]
 jobs:
   build:
@@ -7,7 +7,6 @@ jobs:
       - uses: prefix-dev/setup-pixi@v0.8.1
         with:
           pixi-version: v0.39.5
-          cache: true
           environments: default
           activate-environment: true
           frozen: true
