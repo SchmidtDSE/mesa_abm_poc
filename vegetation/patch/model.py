@@ -248,7 +248,7 @@ class Vegetation(mesa.Model):
 
         for management_x_wgs84, management_y_wgs84 in outplanting_point_locations:
 
-            # TODO: Vegetation model doesn't know its own CRS 
+            # TODO: Vegetation model doesn't know its own CRS
             management_agent = JoshuaTreeAgent(
                 model=self,
                 geometry=sg.Point(management_x_wgs84, management_y_wgs84),
