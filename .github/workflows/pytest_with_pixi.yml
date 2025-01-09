@@ -20,5 +20,10 @@ jobs:
           mkdir .local_dev_data
           mv tests/assets/* .local_dev_data/
 
+      - name: Debug asset move
+        run: |
+          ll
+          ls -l .local_dev_data
+
       - name: Run pytest
         run: pytest -v tests/
