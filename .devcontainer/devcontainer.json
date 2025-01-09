@@ -13,7 +13,8 @@
     "ms-python.python",
     "ms-python.debugpy",
     "ms-python.black-formatter",
-    "jjjermiah.pixi-vscode"
+    "jjjermiah.pixi-vscode",
+    "github.vscode-github-actions"
   ],
   "postCreateCommand": ".devcontainer/scripts/transfer_local_dev_cache.sh"
 }
