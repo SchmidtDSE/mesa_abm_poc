@@ -20,11 +20,9 @@ jobs:
           mkdir .local_dev_data
           mv tests/assets/* .local_dev_data/
 
-      - name: Debug asset move
-        run: |
-          pwd
-          ls
-          ls -l .local_dev_data
-
       - name: Run pytest
         run: pytest -v tests/
+        env:
+          INITIAL_AGENTS_PATH = "/home/runner/work/mesa_abm_poc/mesa_abm_poc/vegetation/data/initial_agents.json"
+          LOCAL_STAC_CACHE_FSTRING = "/home/runner/work/mesa_abm_poc/mesa_abm_poc/.local_dev_data/{band_name}_{bounds_md5}.tif"
+          SAVE_LOCAL_STAC_CACHE = True
