@@ -13,14 +13,10 @@ import logging
 import time
 
 from config.stages import LifeStage
+from config.paths import LOCAL_STAC_CACHE_FSTRING, SAVE_LOCAL_STAC_CACHE, DEM_STAC_PATH
 
 # from patch.model import JoshuaTreeAgent
 # import rioxarray as rxr
-
-DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
-LOCAL_STAC_CACHE_FSTRING = "/local_dev_data/{band_name}_{bounds_md5}.tif"
-SAVE_LOCAL_STAC_CACHE = True
-
 
 class VegCell(mg.Cell):
     elevation: int | None
