@@ -11,6 +11,15 @@
       "console": "integratedTerminal",
       "justMyCode": false,
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python"
+    },
+    {
+      "name": "Python: Mesa Batch Run",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/vegetation",
+      "program": "batch.py",
+      "justMyCode": false,
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python"
     }
   ]
 }
