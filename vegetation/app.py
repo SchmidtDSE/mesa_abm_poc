@@ -5,11 +5,11 @@ from ipyleaflet.leaflet import GeomanDrawControl
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
 from mesa_geo.visualization import make_geospace_component
-from patch.model import Vegetation, JoshuaTreeAgent
-from patch.space import VegCell
+from vegetation.patch.model import Vegetation, JoshuaTreeAgent
+from vegetation.patch.space import VegCell
 
 # from patch.management import init_tree_management_control
-from config.stages import LIFE_STAGE_RGB_VIZ_MAP
+from vegetation.config.stages import LIFE_STAGE_RGB_VIZ_MAP
 
 # Very big bounds for western JOTR
 # TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.163940, 34.042419]

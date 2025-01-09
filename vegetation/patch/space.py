@@ -12,8 +12,12 @@ import hashlib
 import logging
 import time
 
-from config.stages import LifeStage
-from config.paths import LOCAL_STAC_CACHE_FSTRING, SAVE_LOCAL_STAC_CACHE, DEM_STAC_PATH
+from vegetation.config.stages import LifeStage
+from vegetation.config.paths import (
+    LOCAL_STAC_CACHE_FSTRING,
+    SAVE_LOCAL_STAC_CACHE,
+    DEM_STAC_PATH,
+)
 
 # from patch.model import JoshuaTreeAgent
 # import rioxarray as rxr

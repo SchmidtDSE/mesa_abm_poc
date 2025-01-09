@@ -8,10 +8,10 @@ import json
 from scipy.stats import poisson
 from pyproj import Transformer
 
-from config.stages import LifeStage
-from patch.space import StudyArea, VegCell
-from patch.utils import transform_point_wgs84_utm, generate_point_in_utm
-from config.transitions import (
+from vegetation.config.stages import LifeStage
+from vegetation.patch.space import StudyArea, VegCell
+from vegetation.patch.utils import transform_point_wgs84_utm, generate_point_in_utm
+from vegetation.config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
     JOTR_ADULT_AGE,
@@ -20,7 +20,7 @@ from config.transitions import (
     get_jotr_survival_rate,
     get_jotr_breeding_poisson_lambda,
 )
-from config.paths import INITIAL_AGENTS_PATH
+from vegetation.config.paths import INITIAL_AGENTS_PATH
 
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"

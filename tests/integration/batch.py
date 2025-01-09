@@ -1,8 +1,6 @@
 from vegetation.batch import TST_JOTR_BOUNDS, batch_run
-from patch.model import Vegetation
-from numpy import arange
+from vegetation.patch.model import Vegetation
 import pandas as pd
-import pytest
 
 
 def test_batch_run_basic():
