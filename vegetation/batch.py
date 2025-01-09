@@ -7,6 +7,7 @@ from config.paths import LOCAL_STAC_CACHE_FSTRING, SAVE_LOCAL_STAC_CACHE, DEM_ST
 #Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/16
 
 #TODO: Implement early stopping when all the JOTR die off
+#Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/18
 
 TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 
