@@ -4,6 +4,7 @@ from numpy import arange
 from config.paths import LOCAL_STAC_CACHE_FSTRING, SAVE_LOCAL_STAC_CACHE, DEM_STAC_PATH
 
 #TODO: Batch run can't see local cache 
+#Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/16
 
 TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 
