@@ -18,6 +18,7 @@ from config.paths import LOCAL_STAC_CACHE_FSTRING, SAVE_LOCAL_STAC_CACHE, DEM_ST
 # from patch.model import JoshuaTreeAgent
 # import rioxarray as rxr
 
+
 class VegCell(mg.Cell):
     elevation: int | None
     aridity: int | None
@@ -46,15 +47,18 @@ class VegCell(mg.Cell):
     def step(self):
         self.update_occupancy()
         pass
-    
+
     def update_occupancy(self):
-            # Very clunky way to exclude dead agents
-            alive_jotr_agents = [agent for agent in self.jotr_agents if agent.life_stage != LifeStage.DEAD]
-            self.occupied_by_jotr_agents = True if len(alive_jotr_agents) > 0 else False
+        # Very clunky way to exclude dead agents
+        alive_jotr_agents = [
+            agent for agent in self.jotr_agents if agent.life_stage != LifeStage.DEAD
+        ]
+        self.occupied_by_jotr_agents = True if len(alive_jotr_agents) > 0 else False
 
     def add_agent_link(self, jotr_agent):
         if jotr_agent.life_stage and jotr_agent not in self.jotr_agents:
             self.jotr_agents.append(jotr_agent)
+
 
 class StudyArea(mg.GeoSpace):
     def __init__(self, bounds, epsg, model):

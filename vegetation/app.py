@@ -7,6 +7,7 @@ from mesa.visualization import Slider, SolaraViz, make_plot_component
 from mesa_geo.visualization import make_geospace_component
 from patch.model import Vegetation, JoshuaTreeAgent
 from patch.space import VegCell
+
 # from patch.management import init_tree_management_control
 from config.stages import LIFE_STAGE_RGB_VIZ_MAP
 
@@ -32,7 +33,9 @@ TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 
 model_params = {
     "num_steps": Slider("total number of steps", 20, 1, 100, 1),
-    "management_planting_density": Slider("management planting density", 0.1, 0.01, 1.0, 0.01),
+    "management_planting_density": Slider(
+        "management planting density", 0.1, 0.01, 1.0, 0.01
+    ),
     "export_data": False,
     "bounds": TST_JOTR_BOUNDS,
 }
@@ -53,7 +56,6 @@ def cell_portrayal(agent):
             max_stage = max(patch_life_stages)
             rgba = LIFE_STAGE_RGB_VIZ_MAP[max_stage]
 
-
         else:
             if not agent.refugia_status:
                 debug_normalized_elevation = int((agent.elevation / 5000) * 255)
@@ -61,7 +63,7 @@ def cell_portrayal(agent):
                     debug_normalized_elevation,
                     debug_normalized_elevation,
                     debug_normalized_elevation,
-                    .25,
+                    0.25,
                 )
             else:
                 rgba = (0, 255, 0, 1)
@@ -85,11 +87,7 @@ def cell_portrayal(agent):
 model = Vegetation(bounds=TST_JOTR_BOUNDS)
 
 tree_management = GeomanDrawControl(
-    drag=False,
-    cut=False,
-    rotate=False,
-    polyline={},
-    circlemarker={}
+    drag=False, cut=False, rotate=False, polyline={}, circlemarker={}
 )
 tree_management.on_draw(model.add_agents_from_management_draw)
 
@@ -97,7 +95,7 @@ page = SolaraViz(
     model,
     name="Veg Model",
     components=[
-        make_geospace_component(cell_portrayal, zoom=14, controls = [tree_management]),
+        make_geospace_component(cell_portrayal, zoom=14, controls=[tree_management]),
         make_plot_component(
             [
                 "Mean Age",
