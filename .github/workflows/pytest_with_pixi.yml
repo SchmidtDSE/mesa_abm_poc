@@ -22,7 +22,8 @@ jobs:
 
       - name: Debug asset move
         run: |
-          ll
+          pwd
+          ls
           ls -l .local_dev_data
 
       - name: Run pytest
