@@ -5,8 +5,8 @@
     "context": "../"
   },
   "mounts": [
-    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind", // SSH keys
-    "source=/local_dev_data,target=/local_dev_data,type=bind" // Local development cache
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached", // SSH keys
+    "source=/local_dev_data,target=/local_dev_data,type=bind,consistency=cached" // Local development cache
   ],
   "extensions": [
     "ms-python.flake8",
