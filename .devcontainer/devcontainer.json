@@ -12,7 +12,8 @@
     "ms-python.flake8",
     "ms-python.python",
     "ms-python.debugpy",
-    "ms-python.black-formatter"
+    "ms-python.black-formatter",
+    "jjjermiah.pixi-vscode"
   ],
   "postCreateCommand": ".devcontainer/scripts/transfer_local_dev_cache.sh"
 }

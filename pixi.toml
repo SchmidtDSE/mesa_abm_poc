@@ -9,6 +9,7 @@ platforms = ["linux-64"]
 [tasks]
 
 [dependencies]
+pytest = ">=7.4.4,<7.5"
 
 [target.linux-64.dependencies]
 python = "3.11.*"

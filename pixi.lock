@@ -64,6 +64,7 @@ environments:
       - conda: https://conda.anaconda.org/main/linux-64/icu-73.1-h6a678d5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/idna-3.7-py311h06a4308_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/importlib-metadata-8.5.0-py311h06a4308_0.tar.bz2
+      - conda: https://conda.anaconda.org/main/noarch/iniconfig-1.1.1-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/intel-openmp-2023.1.0-hdb19cb5_46306.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/ipython-8.30.0-py311h06a4308_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/jedi-0.19.2-py311h06a4308_0.tar.bz2
@@ -148,6 +149,7 @@ environments:
       - conda: https://conda.anaconda.org/main/linux-64/pip-24.2-py311h06a4308_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/pixman-0.40.0-h7f8727e_1.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/planetary-computer-1.0.0-pyhd8ed1ab_1.conda
+      - conda: https://conda.anaconda.org/main/linux-64/pluggy-1.5.0-py311h06a4308_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/ply-3.11-py311h06a4308_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/poppler-24.09.0-hcf11d46_1.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/poppler-data-0.4.11-h06a4308_1.tar.bz2
@@ -166,6 +168,7 @@ environments:
       - conda: https://conda.anaconda.org/main/linux-64/pysocks-1.7.1-py311h06a4308_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/pystac-1.11.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pystac-client-0.8.5-pyhd8ed1ab_1.conda
+      - conda: https://conda.anaconda.org/main/linux-64/pytest-7.4.4-py311h06a4308_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/python-3.11.11-he870216_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/python-dateutil-2.9.0post0-py311h06a4308_2.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/python-dotenv-0.21.0-py311h06a4308_0.tar.bz2
@@ -1724,6 +1727,20 @@ packages:
   license_family: APACHE
   size: 54269
   timestamp: 1732633524542
+- kind: conda
+  name: iniconfig
+  version: 1.1.1
+  build: pyhd3eb1b0_0
+  subdir: noarch
+  noarch: python
+  url: https://conda.anaconda.org/main/noarch/iniconfig-1.1.1-pyhd3eb1b0_0.tar.bz2
+  sha256: d288f67c03b20a885464056a215baef626d29f95df56e1974379a17f8e55a24e
+  md5: e40edff2c5708f342cef43c7f280c507
+  depends:
+  - python
+  license: MIT
+  size: 7815
+  timestamp: 1610983027305
 - kind: conda
   name: intel-openmp
   version: 2023.1.0
@@ -4200,6 +4217,22 @@ packages:
   - mypy >=1.11.2 ; extra == 'type'
   requires_python: '>=3.8'
 - kind: conda
+  name: pluggy
+  version: 1.5.0
+  build: py311h06a4308_0
+  subdir: linux-64
+  url: https://conda.anaconda.org/main/linux-64/pluggy-1.5.0-py311h06a4308_0.tar.bz2
+  sha256: 1c90a938a56d8516989299afd28ebb0a474abe709ebc78d13490ba042a620f53
+  md5: cf3d0a6a559bf4b8593b28e23d282de6
+  depends:
+  - python >=3.11,<3.12.0a0
+  arch: x86_64
+  platform: linux
+  license: MIT
+  license_family: MIT
+  size: 47220
+  timestamp: 1733169656661
+- kind: conda
   name: ply
   version: '3.11'
   build: py311h06a4308_0
@@ -4635,6 +4668,27 @@ packages:
   - pkg:pypi/pystac-client
   size: 36086
   timestamp: 1734440737754
+- kind: conda
+  name: pytest
+  version: 7.4.4
+  build: py311h06a4308_0
+  subdir: linux-64
+  url: https://conda.anaconda.org/main/linux-64/pytest-7.4.4-py311h06a4308_0.tar.bz2
+  sha256: 3ca62c3918b96f6dfb5ca8986a179e81f559f4b1ed5758c5a406a3383e57c1d6
+  md5: a99069e41aa107bf58ef21befb6baf8e
+  depends:
+  - iniconfig
+  - packaging
+  - pluggy >=0.12,<2.0
+  - python >=3.11,<3.12.0a0
+  constrains:
+  - pytest-faulthandler >=2
+  arch: x86_64
+  platform: linux
+  license: MIT
+  license_family: MIT
+  size: 1175267
+  timestamp: 1717793382164
 - kind: conda
   name: python
   version: 3.11.11
