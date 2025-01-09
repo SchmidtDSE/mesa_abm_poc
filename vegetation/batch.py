@@ -6,13 +6,15 @@ from config.paths import LOCAL_STAC_CACHE_FSTRING, SAVE_LOCAL_STAC_CACHE, DEM_ST
 #TODO: Batch run can't see local cache 
 #Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/16
 
+#TODO: Implement early stopping when all the JOTR die off
+
 TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 
 model_params = {
-    "num_steps": 100,
+    "num_steps": [100],
     "management_planting_density": arange(0, 1, .05),
-    "export_data": False,
-    "bounds": TST_JOTR_BOUNDS,
+    "export_data": [False],
+    "bounds": [TST_JOTR_BOUNDS],
 }
 
 if __name__ == '__main__':
