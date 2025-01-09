@@ -10,7 +10,7 @@ from patch.space import VegCell
 # from patch.management import init_tree_management_control
 from config.stages import LIFE_STAGE_RGB_VIZ_MAP
 
-# Very big bounds for western JOTR
+# Very big bounds for western JOTR 
 # TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.163940, 34.042419]
 
 # Medium bounds for testing
