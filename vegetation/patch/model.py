@@ -1,7 +1,8 @@
 import mesa
 import mesa_geo as mg
 import numpy as np
-from shapely.geometry import Point
+import shapely.geometry as sg
+from shapely.ops import transform
 import random
 import json
 from scipy.stats import poisson
@@ -9,6 +10,7 @@ from pyproj import Transformer
 
 from config.stages import LifeStage
 from patch.space import StudyArea, VegCell
+from patch.utils import transform_point_wgs84_utm, generate_point_in_utm
 from config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
@@ -19,6 +21,7 @@ from config.transitions import (
     get_jotr_breeding_poisson_lambda,
 )
 from config.paths import INITIAL_AGENTS_PATH
+
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
@@ -159,69 +162,43 @@ class JoshuaTreeAgent(mg.GeoAgent):
         else:
             return False
 
-    def disperse_seeds(
-        self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
-    ):
-
+    def disperse_seeds(self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE):
         if self.life_stage != LifeStage.BREEDING:
-            raise ValueError(
-                f"Agent {self.unique_id} is not breeding and cannot disperse seeds"
-            )
+            raise ValueError(f"Agent {self.unique_id} is not breeding and cannot disperse seeds")
 
         print(f"{STD_INDENT*2}🌰 Agent {self.unique_id} ({self.life_stage.name}) is dispersing {n_seeds} seeds...")
 
-        # TODO: Use the best projection for valid seed dispersal
-        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/12
-        # For now this uses UTM zone 11N, cuz it's in meters and
-        # works, but it may not be best for accurate linear distance?
-
-        # Create transformers to disperse seeds accurately in meters
-        wgs84_to_utm = Transformer.from_crs("EPSG:4326", JOTR_UTM_PROJ, always_xy=True)
-        utm_to_wgs84 = Transformer.from_crs(JOTR_UTM_PROJ, "EPSG:4326", always_xy=True)
-
-        # Transform parent location to UTM
+        wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(self.geometry.x, self.geometry.y)
         x_utm, y_utm = wgs84_to_utm.transform(self.geometry.x, self.geometry.y)
 
         for __seed_idx in np.arange(0, n_seeds):
-            # Random direction in radians
-            angle = random.uniform(0, 2 * np.pi)
-
-            # Random distance in meters, up to dispersal distance
-            dispersal_distance = random.uniform(0, max_dispersal_distance)
-
-            # Calculate new seed location in UTM
-            seed_x_utm = x_utm + dispersal_distance * np.cos(angle)
-            seed_y_utm = y_utm + dispersal_distance * np.sin(angle)
-
-            # Transform back to WGS84
+            seed_x_utm, seed_y_utm = generate_point_in_utm(x_utm, y_utm, max_dispersal_distance)
             seed_x_wgs84, seed_y_wgs84 = utm_to_wgs84.transform(seed_x_utm, seed_y_utm)
 
-            # Create new seed agent
             seed_agent = JoshuaTreeAgent(
                 model=self.model,
-                geometry=Point(seed_x_wgs84, seed_y_wgs84),
+                geometry=sg.Point(seed_x_wgs84, seed_y_wgs84),
                 crs=self.crs,
                 age=0,
                 parent_id=self.unique_id,
             )
             seed_agent._update_life_stage()
-
-            # Add the seed agent to the model
+            
             self.model.space.add_agents(seed_agent)
             delta_x_index = self.indices[0] - seed_agent.indices[0]
             delta_y_index = self.indices[1] - seed_agent.indices[1]
 
-            print(
-                f"{STD_INDENT*3}➕ Seed ({seed_agent.unique_id}, lifestage {seed_agent.life_stage}) to {seed_agent._pos} (🔺index: {delta_x_index}, {delta_y_index})"
-            )
+            print(f"{STD_INDENT*3}➕ Seed ({seed_agent.unique_id}, lifestage {seed_agent.life_stage}) to {seed_agent._pos} (🔺index: {delta_x_index}, {delta_y_index})")
+
 
 
 class Vegetation(mesa.Model):
-    def __init__(self, bounds, export_data=False, num_steps=20, epsg=4326):
+    def __init__(self, bounds, export_data=False, num_steps=20, management_planting_density=.01, epsg=4326):
         super().__init__()
         self.bounds = bounds
         self.export_data = export_data
         self.num_steps = num_steps
+        self.management_planting_density = management_planting_density
 
         self.space = StudyArea(bounds, epsg=epsg, model=self)
 
@@ -262,16 +239,58 @@ class Vegetation(mesa.Model):
         self.update_metrics()
 
     # def add_agents_from_management_draw(event, geo_json, action):
-    def add_agents_from_management_draw(*args, **kwargs):
+    def add_agents_from_management_draw(self, *args, **kwargs):
         
         assert kwargs.get("action") == "create"
         management_area = kwargs.get('geo_json')
 
-        # Use geojson to creates agents within polygon area
-        # agents = mg.AgentCreator(JoshuaTreeAgent, model=self).from_GeoJSON(geojson)
-        # self.space.add_agents(agents)
+        outplanting_point_locations = self._generate_planting_points(management_area)
 
-    # @property
+        for management_x_wgs84, management_y_wgs84 in outplanting_point_locations:
+
+            # TODO: Vegetation model doesn't know its own CRS
+            management_agent = JoshuaTreeAgent(
+                model=self,
+                geometry=sg.Point(management_x_wgs84, management_y_wgs84),
+                crs="EPSG:4326",
+                age=20,
+                parent_id=None,
+            )
+            management_agent._update_life_stage()
+            
+            self.space.add_agents(management_agent)
+
+            print(f"{STD_INDENT*3}✨ Outplanted ({management_agent.unique_id}, lifestage {management_agent.life_stage.name}) to {management_agent._pos}")
+
+
+    def _generate_planting_points(self, geo_json):
+        # Convert GeoJSON to Shapely polygon
+        coords = geo_json[0]['geometry']['coordinates'][0]
+        polygon = sg.Polygon(coords)
+        
+        # Get UTM zone from polygon centroid
+        lon, lat = polygon.centroid.x, polygon.centroid.y
+        wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(lon, lat)
+        
+        # Project polygon to UTM
+        utm_polygon = transform(wgs84_to_utm.transform, polygon)
+        area = utm_polygon.area
+        num_points = int(area * self.management_planting_density)
+        
+        points = []
+        minx, miny, maxx, maxy = utm_polygon.bounds
+        
+        while len(points) < num_points:
+            x_utm = np.random.uniform(minx, maxx)
+            y_utm = np.random.uniform(miny, maxy)
+            point_utm = sg.Point(x_utm, y_utm)
+            
+            if utm_polygon.contains(point_utm):
+                management_x_wgs84, management_y_wgs84 = utm_to_wgs84.transform(x_utm, y_utm)
+                points.append((management_x_wgs84, management_y_wgs84))
+        
+        return points
+
     def update_metrics(self):
         # Mean age
         mean_age = self.agents.select(agent_type=JoshuaTreeAgent).agg("age", np.mean)

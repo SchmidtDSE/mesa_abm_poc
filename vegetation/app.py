@@ -32,6 +32,7 @@ TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 
 model_params = {
     "num_steps": Slider("total number of steps", 20, 1, 100, 1),
+    "management_planting_density": Slider("management planting density", 0.1, 0.01, 1.0, 0.01),
     "export_data": False,
     "bounds": TST_JOTR_BOUNDS,
 }

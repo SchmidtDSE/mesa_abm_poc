@@ -48,7 +48,6 @@ class VegCell(mg.Cell):
         self.occupied_by_jotr_agents = False
 
     def step(self):
-        # Right now, this cell is being updated by the JOTR agent step, but it probably shouldn't be
         self.update_occupancy()
         pass
     
