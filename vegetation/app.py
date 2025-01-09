@@ -96,10 +96,10 @@ page = SolaraViz(
     model,
     name="Veg Model",
     components=[
-        # make_raster_only_geospace_component(
-        #     cell_portrayal, zoom=14, controls=[tree_management]
-        # ),
-        make_geospace_component(cell_portrayal, zoom=14, controls=[tree_management]),
+        make_raster_only_geospace_component(
+            cell_portrayal, zoom=14, controls=[tree_management]
+        ),
+        # make_geospace_component(cell_portrayal, zoom=14, controls=[tree_management]),
         make_plot_component(
             [
                 "Mean Age",
