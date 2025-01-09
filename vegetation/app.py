@@ -7,6 +7,7 @@ from mesa.visualization import Slider, SolaraViz, make_plot_component
 from mesa_geo.visualization import make_geospace_component
 from vegetation.patch.model import Vegetation, JoshuaTreeAgent
 from vegetation.patch.space import VegCell
+from vegetation.viz.simple_raster_map import make_raster_only_geospace_component
 
 # from patch.management import init_tree_management_control
 from vegetation.config.stages import LIFE_STAGE_RGB_VIZ_MAP
@@ -95,6 +96,9 @@ page = SolaraViz(
     model,
     name="Veg Model",
     components=[
+        # make_raster_only_geospace_component(
+        #     cell_portrayal, zoom=14, controls=[tree_management]
+        # ),
         make_geospace_component(cell_portrayal, zoom=14, controls=[tree_management]),
         make_plot_component(
             [
