@@ -4,8 +4,10 @@ jobs:
   build:
     runs-on: "ubuntu-latest"
     steps:
+      - name: Check out code for this commit
       - uses: actions/checkout@v4
 
+      - name: Get pixi and install environment
       - uses: prefix-dev/setup-pixi@v0.8.1
         with:
           pixi-version: v0.39.5
@@ -13,4 +15,10 @@ jobs:
           activate-environment: true
           frozen: true
 
+      - name: Get required assets for simulations
+      - run: |
+          mkdir .local_dev_data
+          mv tests/assets/* .local_dev_data/
+
+      - name: Run pytest
       - run: pytest -v tests/
