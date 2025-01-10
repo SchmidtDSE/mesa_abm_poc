@@ -7,7 +7,8 @@ from mesa.visualization import Slider, SolaraViz, make_plot_component
 from mesa_geo.visualization import make_geospace_component
 from vegetation.patch.model import Vegetation, JoshuaTreeAgent
 from vegetation.patch.space import VegCell
-from vegetation.viz.simple_raster_map import make_raster_only_geospace_component
+from vegetation.viz.simple_raster_map import make_simple_raster_geospace_component
+from vegetation.viz.log_window import make_log_window_component
 
 # from patch.management import init_tree_management_control
 from vegetation.config.stages import LIFE_STAGE_RGB_VIZ_MAP
@@ -87,19 +88,16 @@ def cell_portrayal(agent):
 
 model = Vegetation(bounds=TST_JOTR_BOUNDS)
 
-tree_management = GeomanDrawControl(
-    drag=False, cut=False, rotate=False, polyline={}, circlemarker={}
-)
+tree_management = GeomanDrawControl(drag=False, cut=False, rotate=False, polyline={})
 tree_management.on_draw(model.add_agents_from_management_draw)
 
 page = SolaraViz(
     model,
     name="Veg Model",
     components=[
-        make_raster_only_geospace_component(
+        make_simple_raster_geospace_component(
             cell_portrayal, zoom=14, controls=[tree_management]
         ),
-        # make_geospace_component(cell_portrayal, zoom=14, controls=[tree_management]),
         make_plot_component(
             [
                 "Mean Age",
@@ -114,6 +112,7 @@ page = SolaraViz(
         make_plot_component(
             ["% Refugia Cells Occupied"],
         ),
+        make_log_window_component(),
     ],
     model_params=model_params,
 )

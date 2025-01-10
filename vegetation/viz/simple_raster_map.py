@@ -5,7 +5,7 @@ from mesa.visualization.utils import update_counter
 from mesa_geo.visualization.components.geospace_component import MapModule
 
 
-def make_raster_only_geospace_component(
+def make_simple_raster_geospace_component(
     agent_portrayal,
     view=None,
     tiles=xyzservices.providers.OpenStreetMap.Mapnik,

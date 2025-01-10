@@ -31,3 +31,5 @@ solara run app.py
 - For some weird reason, after adding interactivity, the solara app only runs after being reloaded after initial build. This can be triggered by saving any file within the repo, and things seem to work fine after that - you can even make source edits and re-run, which is a nice workflow. Weird!
 
 - Sliders don't seem to change model inits whatsoever - and docs don't show any explicit way to access them, seems to just 'happen' when registering model params?
+
+- Occasionally Solara appears to never render (stuck on "Loading App"). Simply rebuilding (not from cache) seems to fix it, and it seems to happen after changes are made to the `SolaraViz` class from mesa-geo - could have something to do with autoreload, but not sure. 
