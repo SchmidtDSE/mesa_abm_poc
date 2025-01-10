@@ -7,6 +7,7 @@ import random
 import json
 from scipy.stats import poisson
 from pyproj import Transformer
+import logging
 
 from vegetation.config.stages import LifeStage
 from vegetation.patch.space import StudyArea, VegCell
@@ -25,6 +26,8 @@ from vegetation.config.paths import INITIAL_AGENTS_PATH
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
+
+logger = logging.getLogger("vegetation")
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
@@ -75,6 +78,8 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # self._update_life_stage()
 
     def step(self):
+
+        logger.info("Agent Step")
 
         # Save initial life stage for logging
         initial_life_stage = self.life_stage
@@ -344,6 +349,9 @@ class Vegetation(mesa.Model):
         )
 
     def step(self):
+
+        logger.info("Model Step")
+
         # Print timestep header
         timestep_str = f"# {STD_INDENT*0}🕰️  Time passes. It is the year {self.steps}. #"
         nchar_timestep_str = len(timestep_str)
