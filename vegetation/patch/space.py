@@ -11,6 +11,7 @@ import os
 import hashlib
 import logging
 import time
+from functools import cached_property
 
 from config.stages import LifeStage
 
@@ -73,21 +74,23 @@ class StudyArea(mg.GeoSpace):
         # the bounds of the study area, so that we can grab if we already have it
         self.bounds_md5 = hashlib.md5(str(bounds).encode()).hexdigest()
 
-        self.pystac_client = None
-        if not LOCAL_STAC_CACHE_FSTRING:
-            self.pystac_client = PystacClient.open(
-                DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
-            )
+    @cached_property
+    def pystac_client(self):
+        return PystacClient.open(
+            DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
+        )
 
-    def get_elevation(self):
-
+    @property
+    def _cache_exists(self) -> bool:
         local_elevation_path = LOCAL_STAC_CACHE_FSTRING.format(
             band_name="elevation",
             bounds_md5=self.bounds_md5,
         )
 
-        if os.path.exists(local_elevation_path):
+        return os.path.exists(local_elevation_path)
 
+    def get_elevation(self):
+        if self._cache_exists:
             print(f"Loading elevation from local cache: {local_elevation_path}")
 
             try:
@@ -104,7 +107,6 @@ class StudyArea(mg.GeoSpace):
                 raise e
 
         else:
-
             print("No local cache found, downloading elevation from STAC")
             time_at_start = time.time()
 
