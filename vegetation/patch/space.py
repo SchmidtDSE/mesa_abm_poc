@@ -12,20 +12,22 @@ import hashlib
 import logging
 import time
 
-from config.stages import LifeStage
+from vegetation.config.stages import LifeStage
+from vegetation.config.paths import (
+    LOCAL_STAC_CACHE_FSTRING,
+    SAVE_LOCAL_STAC_CACHE,
+    DEM_STAC_PATH,
+)
 
 # from patch.model import JoshuaTreeAgent
 # import rioxarray as rxr
-
-DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
-LOCAL_STAC_CACHE_FSTRING = "/local_dev_data/{band_name}_{bounds_md5}.tif"
-SAVE_LOCAL_STAC_CACHE = True
 
 
 class VegCell(mg.Cell):
     elevation: int | None
     aridity: int | None
     refugia_status: bool = False
+    jotr_max_life_stage: int | None
 
     def __init__(
         self,
@@ -46,20 +48,29 @@ class VegCell(mg.Cell):
         # is that this will either not work or be very slow, but itll get us started
         self.jotr_agents = []
         self.occupied_by_jotr_agents = False
+        self.jotr_max_life_stage = 0
 
     def step(self):
-        # Right now, this cell is being updated by the JOTR agent step, but it probably shouldn't be
         self.update_occupancy()
-        pass
-    
+
     def update_occupancy(self):
-            # Very clunky way to exclude dead agents
-            alive_jotr_agents = [agent for agent in self.jotr_agents if agent.life_stage != LifeStage.DEAD]
-            self.occupied_by_jotr_agents = True if len(alive_jotr_agents) > 0 else False
+        # Very clunky way to exclude dead agents
+        alive_patch_life_stages = [
+            agent.life_stage
+            for agent in self.jotr_agents
+            if agent.life_stage != LifeStage.DEAD
+        ]
+        if alive_patch_life_stages:
+            self.jotr_max_life_stage = max(alive_patch_life_stages)
+            self.occupied_by_jotr_agents = True
+        else:
+            self.jotr_max_life_stage = None
+            self.occupied_by_jotr_agents = False
 
     def add_agent_link(self, jotr_agent):
         if jotr_agent.life_stage and jotr_agent not in self.jotr_agents:
             self.jotr_agents.append(jotr_agent)
+
 
 class StudyArea(mg.GeoSpace):
     def __init__(self, bounds, epsg, model):
