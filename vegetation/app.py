@@ -52,11 +52,8 @@ def cell_portrayal(agent):
         # life stage of any Joshua Tree agent in the cell. If there are no agents,
         # we color based on elevation.
 
-        # patch_life_stages = [agent.life_stage for agent in agent.jotr_agents]
-
         if agent.jotr_max_life_stage and agent.jotr_max_life_stage > 0:
 
-            # max_stage = max(patch_life_stages)
             rgba = LIFE_STAGE_RGB_VIZ_MAP[agent.jotr_max_life_stage]
 
         else:

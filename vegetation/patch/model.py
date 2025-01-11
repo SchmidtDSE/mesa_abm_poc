@@ -62,10 +62,13 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # pos = (np.float64(geometry.x), np.float64(geometry.y))
         # self._pos = pos
 
-        self.indices = (int(self.float_indices[0]), int(self.float_indices[1]))
+        self.indices = (
+            int(self.float_indices[0]),
+            self.model.space.raster_layer.height - int(self.float_indices[1]),
+        )
         self._pos = (
-            self.indices[0],
-            self.model.space.raster_layer.height - self.indices[1],
+            int(self.float_indices[0]),
+            int(self.float_indices[1]),
         )
 
         # TODO: Figure out how to set the life stage on init
