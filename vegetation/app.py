@@ -89,6 +89,7 @@ tree_management = GeomanDrawControl(
 tree_management.on_draw(model.add_agents_from_management_draw)
 
 ## TODO: Solara only works after first auto-reload
+#Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/21
 
 page = SolaraViz(
     model,
