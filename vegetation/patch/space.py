@@ -19,7 +19,7 @@ from config.stages import LifeStage
 # import rioxarray as rxr
 
 DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
-LOCAL_STAC_CACHE_FSTRING = "/local_dev_data/{band_name}_{bounds_md5}.tif"
+LOCAL_STAC_CACHE_FSTRING = "/tmp/local_dev_data/{band_name}_{bounds_md5}.tif"
 SAVE_LOCAL_STAC_CACHE = True
 
 
@@ -129,6 +129,7 @@ class StudyArea(mg.GeoSpace):
 
             if SAVE_LOCAL_STAC_CACHE:
                 print(f"Saving elevation to local cache: {self._cache_path}")
+                os.makedirs(os.path.dirname(self._cache_path), exist_ok=True)
                 elevation_layer.to_file(self._cache_path)
 
             print(f"Downloaded elevation in {time.time() - time_at_start} seconds")
