@@ -27,8 +27,6 @@ from vegetation.config.paths import INITIAL_AGENTS_PATH
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
 
-logger = logging.getLogger("vegetation")
-
 
 class JoshuaTreeAgent(mg.GeoAgent):
     def __init__(self, model, geometry, crs, age=None, parent_id=None):
