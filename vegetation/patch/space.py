@@ -81,17 +81,15 @@ class StudyArea(mg.GeoSpace):
         )
 
     @property
-    def _cache_exists(self) -> bool:
-        local_elevation_path = LOCAL_STAC_CACHE_FSTRING.format(
+    def _cache_path(self) -> str:
+        return LOCAL_STAC_CACHE_FSTRING.format(
             band_name="elevation",
             bounds_md5=self.bounds_md5,
         )
 
-        return os.path.exists(local_elevation_path)
-
     def get_elevation(self):
-        if self._cache_exists:
-            print(f"Loading elevation from local cache: {local_elevation_path}")
+        if os.path.exists(self._cache_path):
+            print(f"Loading elevation from local cache: {self._cache_path}")
 
             try:
                 elevation_layer = mg.RasterLayer.from_file(
@@ -102,7 +100,7 @@ class StudyArea(mg.GeoSpace):
                 )
             except Exception as e:
                 logging.warning(
-                    f"Failed to load elevation from local cache ({local_elevation_path}): {e}"
+                    f"Failed to load elevation from local cache ({self._cache_path}): {e}"
                 )
                 raise e
 
@@ -130,8 +128,8 @@ class StudyArea(mg.GeoSpace):
             )
 
             if SAVE_LOCAL_STAC_CACHE:
-                print(f"Saving elevation to local cache: {local_elevation_path}")
-                elevation_layer.to_file(local_elevation_path)
+                print(f"Saving elevation to local cache: {self._cache_path}")
+                elevation_layer.to_file(self._cache_path)
 
             print(f"Downloaded elevation in {time.time() - time_at_start} seconds")
 
