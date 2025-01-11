@@ -4,11 +4,12 @@ from typing import Tuple
 from ipyleaflet.leaflet import GeomanDrawControl
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
-from mesa_geo.visualization import make_geospace_component
 from vegetation.patch.model import Vegetation, JoshuaTreeAgent
 from vegetation.patch.space import VegCell
 from vegetation.viz.simple_raster_map import make_simple_raster_geospace_component
-from vegetation.viz.log_window import make_log_window_component
+
+# Log window tabled for now... not working as expected at the moment
+# from vegetation.viz.log_window import make_log_window_component
 
 # from patch.management import init_tree_management_control
 from vegetation.config.stages import LIFE_STAGE_RGB_VIZ_MAP
@@ -51,12 +52,12 @@ def cell_portrayal(agent):
         # life stage of any Joshua Tree agent in the cell. If there are no agents,
         # we color based on elevation.
 
-        patch_life_stages = [agent.life_stage for agent in agent.jotr_agents]
+        # patch_life_stages = [agent.life_stage for agent in agent.jotr_agents]
 
-        if len(patch_life_stages) > 0:
+        if agent.jotr_max_life_stage and agent.jotr_max_life_stage > 0:
 
-            max_stage = max(patch_life_stages)
-            rgba = LIFE_STAGE_RGB_VIZ_MAP[max_stage]
+            # max_stage = max(patch_life_stages)
+            rgba = LIFE_STAGE_RGB_VIZ_MAP[agent.jotr_max_life_stage]
 
         else:
             if not agent.refugia_status:
@@ -112,7 +113,7 @@ page = SolaraViz(
         make_plot_component(
             ["% Refugia Cells Occupied"],
         ),
-        make_log_window_component(),
+        # make_log_window_component(),
     ],
     model_params=model_params,
 )

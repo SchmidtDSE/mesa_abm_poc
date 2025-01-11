@@ -27,6 +27,7 @@ class VegCell(mg.Cell):
     elevation: int | None
     aridity: int | None
     refugia_status: bool = False
+    jotr_max_life_stage: int | None
 
     def __init__(
         self,
@@ -47,17 +48,24 @@ class VegCell(mg.Cell):
         # is that this will either not work or be very slow, but itll get us started
         self.jotr_agents = []
         self.occupied_by_jotr_agents = False
+        self.jotr_max_life_stage = 0
 
     def step(self):
         self.update_occupancy()
-        pass
 
     def update_occupancy(self):
         # Very clunky way to exclude dead agents
-        alive_jotr_agents = [
-            agent for agent in self.jotr_agents if agent.life_stage != LifeStage.DEAD
+        alive_patch_life_stages = [
+            agent.life_stage
+            for agent in self.jotr_agents
+            if agent.life_stage != LifeStage.DEAD
         ]
-        self.occupied_by_jotr_agents = True if len(alive_jotr_agents) > 0 else False
+        if alive_patch_life_stages:
+            self.jotr_max_life_stage = max(alive_patch_life_stages)
+            self.occupied_by_jotr_agents = True
+        else:
+            self.jotr_max_life_stage = None
+            self.occupied_by_jotr_agents = False
 
     def add_agent_link(self, jotr_agent):
         if jotr_agent.life_stage and jotr_agent not in self.jotr_agents:

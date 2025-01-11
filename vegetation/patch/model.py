@@ -79,8 +79,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
     def step(self):
 
-        logger.info("Agent Step")
-
         # Save initial life stage for logging
         initial_life_stage = self.life_stage
 
@@ -140,7 +138,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             )
             n_seeds = poisson.rvs(jotr_breeding_poisson_lambda)
 
-            self.disperse_seeds(n_seeds)
+            self._disperse_seeds(n_seeds)
 
     def _update_life_stage(self):
 
@@ -167,7 +165,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         else:
             return False
 
-    def disperse_seeds(
+    def _disperse_seeds(
         self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
     ):
         if self.life_stage != LifeStage.BREEDING:
@@ -349,8 +347,6 @@ class Vegetation(mesa.Model):
         )
 
     def step(self):
-
-        logger.info("Model Step")
 
         # Print timestep header
         timestep_str = f"# {STD_INDENT*0}🕰️  Time passes. It is the year {self.steps}. #"
