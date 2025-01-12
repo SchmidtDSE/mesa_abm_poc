@@ -93,7 +93,7 @@ class StudyArea(mg.GeoSpace):
 
             try:
                 elevation_layer = mg.RasterLayer.from_file(
-                    raster_file=local_elevation_path,
+                    raster_file=self._cache_path,
                     model=self.model,
                     cell_cls=VegCell,
                     attr_name="elevation",
