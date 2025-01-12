@@ -11,6 +11,7 @@ import os
 import hashlib
 import logging
 import time
+from functools import cached_property
 
 from config.stages import LifeStage
 
@@ -18,7 +19,7 @@ from config.stages import LifeStage
 # import rioxarray as rxr
 
 DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
-LOCAL_STAC_CACHE_FSTRING = "/local_dev_data/{band_name}_{bounds_md5}.tif"
+LOCAL_STAC_CACHE_FSTRING = "/tmp/local_dev_data/{band_name}_{bounds_md5}.tif"
 SAVE_LOCAL_STAC_CACHE = True
 
 
@@ -73,38 +74,37 @@ class StudyArea(mg.GeoSpace):
         # the bounds of the study area, so that we can grab if we already have it
         self.bounds_md5 = hashlib.md5(str(bounds).encode()).hexdigest()
 
-        self.pystac_client = None
-        if not LOCAL_STAC_CACHE_FSTRING:
-            self.pystac_client = PystacClient.open(
-                DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
-            )
+    @cached_property
+    def pystac_client(self):
+        return PystacClient.open(
+            DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
+        )
 
-    def get_elevation(self):
-
-        local_elevation_path = LOCAL_STAC_CACHE_FSTRING.format(
+    @property
+    def _cache_path(self) -> str:
+        return LOCAL_STAC_CACHE_FSTRING.format(
             band_name="elevation",
             bounds_md5=self.bounds_md5,
         )
 
-        if os.path.exists(local_elevation_path):
-
-            print(f"Loading elevation from local cache: {local_elevation_path}")
+    def get_elevation(self):
+        if os.path.exists(self._cache_path):
+            print(f"Loading elevation from local cache: {self._cache_path}")
 
             try:
                 elevation_layer = mg.RasterLayer.from_file(
-                    raster_file=local_elevation_path,
+                    raster_file=self._cache_path,
                     model=self.model,
                     cell_cls=VegCell,
                     attr_name="elevation",
                 )
             except Exception as e:
                 logging.warning(
-                    f"Failed to load elevation from local cache ({local_elevation_path}): {e}"
+                    f"Failed to load elevation from local cache ({self._cache_path}): {e}"
                 )
                 raise e
 
         else:
-
             print("No local cache found, downloading elevation from STAC")
             time_at_start = time.time()
 
@@ -128,8 +128,9 @@ class StudyArea(mg.GeoSpace):
             )
 
             if SAVE_LOCAL_STAC_CACHE:
-                print(f"Saving elevation to local cache: {local_elevation_path}")
-                elevation_layer.to_file(local_elevation_path)
+                print(f"Saving elevation to local cache: {self._cache_path}")
+                os.makedirs(os.path.dirname(self._cache_path), exist_ok=True)
+                elevation_layer.to_file(self._cache_path)
 
             print(f"Downloaded elevation in {time.time() - time_at_start} seconds")
 

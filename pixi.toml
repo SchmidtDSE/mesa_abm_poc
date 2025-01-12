@@ -23,15 +23,14 @@ pandas = "*"
 stackstac = "*"
 geopandas = "*"
 rioxarray = "*"
-rasterio = "1.3.*"
 networkx = "3.3"
 matplotlib = "*"
 typing-extensions = ">=4.12.0rc1"
 sqlite = "*"
+solara = "*"
 pip = "*"
+
 
 [target.linux-64.pypi-dependencies]
 mesa = { version = "==3.1.1" }
 mesa-geo = { version = "==0.9.0" }
-networkx = { version = "==3.1" }
-solara = "*"
