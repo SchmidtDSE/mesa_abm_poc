@@ -3,6 +3,7 @@ import time
 import hashlib
 import numpy as np
 import stackstac
+import mesa_geo as mg
 from functools import cached_property
 from pystac_client import Client as PystacClient
 import planetary_computer
@@ -18,6 +19,7 @@ class CacheManager:
         self.epsg = epsg
         self.model = model
         self.bounds_md5 = hashlib.md5(str(bounds).encode()).hexdigest()
+        self.local_cache_path_fstring = LOCAL_STAC_CACHE_FSTRING
 
     @cached_property
     def pystac_client(self):
@@ -28,7 +30,7 @@ class CacheManager:
     @property
     def _cache_paths(self) -> dict:
         cache_dict = {
-            "elevation": self.LOCAL_STAC_CACHE_FSTRING.format(
+            "elevation": self.local_cache_path_fstring.format(
                 band_name="elevation",
                 bounds_md5=self.bounds_md5,
             ),
@@ -75,7 +77,7 @@ class CacheManager:
         return elevation
 
     def populate_elevation_cache_if_not_exists(self):
-        if os.path.exists(self._cache_path):
+        if os.path.exists(self._cache_paths["elevation"]):
             print(f"Local elevation cache found: {self._cache_path}")
             return
 
@@ -113,5 +115,6 @@ class CacheManager:
 
 
 if __name__ == "__main__":
-    cache_manager = CacheManager(TST_JOTR_BOUNDS, 4326, Vegetation)
+    vegetation_model = Vegetation(bounds=TST_JOTR_BOUNDS)
+    cache_manager = CacheManager(TST_JOTR_BOUNDS, 4326, vegetation_model)
     cache_manager.populate_elevation_cache_if_not_exists()

@@ -13,14 +13,15 @@ import logging
 import time
 from functools import cached_property
 
-from config.stages import LifeStage
+from vegetation.config.stages import LifeStage
+from vegetation.config.paths import LOCAL_STAC_CACHE_FSTRING
 
 # from patch.model import JoshuaTreeAgent
 # import rioxarray as rxr
 
-DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
-LOCAL_STAC_CACHE_FSTRING = "/tmp/local_dev_data/{band_name}_{bounds_md5}.tif"
-SAVE_LOCAL_STAC_CACHE = True
+# DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
+# LOCAL_STAC_CACHE_FSTRING = "/tmp/local_dev_data/{band_name}_{bounds_md5}.tif"
+# SAVE_LOCAL_STAC_CACHE = True
 
 
 class VegCell(mg.Cell):
@@ -76,17 +77,12 @@ class StudyArea(mg.GeoSpace):
         # have to download it every time. This hash is used to uniquely identify
         # the bounds of the study area, so that we can grab if we already have it
         self.bounds_md5 = hashlib.md5(str(bounds).encode()).hexdigest()
-
-    @cached_property
-    def pystac_client(self):
-        return PystacClient.open(
-            DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
-        )
+        self.local_stac_cache_fstring = LOCAL_STAC_CACHE_FSTRING
 
     @property
     def _cache_paths(self) -> dict:
         cache_dict = {
-            "elevation": self.LOCAL_STAC_CACHE_FSTRING.format(
+            "elevation": self.local_stac_cache_fstring.format(
                 band_name="elevation",
                 bounds_md5=self.bounds_md5,
             ),
@@ -96,12 +92,12 @@ class StudyArea(mg.GeoSpace):
     def get_elevation(self):
         elevation_cache_path = self._cache_paths["elevation"]
 
-        if os.path.exists(self._cache_path):
+        if os.path.exists(elevation_cache_path):
             print(f"Loading elevation from local cache: {elevation_cache_path}")
 
             try:
                 elevation_layer = mg.RasterLayer.from_file(
-                    raster_file=self._cache_path,
+                    raster_file=elevation_cache_path,
                     model=self.model,
                     cell_cls=VegCell,
                     attr_name="elevation",

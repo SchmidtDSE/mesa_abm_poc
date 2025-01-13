@@ -7,9 +7,9 @@ import json
 from scipy.stats import poisson
 from pyproj import Transformer
 
-from config.stages import LifeStage
-from patch.space import StudyArea, VegCell
-from config.transitions import (
+from vegetation.config.stages import LifeStage
+from vegetation.patch.space import StudyArea, VegCell
+from vegetation.config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
     JOTR_ADULT_AGE,
@@ -18,10 +18,11 @@ from config.transitions import (
     get_jotr_survival_rate,
     get_jotr_breeding_poisson_lambda,
 )
-from config.paths import INITIAL_AGENTS_PATH
+from vegetation.config.paths import INITIAL_AGENTS_PATH
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
+
 
 class JoshuaTreeAgent(mg.GeoAgent):
     def __init__(self, model, geometry, crs, age=None, parent_id=None):
@@ -112,7 +113,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
             )
             self.life_stage = LifeStage.DEAD
 
-
         # Increment age
         self.age += 1
         life_stage_promotion = self._update_life_stage()
@@ -168,7 +168,9 @@ class JoshuaTreeAgent(mg.GeoAgent):
                 f"Agent {self.unique_id} is not breeding and cannot disperse seeds"
             )
 
-        print(f"{STD_INDENT*2}🌰 Agent {self.unique_id} ({self.life_stage.name}) is dispersing {n_seeds} seeds...")
+        print(
+            f"{STD_INDENT*2}🌰 Agent {self.unique_id} ({self.life_stage.name}) is dispersing {n_seeds} seeds..."
+        )
 
         # TODO: Use the best projection for valid seed dispersal
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/12
@@ -263,9 +265,9 @@ class Vegetation(mesa.Model):
 
     # def add_agents_from_management_draw(event, geo_json, action):
     def add_agents_from_management_draw(*args, **kwargs):
-        
+
         assert kwargs.get("action") == "create"
-        management_area = kwargs.get('geo_json')
+        management_area = kwargs.get("geo_json")
 
         # Use geojson to creates agents within polygon area
         # agents = mg.AgentCreator(JoshuaTreeAgent, model=self).from_GeoJSON(geojson)
@@ -294,12 +296,14 @@ class Vegetation(mesa.Model):
 
         # Number of refugia cells occupied by JoshuaTreeAgents
         count_dict = (
-            self.agents.select(agent_type=VegCell) \
-                .select(filter_func = lambda agent: agent.refugia_status) \
-                .groupby("occupied_by_jotr_agents") \
-                .count()
+            self.agents.select(agent_type=VegCell)
+            .select(filter_func=lambda agent: agent.refugia_status)
+            .groupby("occupied_by_jotr_agents")
+            .count()
         )
-        self.pct_refugia_cells_occupied = count_dict.get(True, 0) / (count_dict.get(True, 0) + count_dict.get(False, 0))
+        self.pct_refugia_cells_occupied = count_dict.get(True, 0) / (
+            count_dict.get(True, 0) + count_dict.get(False, 0)
+        )
 
     def step(self):
         # Print timestep header
