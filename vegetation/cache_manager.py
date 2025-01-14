@@ -115,7 +115,9 @@ class CacheManager:
             docker_host_elevation_cache_path = self._docker_host_cache_paths[
                 "elevation"
             ]
-            os.mkdir(os.path.dirname(docker_host_elevation_cache_path), exist_ok=True)
+            os.makedirs(
+                os.path.dirname(docker_host_elevation_cache_path), exist_ok=True
+            )
             elevation_layer.to_file(docker_host_elevation_cache_path)
 
         print(f"Downloaded elevation in {time.time() - time_at_start} seconds")
