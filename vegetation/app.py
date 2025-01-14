@@ -4,30 +4,13 @@ from typing import Tuple
 from ipyleaflet.leaflet import GeomanDrawControl
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
-from vegetation.patch.model import Vegetation, JoshuaTreeAgent
-from vegetation.patch.space import VegCell
-from vegetation.viz.simple_raster_map import make_simple_raster_geospace_component
-
-# Log window tabled for now... not working as expected at the moment
-# from vegetation.viz.log_window import make_log_window_component
+from mesa_geo.visualization import make_geospace_component
+from patch.model import Vegetation, JoshuaTreeAgent
+from patch.space import VegCell
 
 # from patch.management import init_tree_management_control
-from vegetation.config.stages import LIFE_STAGE_RGB_VIZ_MAP
-
-# Very big bounds for western JOTR
-# TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.163940, 34.042419]
-
-# Medium bounds for testing
-# TST_JOTR_BOUNDS = [-116.367188, 33.939942, -116.201019, 34.061193]
-
-# Small-ish bounds
-TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
-
-# Very small bounds for testing
-# TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.360920, 33.935106]
-
-# TODO: Add conda lock file to prevent version issues
-# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/11
+from config.stages import LIFE_STAGE_RGB_VIZ_MAP
+from config.aoi import TST_JOTR_BOUNDS
 
 # TODO: Push working build to artifact registry, or dockerhub, or something, while
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/10

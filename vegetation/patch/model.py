@@ -23,7 +23,6 @@ from vegetation.config.transitions import (
 )
 from vegetation.config.paths import INITIAL_AGENTS_PATH
 
-
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
 
@@ -218,21 +217,12 @@ class Vegetation(mesa.Model):
     ):
         super().__init__()
         self.bounds = bounds
-        self.export_data = export_data
         self.num_steps = num_steps
         self.management_planting_density = management_planting_density
+        self._on_start_executed = False
 
+        # mesa setup
         self.space = StudyArea(bounds, epsg=epsg, model=self)
-
-        self.space.get_elevation()
-        self.space.get_aridity()
-        self.space.get_refugia_status()
-
-        with open(INITIAL_AGENTS_PATH, "r") as f:
-            initial_agents_geojson = json.loads(f.read())
-
-        self._add_agents_from_geojson(initial_agents_geojson)
-
         self.datacollector = mesa.DataCollector(
             {
                 "Mean Age": "mean_age",
@@ -245,6 +235,19 @@ class Vegetation(mesa.Model):
                 "% Refugia Cells Occupied": "pct_refugia_cells_occupied",
             }
         )
+
+    def _on_start(self):
+
+        self.space.get_elevation()
+        self.space.get_aridity()
+        self.space.get_refugia_status()
+
+        with open(INITIAL_AGENTS_PATH, "r") as f:
+            initial_agents_geojson = json.loads(f.read())
+
+        self._add_agents_from_geojson(initial_agents_geojson)
+
+        self._on_start_executed = True
 
     def _add_agents_from_geojson(self, agents_geojson):
         agents = mg.AgentCreator(JoshuaTreeAgent, model=self).from_GeoJSON(
@@ -348,6 +351,9 @@ class Vegetation(mesa.Model):
         )
 
     def step(self):
+
+        if not self._on_start_executed:
+            self._on_start()
 
         # Print timestep header
         timestep_str = f"# {STD_INDENT*0}🕰️  Time passes. It is the year {self.steps}. #"
