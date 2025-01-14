@@ -109,14 +109,16 @@ class CacheManager:
         elevation_layer.to_file(elevation_cache_path)
 
         if os.getenv("DOCKER_HOST_STAC_CACHE_FSTRING"):
-            print(
-                "Also saving elevation to Docker host cache (to speed up cache build later on this machine):"
-            )
+
             docker_host_elevation_cache_path = self._docker_host_cache_paths[
                 "elevation"
             ]
             os.makedirs(
                 os.path.dirname(docker_host_elevation_cache_path), exist_ok=True
+            )
+
+            print(
+                f"Also saving elevation to Docker host cache (to speed up cache build later on this machine): {docker_host_elevation_cache_path}"
             )
             elevation_layer.to_file(docker_host_elevation_cache_path)
 
