@@ -69,6 +69,7 @@ def cell_portrayal(agent):
 
 
 # TODO: Circular issue between vegetation model and cache generation
+# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/24
 # manually trigger `_on_start` for now to ensure init is the same as before,
 # but we ideally want this to not kick when the solara viz is created. I suppose
 # maybe we need an `_on_viz` hook or something?
