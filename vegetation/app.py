@@ -7,6 +7,7 @@ from mesa.visualization import Slider, SolaraViz, make_plot_component
 from vegetation.patch.model import Vegetation, JoshuaTreeAgent
 from vegetation.patch.space import VegCell
 from vegetation.viz.simple_raster_map import make_simple_raster_geospace_component
+from vegetation.cache_manager import CacheManager
 
 # from patch.management import init_tree_management_control
 from config.stages import LIFE_STAGE_RGB_VIZ_MAP
@@ -67,16 +68,21 @@ def cell_portrayal(agent):
         return portrayal
 
 
-model = Vegetation(bounds=TST_JOTR_BOUNDS)
+# TODO: Circular issue between vegetation model and cache generation
+# manually trigger `_on_start` for now to ensure init is the same as before,
+# but we ideally want this to not kick when the solara viz is created. I suppose
+# maybe we need an `_on_viz` hook or something?
+vegetation_model = Vegetation(bounds=TST_JOTR_BOUNDS)
+cache_manager = CacheManager(bounds=TST_JOTR_BOUNDS, epsg=4326, model=vegetation_model)
 
-# DEBUG: Running into bounds issue here - going to manually trigger `_on_start` for now to ensure init is the same as before
-model._on_start()
+cache_manager.populate_elevation_cache_if_not_exists()
+vegetation_model._on_start()
 
 tree_management = GeomanDrawControl(drag=False, cut=False, rotate=False, polyline={})
-tree_management.on_draw(model.add_agents_from_management_draw)
+tree_management.on_draw(vegetation_model.add_agents_from_management_draw)
 
 page = SolaraViz(
-    model,
+    vegetation_model,
     name="Veg Model",
     components=[
         make_simple_raster_geospace_component(
