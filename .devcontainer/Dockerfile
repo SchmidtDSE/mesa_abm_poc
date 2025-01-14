@@ -1,5 +1,5 @@
 # First, grab a Unix image with pixi installed
-FROM ghcr.io/prefix-dev/pixi:0.18.0
+FROM ghcr.io/prefix-dev/pixi:0.39.5-bullseye-slim
 
 # Copy over install scripts - this is a good way to keep the Dockerfile clean and readable
 COPY .devcontainer/scripts .devcontainer/scripts
