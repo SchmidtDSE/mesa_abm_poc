@@ -14,7 +14,7 @@ PACKAGE_PATH = Path(__file__).resolve().parent.parent
 SAVE_LOCAL_STAC_CACHE = os.getenv("SAVE_LOCAL_STAC_CACHE", True)
 
 INITIAL_AGENTS_PATH = os.getenv(
-    "INITIAL_AGENTS_PATH", f"{PACKAGE_PATH}/data/initial_agents.geojson"
+    "INITIAL_AGENTS_PATH", f"{PACKAGE_PATH}/data/initial_agents.json"
 )
 
 DEM_STAC_PATH = os.getenv(
