@@ -4,9 +4,9 @@ from typing import Tuple
 from ipyleaflet.leaflet import GeomanDrawControl
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
-from mesa_geo.visualization import make_geospace_component
-from patch.model import Vegetation, JoshuaTreeAgent
-from patch.space import VegCell
+from vegetation.patch.model import Vegetation, JoshuaTreeAgent
+from vegetation.patch.space import VegCell
+from vegetation.viz.simple_raster_map import make_simple_raster_geospace_component
 
 # from patch.management import init_tree_management_control
 from config.stages import LIFE_STAGE_RGB_VIZ_MAP
@@ -68,6 +68,9 @@ def cell_portrayal(agent):
 
 
 model = Vegetation(bounds=TST_JOTR_BOUNDS)
+
+# DEBUG: Running into bounds issue here - going to manually trigger `_on_start` for now to ensure init is the same as before
+model._on_start()
 
 tree_management = GeomanDrawControl(drag=False, cut=False, rotate=False, polyline={})
 tree_management.on_draw(model.add_agents_from_management_draw)
