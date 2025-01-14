@@ -38,11 +38,8 @@ def cell_portrayal(agent):
 
         if agent.jotr_max_life_stage and agent.jotr_max_life_stage > 0:
 
-<<<<<<< HEAD
-=======
             rgba = LIFE_STAGE_RGB_VIZ_MAP[agent.jotr_max_life_stage]
 
->>>>>>> dev
         else:
             if not agent.refugia_status:
                 debug_normalized_elevation = int((agent.elevation / 5000) * 255)
@@ -79,33 +76,22 @@ def cell_portrayal(agent):
 vegetation_model = Vegetation(bounds=TST_JOTR_BOUNDS)
 cache_manager = CacheManager(bounds=TST_JOTR_BOUNDS, epsg=4326, model=vegetation_model)
 
-<<<<<<< HEAD
-tree_management = GeomanDrawControl(
-    drag=False, cut=False, rotate=False, polyline={}, circlemarker={}
-)
-tree_management.on_draw(model.add_agents_from_management_draw)
-=======
 cache_manager.populate_elevation_cache_if_not_exists()
 vegetation_model._on_start()
 
 tree_management = GeomanDrawControl(drag=False, cut=False, rotate=False, polyline={})
 tree_management.on_draw(vegetation_model.add_agents_from_management_draw)
->>>>>>> dev
 
 ## TODO: Solara only works after first auto-reload
-#Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/21
+# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/21
 
 page = SolaraViz(
     vegetation_model,
     name="Veg Model",
     components=[
-<<<<<<< HEAD
-        make_geospace_component(cell_portrayal, zoom=14, controls=[tree_management]),
-=======
         make_simple_raster_geospace_component(
             cell_portrayal, zoom=14, controls=[tree_management]
         ),
->>>>>>> dev
         make_plot_component(
             [
                 "Mean Age",
