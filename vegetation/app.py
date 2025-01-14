@@ -82,6 +82,9 @@ vegetation_model._on_start()
 tree_management = GeomanDrawControl(drag=False, cut=False, rotate=False, polyline={})
 tree_management.on_draw(vegetation_model.add_agents_from_management_draw)
 
+## TODO: Solara only works after first auto-reload
+# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/21
+
 page = SolaraViz(
     vegetation_model,
     name="Veg Model",

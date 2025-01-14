@@ -20,10 +20,10 @@ The demo simulation here is derived from `mesa-geo`'s [Rainfall Model](https://g
 
 To run Solara, it's recommended to use the included VSCode launch config (which will be detected automatically by VSCode within the debug panel). Simply fire it up and click the localhost link to use the Solara dashboard.
 
-Alternatively, the simulation can be run the same way (without debugging) via the following command within the `rainfall` folder:
+Alternatively, the simulation can be run the same way (without debugging) via the following command:
 
 ```bash
-solara run app.py
+pixi run vegetation
 ```
 
 ## Known Issues
