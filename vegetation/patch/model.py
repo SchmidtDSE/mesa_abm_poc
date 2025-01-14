@@ -1,15 +1,18 @@
 import mesa
 import mesa_geo as mg
 import numpy as np
-from shapely.geometry import Point
+import shapely.geometry as sg
+from shapely.ops import transform
 import random
 import json
 from scipy.stats import poisson
 from pyproj import Transformer
+import logging
 
-from config.stages import LifeStage
-from patch.space import StudyArea, VegCell
-from config.transitions import (
+from vegetation.config.stages import LifeStage
+from vegetation.patch.space import StudyArea, VegCell
+from vegetation.patch.utils import transform_point_wgs84_utm, generate_point_in_utm
+from vegetation.config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
     JOTR_ADULT_AGE,
@@ -18,10 +21,11 @@ from config.transitions import (
     get_jotr_survival_rate,
     get_jotr_breeding_poisson_lambda,
 )
-from config.paths import INITIAL_AGENTS_PATH
+from vegetation.config.paths import INITIAL_AGENTS_PATH
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
+
 
 class JoshuaTreeAgent(mg.GeoAgent):
     def __init__(self, model, geometry, crs, age=None, parent_id=None):
@@ -55,10 +59,13 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # pos = (np.float64(geometry.x), np.float64(geometry.y))
         # self._pos = pos
 
-        self.indices = (int(self.float_indices[0]), int(self.float_indices[1]))
+        self.indices = (
+            int(self.float_indices[0]),
+            self.model.space.raster_layer.height - int(self.float_indices[1]),
+        )
         self._pos = (
-            self.indices[0],
-            self.model.space.raster_layer.height - self.indices[1],
+            int(self.float_indices[0]),
+            int(self.float_indices[1]),
         )
 
         # TODO: Figure out how to set the life stage on init
@@ -112,7 +119,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
             )
             self.life_stage = LifeStage.DEAD
 
-
         # Increment age
         self.age += 1
         life_stage_promotion = self._update_life_stage()
@@ -132,7 +138,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             )
             n_seeds = poisson.rvs(jotr_breeding_poisson_lambda)
 
-            self.disperse_seeds(n_seeds)
+            self._disperse_seeds(n_seeds)
 
     def _update_life_stage(self):
 
@@ -159,54 +165,38 @@ class JoshuaTreeAgent(mg.GeoAgent):
         else:
             return False
 
-    def disperse_seeds(
+    def _disperse_seeds(
         self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
     ):
-
         if self.life_stage != LifeStage.BREEDING:
             raise ValueError(
                 f"Agent {self.unique_id} is not breeding and cannot disperse seeds"
             )
 
-        print(f"{STD_INDENT*2}🌰 Agent {self.unique_id} ({self.life_stage.name}) is dispersing {n_seeds} seeds...")
+        print(
+            f"{STD_INDENT*2}🌰 Agent {self.unique_id} ({self.life_stage.name}) is dispersing {n_seeds} seeds..."
+        )
 
-        # TODO: Use the best projection for valid seed dispersal
-        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/12
-        # For now this uses UTM zone 11N, cuz it's in meters and
-        # works, but it may not be best for accurate linear distance?
-
-        # Create transformers to disperse seeds accurately in meters
-        wgs84_to_utm = Transformer.from_crs("EPSG:4326", JOTR_UTM_PROJ, always_xy=True)
-        utm_to_wgs84 = Transformer.from_crs(JOTR_UTM_PROJ, "EPSG:4326", always_xy=True)
-
-        # Transform parent location to UTM
+        wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(
+            self.geometry.x, self.geometry.y
+        )
         x_utm, y_utm = wgs84_to_utm.transform(self.geometry.x, self.geometry.y)
 
         for __seed_idx in np.arange(0, n_seeds):
-            # Random direction in radians
-            angle = random.uniform(0, 2 * np.pi)
-
-            # Random distance in meters, up to dispersal distance
-            dispersal_distance = random.uniform(0, max_dispersal_distance)
-
-            # Calculate new seed location in UTM
-            seed_x_utm = x_utm + dispersal_distance * np.cos(angle)
-            seed_y_utm = y_utm + dispersal_distance * np.sin(angle)
-
-            # Transform back to WGS84
+            seed_x_utm, seed_y_utm = generate_point_in_utm(
+                x_utm, y_utm, max_dispersal_distance
+            )
             seed_x_wgs84, seed_y_wgs84 = utm_to_wgs84.transform(seed_x_utm, seed_y_utm)
 
-            # Create new seed agent
             seed_agent = JoshuaTreeAgent(
                 model=self.model,
-                geometry=Point(seed_x_wgs84, seed_y_wgs84),
+                geometry=sg.Point(seed_x_wgs84, seed_y_wgs84),
                 crs=self.crs,
                 age=0,
                 parent_id=self.unique_id,
             )
             seed_agent._update_life_stage()
 
-            # Add the seed agent to the model
             self.model.space.add_agents(seed_agent)
             delta_x_index = self.indices[0] - seed_agent.indices[0]
             delta_y_index = self.indices[1] - seed_agent.indices[1]
@@ -217,23 +207,22 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
 
 class Vegetation(mesa.Model):
-    def __init__(self, bounds, export_data=False, num_steps=20, epsg=4326):
+    def __init__(
+        self,
+        bounds,
+        export_data=False,
+        num_steps=20,
+        management_planting_density=0.01,
+        epsg=4326,
+    ):
         super().__init__()
         self.bounds = bounds
-        self.export_data = export_data
         self.num_steps = num_steps
+        self.management_planting_density = management_planting_density
+        self._on_start_executed = False
 
+        # mesa setup
         self.space = StudyArea(bounds, epsg=epsg, model=self)
-
-        self.space.get_elevation()
-        self.space.get_aridity()
-        self.space.get_refugia_status()
-
-        with open(INITIAL_AGENTS_PATH, "r") as f:
-            initial_agents_geojson = json.loads(f.read())
-
-        self._add_agents_from_geojson(initial_agents_geojson)
-
         self.datacollector = mesa.DataCollector(
             {
                 "Mean Age": "mean_age",
@@ -246,6 +235,19 @@ class Vegetation(mesa.Model):
                 "% Refugia Cells Occupied": "pct_refugia_cells_occupied",
             }
         )
+
+    def _on_start(self):
+
+        self.space.get_elevation()
+        self.space.get_aridity()
+        self.space.get_refugia_status()
+
+        with open(INITIAL_AGENTS_PATH, "r") as f:
+            initial_agents_geojson = json.loads(f.read())
+
+        self._add_agents_from_geojson(initial_agents_geojson)
+
+        self._on_start_executed = True
 
     def _add_agents_from_geojson(self, agents_geojson):
         agents = mg.AgentCreator(JoshuaTreeAgent, model=self).from_GeoJSON(
@@ -262,16 +264,61 @@ class Vegetation(mesa.Model):
         self.update_metrics()
 
     # def add_agents_from_management_draw(event, geo_json, action):
-    def add_agents_from_management_draw(*args, **kwargs):
-        
+    def add_agents_from_management_draw(self, *args, **kwargs):
+
         assert kwargs.get("action") == "create"
-        management_area = kwargs.get('geo_json')
+        management_area = kwargs.get("geo_json")
 
-        # Use geojson to creates agents within polygon area
-        # agents = mg.AgentCreator(JoshuaTreeAgent, model=self).from_GeoJSON(geojson)
-        # self.space.add_agents(agents)
+        outplanting_point_locations = self._generate_planting_points(management_area)
 
-    # @property
+        for management_x_wgs84, management_y_wgs84 in outplanting_point_locations:
+
+            # TODO: Vegetation model doesn't know its own CRS
+            management_agent = JoshuaTreeAgent(
+                model=self,
+                geometry=sg.Point(management_x_wgs84, management_y_wgs84),
+                crs="EPSG:4326",
+                age=20,
+                parent_id=None,
+            )
+            management_agent._update_life_stage()
+
+            self.space.add_agents(management_agent)
+
+            print(
+                f"{STD_INDENT*3}✨ Outplanted ({management_agent.unique_id}, lifestage {management_agent.life_stage.name}) to {management_agent._pos}"
+            )
+
+    def _generate_planting_points(self, geo_json):
+        # Convert GeoJSON to Shapely polygon
+        coords = geo_json[0]["geometry"]["coordinates"][0]
+        polygon = sg.Polygon(coords)
+
+        # Get UTM zone from polygon centroid
+        lon, lat = polygon.centroid.x, polygon.centroid.y
+        wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(lon, lat)
+
+        # Project polygon to UTM
+        utm_polygon = transform(wgs84_to_utm.transform, polygon)
+        area = utm_polygon.area
+        num_points = int(area * self.management_planting_density)
+
+        points = []
+        minx, miny, maxx, maxy = utm_polygon.bounds
+
+        while len(points) < num_points:
+            x_utm = np.random.uniform(minx, maxx)
+            y_utm = np.random.uniform(miny, maxy)
+            point_utm = sg.Point(x_utm, y_utm)
+
+            if utm_polygon.contains(point_utm):
+                management_x_wgs84, management_y_wgs84 = utm_to_wgs84.transform(
+                    x_utm, y_utm
+                )
+                points.append((management_x_wgs84, management_y_wgs84))
+
+        return points
+
     def update_metrics(self):
         # Mean age
         mean_age = self.agents.select(agent_type=JoshuaTreeAgent).agg("age", np.mean)
@@ -294,14 +341,20 @@ class Vegetation(mesa.Model):
 
         # Number of refugia cells occupied by JoshuaTreeAgents
         count_dict = (
-            self.agents.select(agent_type=VegCell) \
-                .select(filter_func = lambda agent: agent.refugia_status) \
-                .groupby("occupied_by_jotr_agents") \
-                .count()
+            self.agents.select(agent_type=VegCell)
+            .select(filter_func=lambda agent: agent.refugia_status)
+            .groupby("occupied_by_jotr_agents")
+            .count()
         )
-        self.pct_refugia_cells_occupied = count_dict.get(True, 0) / (count_dict.get(True, 0) + count_dict.get(False, 0))
+        self.pct_refugia_cells_occupied = count_dict.get(True, 0) / (
+            count_dict.get(True, 0) + count_dict.get(False, 0)
+        )
 
     def step(self):
+
+        if not self._on_start_executed:
+            self._on_start()
+
         # Print timestep header
         timestep_str = f"# {STD_INDENT*0}🕰️  Time passes. It is the year {self.steps}. #"
         nchar_timestep_str = len(timestep_str)

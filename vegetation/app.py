@@ -4,26 +4,14 @@ from typing import Tuple
 from ipyleaflet.leaflet import GeomanDrawControl
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
-from mesa_geo.visualization import make_geospace_component
-from patch.model import Vegetation, JoshuaTreeAgent
-from patch.space import VegCell
+from vegetation.patch.model import Vegetation, JoshuaTreeAgent
+from vegetation.patch.space import VegCell
+from vegetation.viz.simple_raster_map import make_simple_raster_geospace_component
+from vegetation.cache_manager import CacheManager
+
 # from patch.management import init_tree_management_control
 from config.stages import LIFE_STAGE_RGB_VIZ_MAP
-
-# Very big bounds for western JOTR
-# TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.163940, 34.042419]
-
-# Medium bounds for testing
-# TST_JOTR_BOUNDS = [-116.367188, 33.939942, -116.201019, 34.061193]
-
-# Small-ish bounds
-TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
-
-# Very small bounds for testing
-# TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.360920, 33.935106]
-
-# TODO: Add conda lock file to prevent version issues
-# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/11
+from config.aoi import TST_JOTR_BOUNDS
 
 # TODO: Push working build to artifact registry, or dockerhub, or something, while
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/10
@@ -32,6 +20,9 @@ TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 
 model_params = {
     "num_steps": Slider("total number of steps", 20, 1, 100, 1),
+    "management_planting_density": Slider(
+        "management planting density", 0.1, 0.01, 1.0, 0.01
+    ),
     "export_data": False,
     "bounds": TST_JOTR_BOUNDS,
 }
@@ -45,13 +36,9 @@ def cell_portrayal(agent):
         # life stage of any Joshua Tree agent in the cell. If there are no agents,
         # we color based on elevation.
 
-        patch_life_stages = [agent.life_stage for agent in agent.jotr_agents]
+        if agent.jotr_max_life_stage and agent.jotr_max_life_stage > 0:
 
-        if len(patch_life_stages) > 0:
-
-            max_stage = max(patch_life_stages)
-            rgba = LIFE_STAGE_RGB_VIZ_MAP[max_stage]
-
+            rgba = LIFE_STAGE_RGB_VIZ_MAP[agent.jotr_max_life_stage]
 
         else:
             if not agent.refugia_status:
@@ -60,7 +47,7 @@ def cell_portrayal(agent):
                     debug_normalized_elevation,
                     debug_normalized_elevation,
                     debug_normalized_elevation,
-                    .25,
+                    0.25,
                 )
             else:
                 rgba = (0, 255, 0, 1)
@@ -81,22 +68,27 @@ def cell_portrayal(agent):
         return portrayal
 
 
-model = Vegetation(bounds=TST_JOTR_BOUNDS)
+# TODO: Circular issue between vegetation model and cache generation
+# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/24
+# manually trigger `_on_start` for now to ensure init is the same as before,
+# but we ideally want this to not kick when the solara viz is created. I suppose
+# maybe we need an `_on_viz` hook or something?
+vegetation_model = Vegetation(bounds=TST_JOTR_BOUNDS)
+cache_manager = CacheManager(bounds=TST_JOTR_BOUNDS, epsg=4326, model=vegetation_model)
 
-tree_management = GeomanDrawControl(
-    drag=False,
-    cut=False,
-    rotate=False,
-    polyline={},
-    circlemarker={}
-)
-tree_management.on_draw(model.add_agents_from_management_draw)
+cache_manager.populate_elevation_cache_if_not_exists()
+vegetation_model._on_start()
+
+tree_management = GeomanDrawControl(drag=False, cut=False, rotate=False, polyline={})
+tree_management.on_draw(vegetation_model.add_agents_from_management_draw)
 
 page = SolaraViz(
-    model,
+    vegetation_model,
     name="Veg Model",
     components=[
-        make_geospace_component(cell_portrayal, zoom=14, controls = [tree_management]),
+        make_simple_raster_geospace_component(
+            cell_portrayal, zoom=14, controls=[tree_management]
+        ),
         make_plot_component(
             [
                 "Mean Age",
@@ -111,6 +103,7 @@ page = SolaraViz(
         make_plot_component(
             ["% Refugia Cells Occupied"],
         ),
+        # make_log_window_component(),
     ],
     model_params=model_params,
 )
