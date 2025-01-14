@@ -22,6 +22,6 @@ DEM_STAC_PATH = os.getenv(
 )
 
 LOCAL_STAC_CACHE_FSTRING = os.getenv(
-    LOCAL_STAC_CACHE_FSTRING,
+    "LOCAL_STAC_CACHE_FSTRING",
     f"{PACKAGE_PATH}/.local_dev_data/{{band_name}}_{{bounds_md5}}.tif",
 )
