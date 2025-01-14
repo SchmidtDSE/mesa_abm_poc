@@ -77,8 +77,11 @@ class CacheManager:
         return elevation
 
     def populate_elevation_cache_if_not_exists(self):
-        if os.path.exists(self._cache_paths["elevation"]):
-            print(f"Local elevation cache found: {self._cache_path}")
+
+        elevation_cache_path = self._cache_paths["elevation"]
+
+        if os.path.exists(elevation_cache_path):
+            print(f"Local elevation cache found: {elevation_cache_path}")
             return
 
         print("No local cache found, downloading elevation from STAC")
@@ -101,15 +104,19 @@ class CacheManager:
             attr_name="elevation",
         )
 
-        print(f"Saving elevation to local cache: {self._cache_path}")
-        os.makedirs(os.path.dirname(self._cache_path), exist_ok=True)
-        elevation_layer.to_file(self._cache_path)
+        print(f"Saving elevation to local cache: {elevation_cache_path}")
+        os.makedirs(os.path.dirname(elevation_cache_path), exist_ok=True)
+        elevation_layer.to_file(elevation_cache_path)
 
         if os.getenv("DOCKER_HOST_STAC_CACHE_FSTRING"):
             print(
                 "Also saving elevation to Docker host cache (to speed up cache build later on this machine):"
             )
-            elevation_layer.to_file(self._docker_host_cache_path)
+            docker_host_elevation_cache_path = self._docker_host_cache_paths[
+                "elevation"
+            ]
+            os.mkdir(os.path.dirname(docker_host_elevation_cache_path), exist_ok=True)
+            elevation_layer.to_file(docker_host_elevation_cache_path)
 
         print(f"Downloaded elevation in {time.time() - time_at_start} seconds")
 
