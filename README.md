@@ -7,6 +7,7 @@ If going the dev container route, you will need the following:
 - Docker (cli, but optionally the desktop app)
 - VSCode, and the `Dev Containers` extension
 - `ssh` installed on the host machine, to access git from within
+- A folder `local_dev_data` needs to be created in your home directory
 
 After cloning the repo, you will need to open it in VSCode and run the following command:
 
