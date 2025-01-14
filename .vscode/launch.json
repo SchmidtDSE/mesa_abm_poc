@@ -5,12 +5,31 @@
       "name": "Solara: Launch",
       "type": "debugpy",
       "request": "launch",
-      "cwd": "${workspaceFolder}/vegetation",
+      "cwd": "${workspaceFolder}",
       "module": "solara",
-      "args": ["run", "app.py"],
+      "args": ["run", "vegetation/app.py"],
       "console": "integratedTerminal",
       "justMyCode": false,
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
+      "envFile": "${workspaceFolder}/.devcontainer/.env"
+    },
+    {
+      "name": "Python: Mesa Batch Run",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "module": "vegetation.batch",
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python"
+    },
+    {
+      "name": "Python: Build Cache",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "module": "vegetation.cache_manager",
+      "justMyCode": false,
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
+      "envFile": "${workspaceFolder}/.devcontainer/.env"
     }
   ]
 }
