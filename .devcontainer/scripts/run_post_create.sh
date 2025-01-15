@@ -1,12 +1,7 @@
 #!/bin/bash
 
-# Set the directory path (default to current directory if not specified)
 DIR=".devcontainer/scripts/post_create"
 
-# Find all .sh files in the directory and make them executable
-find "$DIR" -name "*.sh" -type f -exec chmod +x {} \;
-
-# Loop through and execute each .sh file
 for script in "$DIR"/*.sh; do
     if [ -f "$script" ]; then
         echo "=== Executing $script ==="

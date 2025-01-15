@@ -24,5 +24,5 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-  "postCreateCommand": ".devcontainer/scripts/transfer_local_dev_cache.sh"
+  "postCreateCommand": ".devcontainer/scripts/run_post_create.sh"
 }

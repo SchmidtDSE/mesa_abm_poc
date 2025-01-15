@@ -4,8 +4,8 @@ FROM ghcr.io/prefix-dev/pixi:0.39.5-bullseye-slim
 # Copy over install scripts - this is a good way to keep the Dockerfile clean and readable
 COPY .devcontainer/scripts .devcontainer/scripts
 
-# Install git, ssh
-RUN .devcontainer/scripts/on_build/install_git_and_ssh.sh
+# Install git, ssh and other tools contained in `scripts/run_on_build.sh`
+RUN .devcontainer/scripts/run_on_build.sh
 
 # Copy over pixi toml and pyproject.toml
 COPY pixi.toml pixi.toml
