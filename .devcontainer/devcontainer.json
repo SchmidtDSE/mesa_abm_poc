@@ -9,7 +9,8 @@
   },
   "mounts": [
     "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached", // SSH keys
-    "source=${localEnv:HOME}/local_dev_data,target=/local_dev_data,type=bind,consistency=cached" // Local development cache
+    "source=${localEnv:HOME}/local_dev_data,target=/local_dev_data,type=bind,consistency=cached" // Local development cache,
+    "source=${localWorkspaceFolderBasename}-pixi,target=${containerWorkspaceFolder}/.pixi,type=volume"
   ],
   "extensions": [
     "ms-python.flake8",
@@ -20,5 +21,8 @@
     "github.vscode-github-actions",
     "ms-azuretools.vscode-docker"
   ],
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
   "postCreateCommand": ".devcontainer/scripts/transfer_local_dev_cache.sh"
 }

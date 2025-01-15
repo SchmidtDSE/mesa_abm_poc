@@ -5,18 +5,11 @@ FROM ghcr.io/prefix-dev/pixi:0.39.5-bullseye-slim
 COPY .devcontainer/scripts .devcontainer/scripts
 
 # Install git, ssh
-RUN .devcontainer/scripts/install_git_and_ssh.sh
+RUN .devcontainer/scripts/on_build/install_git_and_ssh.sh
 
 # Copy over pixi toml and pyproject.toml
 COPY pixi.toml pixi.toml
 COPY pixi.lock pixi.lock
-
-# TODO: Pixi is invalidating docker cache here for some reason - it would be better 
-# to do a multi-stage build and only copy over the source code at the end
-# See https://github.com/pavelzw/pixi-docker-example/blob/main/3-multi-stage/Dockerfile
-
-# Install pixi dependencies
-RUN pixi install
 
 # Now, copy python source code into the image - by doing this last, we can avoid re-installing ALL dependencies if just the source code changes
 COPY vegetation vegetation
