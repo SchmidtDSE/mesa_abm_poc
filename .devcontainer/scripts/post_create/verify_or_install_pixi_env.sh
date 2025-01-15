@@ -1,4 +1,2 @@
-!#/bin/bash
-
-sudo chown vscode .pixi
+#!/bin/bash
 pixi install
