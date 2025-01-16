@@ -39,7 +39,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
     def agent_logger(self):
         if not hasattr(self, "_agent_logger"):
             self._agent_logger = AgentLogger()
-        return self._agent_logger()
+        return self._agent_logger
 
     def __init__(self, model, geometry, crs, age=None, parent_id=None, log_level=None):
         super().__init__(
@@ -230,7 +230,7 @@ class Vegetation(mesa.Model):
     def sim_logger(self):
         if not hasattr(self, "_sim_logger"):
             self._sim_logger = SimLogger()
-        return self._sim_logger()
+        return self._sim_logger
 
     def __init__(
         self,
