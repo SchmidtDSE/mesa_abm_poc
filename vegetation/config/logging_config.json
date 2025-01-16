@@ -1,0 +1,12 @@
+
+{
+    "JoshuaTreeAgent": {
+        "on_create": "{STD_INDENT}🌱 Agent {agent.unique_id} created at ({agent.indices})",
+        "on_death": "{STD_INDENT}💀 Agent {agent_unique_id} died (survival {survival_rate:.2f})",
+        "on_transition": "{STD_INDENT}🔄 Agent {id} promoted to {new_stage}"
+    },
+    "Vegetation": {
+        "on_start": "🌵 Simulation started (maximum number of steps: {num_steps})",
+        "on_step": "🕰️ Time passes. It is the year {year}"
+    }
+}

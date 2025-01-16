@@ -73,7 +73,9 @@ def cell_portrayal(agent):
 # manually trigger `_on_start` for now to ensure init is the same as before,
 # but we ideally want this to not kick when the solara viz is created. I suppose
 # maybe we need an `_on_viz` hook or something?
-vegetation_model = Vegetation(bounds=TST_JOTR_BOUNDS)
+vegetation_model = Vegetation(
+    bounds=TST_JOTR_BOUNDS, log_config_path="vegetation/config/logging_config.json"
+)
 cache_manager = CacheManager(bounds=TST_JOTR_BOUNDS, epsg=4326, model=vegetation_model)
 
 cache_manager.populate_elevation_cache_if_not_exists()

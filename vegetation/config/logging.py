@@ -2,6 +2,7 @@
 
 import logging
 import json
+import string
 from enum import Enum, auto
 from typing import Dict, Optional
 
@@ -20,17 +21,38 @@ class SimEventType(Enum):
     ON_END = "on_end"
 
 
-tst_json = {
-    "JoshuaTreeAgent": {
-        "on_create": "{indent}🌱 Agent {id} created at ({x}, {y})",
-        "on_death": "{indent}💀 Agent {id} died (survival {survival_rate:.2f})",
-        "on_transition": "{indent}🔄 Agent {id} promoted to {new_stage}",
-    },
-    "Vegetation": {
-        "on_start": "🌵 Simulation started (maximum number of steps: {num_steps})",
-        "on_step": "🕰️ Time passes. It is the year {year}",
-    },
-}
+STD_FORMATTERS = {"STD_INDENT": "    "}
+
+
+class FallbackFormatter(string.Formatter):
+    def get_field(self, field_name, args, kwargs):
+        # Check if field_name contains dots (e.g., 'agent.unique_id')
+        if "." in field_name:
+            obj_name, attr = field_name.split(".", 1)
+            try:
+                # First check context dictionary
+                if obj_name in kwargs:
+                    obj = kwargs[obj_name]
+                    # Try getting nested attribute
+                    for part in attr.split("."):
+                        obj = getattr(obj, part)
+                    return obj, field_name
+            except (KeyError, AttributeError):
+                # If not in context, check if object itself is passed
+                if hasattr(kwargs.get("_obj"), obj_name):
+                    obj = getattr(kwargs["_obj"], obj_name)
+                    # Try getting nested attribute
+                    for part in attr.split("."):
+                        obj = getattr(obj, part)
+                    return obj, field_name
+
+        # Default lookup in kwargs
+        try:
+            return super().get_field(field_name, args, kwargs)
+        except (KeyError, AttributeError) as e:
+            raise ValueError(
+                f"Could not find {field_name} in context or object attributes"
+            ) from e
 
 
 class LogConfig:
@@ -64,6 +86,7 @@ class LogConfig:
 
 class AgentLogger:
     _instance = None
+    _fallback_formatter = FallbackFormatter()
 
     def __new__(cls):
         if cls._instance is None:
@@ -88,12 +111,16 @@ class AgentLogger:
             return
 
         if template and context:
-            message = template.format(**context)
+            context = context or {}
+            context["_obj"] = agent
+            context.update(STD_FORMATTERS)
+            message = self._fallback_formatter.format(template, **context)
             self.logger.log(agent.log_level, message)
 
 
 class SimLogger:
     _instance = None
+    _fallback_formatter = FallbackFormatter()
 
     def __new__(cls):
         if cls._instance is None:
@@ -115,6 +142,10 @@ class SimLogger:
         self, sim, event_type: SimEventType, context: Dict = None, level=logging.INFO
     ):
         template = self.config.get_template(sim.__class__.__name__, event_type.value)
+
         if template and context:
-            message = template.format(**context)
-            self.logger.log(level, message)
+            context = context or {}
+            context["_obj"] = sim
+            context.update(STD_FORMATTERS)
+            message = self._fallback_formatter.format(template, **context)
+            self.logger.log(sim.log_level, message)

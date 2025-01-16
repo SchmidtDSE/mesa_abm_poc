@@ -7,6 +7,7 @@ import random
 import json
 from scipy.stats import poisson
 from pyproj import Transformer
+import logging
 
 from vegetation.config.stages import LifeStage
 from vegetation.patch.space import StudyArea, VegCell
@@ -51,7 +52,10 @@ class JoshuaTreeAgent(mg.GeoAgent):
         self.age = age
         self.parent_id = parent_id
         self.life_stage = None
-        self.log_level = log_level
+        # self.log_level = log_level
+
+        # To get this set up, assume all agents have logging.INFO level
+        self.log_level = logging.INFO
 
         # TODO: When we create the agent, we need to know its own indices relative
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/6
@@ -247,10 +251,6 @@ class Vegetation(mesa.Model):
         if log_config_path:
             LogConfig.initialize(log_config_path)
 
-        self.sim_logger.log_sim_event(
-            self, SimEventType.ON_START, context={"num_steps": self.num_steps}
-        )
-
         self.bounds = bounds
         self.num_steps = num_steps
         self.management_planting_density = management_planting_density
@@ -269,6 +269,10 @@ class Vegetation(mesa.Model):
                 "N Breeding": "n_breeding",
                 "% Refugia Cells Occupied": "pct_refugia_cells_occupied",
             }
+        )
+
+        self.sim_logger.log_sim_event(
+            self, SimEventType.ON_START, context={"num_steps": self.num_steps}
         )
 
     def _on_start(self):
