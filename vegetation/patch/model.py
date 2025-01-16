@@ -7,7 +7,6 @@ import random
 import json
 from scipy.stats import poisson
 from pyproj import Transformer
-import logging
 
 from vegetation.config.stages import LifeStage
 from vegetation.patch.space import StudyArea, VegCell
@@ -22,22 +21,37 @@ from vegetation.config.transitions import (
     get_jotr_breeding_poisson_lambda,
 )
 from vegetation.config.paths import INITIAL_AGENTS_PATH
+from vegetation.config.logging import (
+    LogConfig,
+    AgentLogger,
+    SimLogger,
+    AgentEventType,
+    SimEventType,
+)
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
-    def __init__(self, model, geometry, crs, age=None, parent_id=None):
+
+    @property
+    def agent_logger(self):
+        if not hasattr(self, "_agent_logger"):
+            self._agent_logger = AgentLogger()
+        return self._agent_logger()
+
+    def __init__(self, model, geometry, crs, age=None, parent_id=None, log_level=None):
         super().__init__(
             model=model,
             geometry=geometry,
             crs=crs,
         )
-
+        self.debug = False
         self.age = age
         self.parent_id = parent_id
         self.life_stage = None
+        self.log_level = log_level
 
         # TODO: When we create the agent, we need to know its own indices relative
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/6
@@ -66,6 +80,10 @@ class JoshuaTreeAgent(mg.GeoAgent):
         self._pos = (
             int(self.float_indices[0]),
             int(self.float_indices[1]),
+        )
+
+        self.agent_logger.log_agent_event(
+            self, AgentEventType.ON_CREATE, context={"parent_id": self.parent_id}
         )
 
         # TODO: Figure out how to set the life stage on init
@@ -207,6 +225,13 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
 
 class Vegetation(mesa.Model):
+
+    @property
+    def sim_logger(self):
+        if not hasattr(self, "_sim_logger"):
+            self._agent_logger = SimLogger()
+        return self._sim_logger()
+
     def __init__(
         self,
         bounds,
@@ -214,8 +239,18 @@ class Vegetation(mesa.Model):
         num_steps=20,
         management_planting_density=0.01,
         epsg=4326,
+        log_config_path=None,
     ):
         super().__init__()
+
+        # Initialize logging config first
+        if log_config_path:
+            LogConfig.initialize(log_config_path)
+
+        self.sim_logger.log_sim_event(
+            self, SimEventType.ON_START, context={"num_steps": self.num_steps}
+        )
+
         self.bounds = bounds
         self.num_steps = num_steps
         self.management_planting_density = management_planting_density
