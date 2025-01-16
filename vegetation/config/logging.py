@@ -26,32 +26,24 @@ STD_FORMATTERS = {"STD_INDENT": "    "}
 
 class FallbackFormatter(string.Formatter):
     def get_field(self, field_name, args, kwargs):
-        # Check if field_name contains dots (e.g., 'agent.unique_id')
-        if "." in field_name:
-            obj_name, attr = field_name.split(".", 1)
-            try:
-                # First check context dictionary
-                if obj_name in kwargs:
-                    obj = kwargs[obj_name]
-                    # Try getting nested attribute
-                    for part in attr.split("."):
-                        obj = getattr(obj, part)
-                    return obj, field_name
-            except (KeyError, AttributeError):
-                # If not in context, check if object itself is passed
-                if hasattr(kwargs.get("_obj"), obj_name):
-                    obj = getattr(kwargs["_obj"], obj_name)
-                    # Try getting nested attribute
-                    for part in attr.split("."):
-                        obj = getattr(obj, part)
-                    return obj, field_name
 
-        # Default lookup in kwargs
         try:
-            return super().get_field(field_name, args, kwargs)
+            # Check if field_name contains dots (e.g., 'agent.unique_id')
+            if "." in field_name:
+                obj_name, attr = field_name.split(".", 1)
+                assert obj_name in ["agent", "sim"], f"Invalid object name: {obj_name}"
+                if hasattr(kwargs.get(obj_name), attr):
+                    attr_value = getattr(kwargs[obj_name], attr)
+                    return attr_value, field_name
+                else:
+                    raise AttributeError(
+                        f"Could not find {attr} in {obj_name}'s attributes"
+                    )
+            else:
+                return super().get_field(field_name, args, kwargs)
         except (KeyError, AttributeError) as e:
             raise ValueError(
-                f"Could not find {field_name} in context or object attributes"
+                f"Could not find {field_name} in context or agent's attributes"
             ) from e
 
 
@@ -112,7 +104,7 @@ class AgentLogger:
 
         if template and context:
             context = context or {}
-            context["_obj"] = agent
+            context["agent"] = agent
             context.update(STD_FORMATTERS)
             message = self._fallback_formatter.format(template, **context)
             self.logger.log(agent.log_level, message)
@@ -145,7 +137,7 @@ class SimLogger:
 
         if template and context:
             context = context or {}
-            context["_obj"] = sim
+            context["sim"] = sim
             context.update(STD_FORMATTERS)
             message = self._fallback_formatter.format(template, **context)
             self.logger.log(sim.log_level, message)

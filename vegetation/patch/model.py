@@ -244,12 +244,16 @@ class Vegetation(mesa.Model):
         management_planting_density=0.01,
         epsg=4326,
         log_config_path=None,
+        log_level=None,
     ):
         super().__init__()
 
         # Initialize logging config first
         if log_config_path:
             LogConfig.initialize(log_config_path)
+
+        # To get this set up, assume sim has logging.INFO level
+        self.log_level = logging.INFO
 
         self.bounds = bounds
         self.num_steps = num_steps
