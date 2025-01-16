@@ -76,6 +76,10 @@ class LogConfig:
         return self._templates.get(agent_type, {}).get(event_type)
 
 
+# TODO: Figure out if AgentLogger and SimLogger need to be different classes
+# It might make sense to do these in one class
+
+
 class AgentLogger:
     _instance = None
     _fallback_formatter = FallbackFormatter()
