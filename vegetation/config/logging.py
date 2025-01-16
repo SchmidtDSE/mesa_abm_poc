@@ -77,6 +77,7 @@ class LogConfig:
 
 
 # TODO: Figure out if AgentLogger and SimLogger need to be different classes
+# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/32
 # It might make sense to do these in one class
 
 
