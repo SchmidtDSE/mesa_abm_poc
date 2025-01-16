@@ -229,7 +229,7 @@ class Vegetation(mesa.Model):
     @property
     def sim_logger(self):
         if not hasattr(self, "_sim_logger"):
-            self._agent_logger = SimLogger()
+            self._sim_logger = SimLogger()
         return self._sim_logger()
 
     def __init__(

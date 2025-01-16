@@ -28,7 +28,8 @@ tst_json = {
     },
     "Vegetation": {
         "on_start": "🌵 Simulation started (maximum number of steps: {num_steps})",
-        "on_step": "🕰️ Time passes. It is the year {year}"},
+        "on_step": "🕰️ Time passes. It is the year {year}",
+    },
 }
 
 
@@ -71,7 +72,7 @@ class AgentLogger:
             cls._instance._setup_logger()
         return cls._instance
 
-   def _setup_logger(self):
+    def _setup_logger(self):
         self.logger = logging.getLogger("agent_logger")
         self.logger.setLevel(logging.INFO)
 
@@ -80,12 +81,7 @@ class AgentLogger:
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
 
-    def log_agent_event(
-        self,
-        agent,
-        event_type: AgentEventType,
-        context: Dict = None
-    ):
+    def log_agent_event(self, agent, event_type: AgentEventType, context: Dict = None):
         template = self.config.get_template(agent.__class__.__name__, event_type.value)
 
         if not agent.log_level:
@@ -94,6 +90,7 @@ class AgentLogger:
         if template and context:
             message = template.format(**context)
             self.logger.log(agent.log_level, message)
+
 
 class SimLogger:
     _instance = None
@@ -105,7 +102,7 @@ class SimLogger:
             cls._instance._setup_logger()
         return cls._instance
 
-   def _setup_logger(self):
+    def _setup_logger(self):
         self.logger = logging.getLogger("sim_logger")
         self.logger.setLevel(logging.INFO)
 
@@ -113,13 +110,6 @@ class SimLogger:
         formatter = logging.Formatter("%(message)s")
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance.config = LogConfig()
-            cls._instance._setup_logger()
-        return cls._instance
 
     def log_sim_event(
         self, sim, event_type: SimEventType, context: Dict = None, level=logging.INFO
