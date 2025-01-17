@@ -7,9 +7,6 @@ from vegetation.config.paths import (
     DEM_STAC_PATH,
 )
 
-# TODO: Batch run can't see local cache
-# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/16
-
 # TODO: Implement early stopping when all the JOTR die off
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/18
 
