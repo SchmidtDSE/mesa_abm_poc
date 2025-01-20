@@ -86,9 +86,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             int(self.float_indices[1]),
         )
 
-        self.agent_logger.log_agent_event(
-            self, AgentEventType.ON_CREATE, context={"parent_id": self.parent_id}
-        )
+        self.agent_logger.log_agent_event(self, AgentEventType.ON_CREATE)
 
         # TODO: Figure out how to set the life stage on init
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/3
@@ -131,13 +129,17 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # Check survival, comparing dice roll to survival rate
         if dice_roll_zero_to_one < survival_rate:
-            print(
-                f"{STD_INDENT*1}💪 Agent {self.unique_id} ({self.life_stage.name}, age {self.age}) survived! (dice roll {dice_roll_zero_to_one:.2f} w/ survival prob {survival_rate:.2f})"
+            self.agent_logger.log_agent_event(
+                self,
+                AgentEventType.ON_SURVIVE,
+                context={"survival_rate": survival_rate},
             )
 
         else:
-            print(
-                f"{STD_INDENT*1}💀 Agent {self.unique_id} ({self.life_stage.name}, age {self.age}) died! (dice roll {dice_roll_zero_to_one:.2f} w/ survival prob {survival_rate:.2f})"
+            self.agent_logger.log_agent_event(
+                self,
+                AgentEventType.ON_DEATH,
+                context={"survival_rate": survival_rate},
             )
             self.life_stage = LifeStage.DEAD
 
@@ -146,19 +148,21 @@ class JoshuaTreeAgent(mg.GeoAgent):
         life_stage_promotion = self._update_life_stage()
 
         if life_stage_promotion:
-            print(
-                f"{STD_INDENT*2}🔄 Agent {self.unique_id} ({initial_life_stage.name}) promoted to {self.life_stage.name}!"
-            )
-
+            self.agent_logger.log_agent_event(self, AgentEventType.ON_TRANSITION)
         # Update underlying patch
         intersecting_cell.add_agent_link(self)
 
         # Disperse
         if self.life_stage == LifeStage.BREEDING:
+
             jotr_breeding_poisson_lambda = get_jotr_breeding_poisson_lambda(
                 intersecting_cell.aridity
             )
             n_seeds = poisson.rvs(jotr_breeding_poisson_lambda)
+
+            self.agent_logger.log_agent_event(
+                self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
+            )
 
             self._disperse_seeds(n_seeds)
 
@@ -194,10 +198,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
             raise ValueError(
                 f"Agent {self.unique_id} is not breeding and cannot disperse seeds"
             )
-
-        print(
-            f"{STD_INDENT*2}🌰 Agent {self.unique_id} ({self.life_stage.name}) is dispersing {n_seeds} seeds..."
-        )
 
         wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(
             self.geometry.x, self.geometry.y
@@ -314,6 +314,12 @@ class Vegetation(mesa.Model):
 
         outplanting_point_locations = self._generate_planting_points(management_area)
 
+        self.sim_logger.log_sim_event(
+            self,
+            SimEventType.ON_MANAGE,
+            context={"n_agents": len(outplanting_point_locations)},
+        )
+
         for management_x_wgs84, management_y_wgs84 in outplanting_point_locations:
 
             # TODO: Vegetation model doesn't know its own CRS
@@ -328,10 +334,6 @@ class Vegetation(mesa.Model):
             management_agent._update_life_stage()
 
             self.space.add_agents(management_agent)
-
-            print(
-                f"{STD_INDENT*3}✨ Outplanted ({management_agent.unique_id}, lifestage {management_agent.life_stage.name}) to {management_agent._pos}"
-            )
 
     def _generate_planting_points(self, geo_json):
         # Convert GeoJSON to Shapely polygon

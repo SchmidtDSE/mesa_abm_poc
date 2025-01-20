@@ -10,6 +10,7 @@ from typing import Dict, Optional
 class AgentEventType(Enum):
     ON_CREATE = "on_create"
     ON_STEP = "on_step"
+    ON_SURVIVE = "on_survive"
     ON_DEATH = "on_death"
     ON_TRANSITION = "on_transition"
     ON_DISPERSE = "on_disperse"
@@ -21,7 +22,11 @@ class SimEventType(Enum):
     ON_END = "on_end"
 
 
-STD_FORMATTERS = {"STD_INDENT": "    "}
+STD_FORMATTERS = {
+    "STD_INDENT": "    ",
+    "WIDE_INDENT": "        ",
+    "VERY_WIDE_INDENT": "            ",
+}
 
 
 class FallbackFormatter(string.Formatter):
@@ -59,21 +64,33 @@ class LogConfig:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._templates = {}
-
+            cls._instance._agent_templates = {}
+            cls._instance._sim_templates = {}
         return cls._instance
 
     def load_config(self, config_path: str):
         with open(config_path, "r") as f:
-            self._templates.update(json.load(f))
+            log_config_dict = json.load(f)
+            if "agent" in log_config_dict:
+                self._agent_templates = log_config_dict["agent"]
+            if "sim" in log_config_dict:
+                self._sim_templates = log_config_dict["sim"]
 
-    def update_template(self, agent_type: str, event_type: str, template: str):
+    def update_agent_template(self, agent_type: str, event_type: str, template: str):
         if agent_type not in self._templates:
-            self._templates[agent_type] = {}
-        self._templates[agent_type][event_type] = template
+            self._agent_templates[agent_type] = {}
+        self._agent_templates[agent_type][event_type] = template
 
-    def get_template(self, agent_type: str, event_type: str) -> Optional[str]:
-        return self._templates.get(agent_type, {}).get(event_type)
+    def update_sim_template(self, sim_type: str, event_type: str, template: str):
+        if sim_type not in self._templates:
+            self._sim_templates[sim_type] = {}
+        self._sim_templates[sim_type][event_type] = template
+
+    def get_agent_template(self, agent_type: str, event_type: str) -> Optional[str]:
+        return self._agent_templates.get(agent_type, {}).get(event_type)
+
+    def get_sim_template(self, sim_type: str, event_type: str) -> Optional[str]:
+        return self._sim_templates.get(sim_type, {}).get(event_type)
 
 
 # TODO: Figure out if AgentLogger and SimLogger need to be different classes
@@ -102,7 +119,9 @@ class AgentLogger:
         self.logger.addHandler(ch)
 
     def log_agent_event(self, agent, event_type: AgentEventType, context: Dict = None):
-        template = self.config.get_template(agent.__class__.__name__, event_type.value)
+        template = self.config.get_agent_template(
+            agent.__class__.__name__, event_type.value
+        )
 
         if not agent.log_level:
             return
@@ -138,7 +157,9 @@ class SimLogger:
     def log_sim_event(
         self, sim, event_type: SimEventType, context: Dict = None, level=logging.INFO
     ):
-        template = self.config.get_template(sim.__class__.__name__, event_type.value)
+        template = self.config.get_sim_template(
+            sim.__class__.__name__, event_type.value
+        )
 
         if template and context:
             context = context or {}
