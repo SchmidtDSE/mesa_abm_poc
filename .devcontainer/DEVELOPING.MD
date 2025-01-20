@@ -55,6 +55,8 @@ There are a couple of conventions we assume (logic defined by `vegetation/config
 
     - _For now, this only works one level deep and doesn't support execution - for eg, `agent.indices.min_index` or `agent.indices[0]` or `int(agent.life_stage)` or similar will not work. We could investigate this if it seems useful_, though.
 
+- We also arbitrarily define some useful constants: `STD_INDENT`, `WIDE_INDENT`, `VERY_WIDE_INDENT` - these are also defined in `vegetation/config/logging.py`. This is nice because we can change the indent size globally across all logs in one spot, for eg, but might also be useful for other 'constants' that don't rely on agent state or application logic really. These can be readily ignored in favor of hard-coding spaces or tabs for example, but this logic is set up in case it proves useful. 
+
 #### Triggering a Log
 
 The agent(s) and simulation both have their own loggers - `agent_logger` and `sim_logger`, respectively. These can be accessed at any point to issue a log event according to the event type passed along, as follows:
