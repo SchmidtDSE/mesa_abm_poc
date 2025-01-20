@@ -119,15 +119,18 @@ class AgentLogger:
         self.logger.addHandler(ch)
 
     def log_agent_event(self, agent, event_type: AgentEventType, context: Dict = None):
-        template = self.config.get_agent_template(
-            agent.__class__.__name__, event_type.value
-        )
 
         if not agent.log_level:
             return
 
-        if template and context:
-            context = context or {}
+        if context is None:
+            context = {}
+
+        template = self.config.get_agent_template(
+            agent.__class__.__name__, event_type.value
+        )
+
+        if template:
             context["agent"] = agent
             context.update(STD_FORMATTERS)
             message = self._fallback_formatter.format(template, **context)
@@ -157,12 +160,18 @@ class SimLogger:
     def log_sim_event(
         self, sim, event_type: SimEventType, context: Dict = None, level=logging.INFO
     ):
+
+        if not sim.log_level:
+            return
+
+        if context is None:
+            context = {}
+
         template = self.config.get_sim_template(
             sim.__class__.__name__, event_type.value
         )
 
-        if template and context:
-            context = context or {}
+        if template:
             context["sim"] = sim
             context.update(STD_FORMATTERS)
             message = self._fallback_formatter.format(template, **context)

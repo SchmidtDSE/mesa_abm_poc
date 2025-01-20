@@ -96,7 +96,7 @@ class StudyArea(mg.GeoSpace):
         elevation_cache_path = self._cache_paths["elevation"]
 
         if os.path.exists(elevation_cache_path):
-            print(f"Loading elevation from local cache: {elevation_cache_path}")
+            logging.info(f"Loading elevation from local cache: {elevation_cache_path}")
 
             try:
                 elevation_layer = mg.RasterLayer.from_file(

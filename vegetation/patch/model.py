@@ -48,7 +48,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             geometry=geometry,
             crs=crs,
         )
-        self.debug = False
+
         self.age = age
         self.parent_id = parent_id
         self.life_stage = None
@@ -98,9 +98,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # self._update_life_stage()
 
     def step(self):
-
-        # Save initial life stage for logging
-        initial_life_stage = self.life_stage
 
         # Check if agent is dead - if yes, skip
         if self.life_stage == LifeStage.DEAD:
@@ -220,12 +217,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
             seed_agent._update_life_stage()
 
             self.model.space.add_agents(seed_agent)
-            delta_x_index = self.indices[0] - seed_agent.indices[0]
-            delta_y_index = self.indices[1] - seed_agent.indices[1]
-
-            print(
-                f"{STD_INDENT*3}➕ Seed ({seed_agent.unique_id}, lifestage {seed_agent.life_stage}) to {seed_agent._pos} (🔺index: {delta_x_index}, {delta_y_index})"
-            )
 
 
 class Vegetation(mesa.Model):
@@ -275,11 +266,9 @@ class Vegetation(mesa.Model):
             }
         )
 
-        self.sim_logger.log_sim_event(
-            self, SimEventType.ON_START, context={"num_steps": self.num_steps}
-        )
-
     def _on_start(self):
+
+        self.sim_logger.log_sim_event(self, SimEventType.ON_START)
 
         self.space.get_elevation()
         self.space.get_aridity()
@@ -401,20 +390,11 @@ class Vegetation(mesa.Model):
         if not self._on_start_executed:
             self._on_start()
 
-        # Print timestep header
-        timestep_str = f"# {STD_INDENT*0}🕰️  Time passes. It is the year {self.steps}. #"
-        nchar_timestep_str = len(timestep_str)
-        print("#" * (nchar_timestep_str - 1))
-        print(timestep_str)
-        print("#" * (nchar_timestep_str - 1))
-        print("\n")
+        self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
 
         # Step agents
         self.agents.shuffle_do("step")
         self.update_metrics()
-
-        # Print end of timestep summary (just padding)
-        print("\n")
 
         # Collect data
         self.datacollector.collect(self)

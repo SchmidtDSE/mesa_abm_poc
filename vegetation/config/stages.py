@@ -9,6 +9,9 @@ class LifeStage(IntEnum):
     ADULT = 4
     BREEDING = 5
 
+    def __str__(self):
+        return self.name
+
 
 LIFE_STAGE_RGB_VIZ_MAP = {
     LifeStage.DEAD: (100, 0, 0, 1),
