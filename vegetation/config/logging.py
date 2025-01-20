@@ -20,6 +20,7 @@ class SimEventType(Enum):
     ON_START = "on_start"
     ON_STEP = "on_step"
     ON_END = "on_end"
+    ON_MANAGE = "on_manage"
 
 
 STD_FORMATTERS = {
@@ -112,11 +113,13 @@ class AgentLogger:
     def _setup_logger(self):
         self.logger = logging.getLogger("agent_logger")
         self.logger.setLevel(logging.INFO)
+        self.logger.propagate = False
 
-        ch = logging.StreamHandler()
-        formatter = logging.Formatter("%(message)s")
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
+        if not self.logger.handlers:
+            ch = logging.StreamHandler()
+            formatter = logging.Formatter("%(message)s")
+            ch.setFormatter(formatter)
+            self.logger.addHandler(ch)
 
     def log_agent_event(self, agent, event_type: AgentEventType, context: Dict = None):
 
@@ -151,11 +154,13 @@ class SimLogger:
     def _setup_logger(self):
         self.logger = logging.getLogger("sim_logger")
         self.logger.setLevel(logging.INFO)
+        self.logger.propagate = False
 
-        ch = logging.StreamHandler()
-        formatter = logging.Formatter("%(message)s")
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
+        if not self.logger.handlers:
+            ch = logging.StreamHandler()
+            formatter = logging.Formatter("%(message)s")
+            ch.setFormatter(formatter)
+            self.logger.addHandler(ch)
 
     def log_sim_event(
         self, sim, event_type: SimEventType, context: Dict = None, level=logging.INFO
