@@ -1,6 +1,3 @@
-import cProfile
-import pstats
-from typing import Tuple
 from ipyleaflet.leaflet import GeomanDrawControl
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
