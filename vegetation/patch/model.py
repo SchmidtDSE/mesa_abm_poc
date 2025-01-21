@@ -29,6 +29,7 @@ from vegetation.config.logging import (
     AgentEventType,
     SimEventType,
 )
+from vegetation.utils.cells_to_zarr import create_life_stage_zarr
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
