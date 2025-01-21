@@ -30,6 +30,7 @@ typing-extensions = ">=4.12.0rc1"
 sqlite = "*"
 solara = "*"
 pip = "*"
+zarr = ">=2.13.3,<3"
 
 [pypi-dependencies]
 mesa = { version = "==3.1.1" }
