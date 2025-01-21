@@ -22,13 +22,27 @@ from vegetation.config.transitions import (
     get_jotr_breeding_poisson_lambda,
 )
 from vegetation.config.paths import INITIAL_AGENTS_PATH
+from vegetation.config.logging import (
+    LogConfig,
+    AgentLogger,
+    SimLogger,
+    AgentEventType,
+    SimEventType,
+)
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
-    def __init__(self, model, geometry, crs, age=None, parent_id=None):
+
+    @property
+    def agent_logger(self):
+        if not hasattr(self, "_agent_logger"):
+            self._agent_logger = AgentLogger()
+        return self._agent_logger
+
+    def __init__(self, model, geometry, crs, age=None, parent_id=None, log_level=None):
         super().__init__(
             model=model,
             geometry=geometry,
@@ -38,6 +52,10 @@ class JoshuaTreeAgent(mg.GeoAgent):
         self.age = age
         self.parent_id = parent_id
         self.life_stage = None
+        # self.log_level = log_level
+
+        # To get this set up, assume all agents have logging.INFO level
+        self.log_level = logging.INFO
 
         # TODO: When we create the agent, we need to know its own indices relative
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/6
@@ -68,6 +86,8 @@ class JoshuaTreeAgent(mg.GeoAgent):
             int(self.float_indices[1]),
         )
 
+        self.agent_logger.log_agent_event(self, AgentEventType.ON_CREATE)
+
         # TODO: Figure out how to set the life stage on init
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/3
         # Seems natural to set the life stage on init, but in
@@ -78,9 +98,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # self._update_life_stage()
 
     def step(self):
-
-        # Save initial life stage for logging
-        initial_life_stage = self.life_stage
 
         # Check if agent is dead - if yes, skip
         if self.life_stage == LifeStage.DEAD:
@@ -109,13 +126,17 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # Check survival, comparing dice roll to survival rate
         if dice_roll_zero_to_one < survival_rate:
-            print(
-                f"{STD_INDENT*1}💪 Agent {self.unique_id} ({self.life_stage.name}, age {self.age}) survived! (dice roll {dice_roll_zero_to_one:.2f} w/ survival prob {survival_rate:.2f})"
+            self.agent_logger.log_agent_event(
+                self,
+                AgentEventType.ON_SURVIVE,
+                context={"survival_rate": survival_rate},
             )
 
         else:
-            print(
-                f"{STD_INDENT*1}💀 Agent {self.unique_id} ({self.life_stage.name}, age {self.age}) died! (dice roll {dice_roll_zero_to_one:.2f} w/ survival prob {survival_rate:.2f})"
+            self.agent_logger.log_agent_event(
+                self,
+                AgentEventType.ON_DEATH,
+                context={"survival_rate": survival_rate},
             )
             self.life_stage = LifeStage.DEAD
 
@@ -124,19 +145,21 @@ class JoshuaTreeAgent(mg.GeoAgent):
         life_stage_promotion = self._update_life_stage()
 
         if life_stage_promotion:
-            print(
-                f"{STD_INDENT*2}🔄 Agent {self.unique_id} ({initial_life_stage.name}) promoted to {self.life_stage.name}!"
-            )
-
+            self.agent_logger.log_agent_event(self, AgentEventType.ON_TRANSITION)
         # Update underlying patch
         intersecting_cell.add_agent_link(self)
 
         # Disperse
         if self.life_stage == LifeStage.BREEDING:
+
             jotr_breeding_poisson_lambda = get_jotr_breeding_poisson_lambda(
                 intersecting_cell.aridity
             )
             n_seeds = poisson.rvs(jotr_breeding_poisson_lambda)
+
+            self.agent_logger.log_agent_event(
+                self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
+            )
 
             self._disperse_seeds(n_seeds)
 
@@ -173,10 +196,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
                 f"Agent {self.unique_id} is not breeding and cannot disperse seeds"
             )
 
-        print(
-            f"{STD_INDENT*2}🌰 Agent {self.unique_id} ({self.life_stage.name}) is dispersing {n_seeds} seeds..."
-        )
-
         wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(
             self.geometry.x, self.geometry.y
         )
@@ -198,15 +217,16 @@ class JoshuaTreeAgent(mg.GeoAgent):
             seed_agent._update_life_stage()
 
             self.model.space.add_agents(seed_agent)
-            delta_x_index = self.indices[0] - seed_agent.indices[0]
-            delta_y_index = self.indices[1] - seed_agent.indices[1]
-
-            print(
-                f"{STD_INDENT*3}➕ Seed ({seed_agent.unique_id}, lifestage {seed_agent.life_stage}) to {seed_agent._pos} (🔺index: {delta_x_index}, {delta_y_index})"
-            )
 
 
 class Vegetation(mesa.Model):
+
+    @property
+    def sim_logger(self):
+        if not hasattr(self, "_sim_logger"):
+            self._sim_logger = SimLogger()
+        return self._sim_logger
+
     def __init__(
         self,
         bounds,
@@ -214,8 +234,18 @@ class Vegetation(mesa.Model):
         num_steps=20,
         management_planting_density=0.01,
         epsg=4326,
+        log_config_path=None,
+        log_level=None,
     ):
         super().__init__()
+
+        # Initialize logging config first
+        if log_config_path:
+            LogConfig.initialize(log_config_path)
+
+        # To get this set up, assume sim has logging.INFO level
+        self.log_level = logging.INFO
+
         self.bounds = bounds
         self.num_steps = num_steps
         self.management_planting_density = management_planting_density
@@ -237,6 +267,8 @@ class Vegetation(mesa.Model):
         )
 
     def _on_start(self):
+
+        self.sim_logger.log_sim_event(self, SimEventType.ON_START)
 
         self.space.get_elevation()
         self.space.get_aridity()
@@ -271,6 +303,12 @@ class Vegetation(mesa.Model):
 
         outplanting_point_locations = self._generate_planting_points(management_area)
 
+        self.sim_logger.log_sim_event(
+            self,
+            SimEventType.ON_MANAGE,
+            context={"n_agents": len(outplanting_point_locations)},
+        )
+
         for management_x_wgs84, management_y_wgs84 in outplanting_point_locations:
 
             # TODO: Vegetation model doesn't know its own CRS
@@ -285,10 +323,6 @@ class Vegetation(mesa.Model):
             management_agent._update_life_stage()
 
             self.space.add_agents(management_agent)
-
-            print(
-                f"{STD_INDENT*3}✨ Outplanted ({management_agent.unique_id}, lifestage {management_agent.life_stage.name}) to {management_agent._pos}"
-            )
 
     def _generate_planting_points(self, geo_json):
         # Convert GeoJSON to Shapely polygon
@@ -356,20 +390,11 @@ class Vegetation(mesa.Model):
         if not self._on_start_executed:
             self._on_start()
 
-        # Print timestep header
-        timestep_str = f"# {STD_INDENT*0}🕰️  Time passes. It is the year {self.steps}. #"
-        nchar_timestep_str = len(timestep_str)
-        print("#" * (nchar_timestep_str - 1))
-        print(timestep_str)
-        print("#" * (nchar_timestep_str - 1))
-        print("\n")
+        self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
 
         # Step agents
         self.agents.shuffle_do("step")
         self.update_metrics()
-
-        # Print end of timestep summary (just padding)
-        print("\n")
 
         # Collect data
         self.datacollector.collect(self)

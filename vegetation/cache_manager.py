@@ -7,6 +7,7 @@ import mesa_geo as mg
 from functools import cached_property
 from pystac_client import Client as PystacClient
 import planetary_computer
+import logging
 
 from vegetation.config.paths import DEM_STAC_PATH, LOCAL_STAC_CACHE_FSTRING
 from vegetation.config.aoi import TST_JOTR_BOUNDS
@@ -50,14 +51,15 @@ class CacheManager:
         return docker_host_cache_dict
 
     def get_elevation_from_stac(self):
-        print("Collecting STAC Items for elevation")
+
+        logging.debug("Collecting STAC Items for elevation")
         items_generator = self.pystac_client.search(
             collections=["cop-dem-glo-30"],
             bbox=self.bounds,
         ).items()
 
         items = [item for item in items_generator]
-        print(f"Found {len(items)} items")
+        logging.debug(f"Found {len(items)} items")
 
         elevation = stackstac.stack(
             items=items,
@@ -81,10 +83,10 @@ class CacheManager:
         elevation_cache_path = self._cache_paths["elevation"]
 
         if os.path.exists(elevation_cache_path):
-            print(f"Local elevation cache found: {elevation_cache_path}")
+            logging.debug(f"Local elevation cache found: {elevation_cache_path}")
             return
 
-        print("No local cache found, downloading elevation from STAC")
+        logging.warning("No local cache found, downloading elevation from STAC")
         time_at_start = time.time()
 
         elevation = self.get_elevation_from_stac()
@@ -104,7 +106,7 @@ class CacheManager:
             attr_name="elevation",
         )
 
-        print(f"Saving elevation to local cache: {elevation_cache_path}")
+        logging.debug(f"Saving elevation to local cache: {elevation_cache_path}")
         os.makedirs(os.path.dirname(elevation_cache_path), exist_ok=True)
         elevation_layer.to_file(elevation_cache_path)
 
@@ -117,12 +119,12 @@ class CacheManager:
                 os.path.dirname(docker_host_elevation_cache_path), exist_ok=True
             )
 
-            print(
+            logging.debug(
                 f"Also saving elevation to Docker host cache (to speed up cache build later on this machine): {docker_host_elevation_cache_path}"
             )
             elevation_layer.to_file(docker_host_elevation_cache_path)
 
-        print(f"Downloaded elevation in {time.time() - time_at_start} seconds")
+        logging.debug(f"Downloaded elevation in {time.time() - time_at_start} seconds")
 
 
 if __name__ == "__main__":
