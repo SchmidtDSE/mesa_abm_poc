@@ -1,5 +1,3 @@
-# logging.py
-
 import logging
 import json
 import string
