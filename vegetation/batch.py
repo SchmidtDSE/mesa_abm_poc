@@ -8,6 +8,7 @@ from vegetation.config.paths import (
 )
 
 import pandas as pd
+import os as os
 
 run_steps = input("Setting up a simulation. Please enter the number of steps you want to simulate: ")
 print(f'Simulating {run_steps} steps')
@@ -15,8 +16,24 @@ print(f'Simulating {run_steps} steps')
 run_iter = input("Enter the number of model iterations you want to simulate: ")
 print(f'Simulating {run_iter} iterations')
 
-run_name = input("Enter the name of your simulation: ")
-print(f'Saving results to local_dev_data/results/{run_name}.')
+run_name = ""
+while True:
+    run_name = input("Enter the name of your simulation: ")
+    print(f'Saving results to vegetation/.local_dev_data/results/{run_name}.')
+
+    if os.path.exists(f'vegetation/.local_dev_data/results/{run_name}'):
+        overwrite = input("That name already exists. Do you want to overwrite? (y/n) ")
+        if overwrite == 'n':
+            continue 
+        elif overwrite == 'y':
+            break 
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
+    else:
+        break 
+
+
+
 
 
 # TODO: Implement early stopping when all the JOTR die off
