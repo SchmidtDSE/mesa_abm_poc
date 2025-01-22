@@ -6,7 +6,7 @@ from shapely.ops import transform
 import random
 import json
 from scipy.stats import poisson
-from pyproj import Transformer
+import datetime
 import logging
 
 from vegetation.config.stages import LifeStage
@@ -29,7 +29,11 @@ from vegetation.config.logging import (
     AgentEventType,
     SimEventType,
 )
-from vegetation.utils.cells_to_zarr import create_life_stage_zarr
+from vegetation.utils.cells_to_zarr import (
+    initialize_synchronized_zarr,
+    append_synchronized_timestep,
+    get_array_from_nested_cell_list,
+)
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
@@ -251,6 +255,7 @@ class Vegetation(mesa.Model):
         self.num_steps = num_steps
         self.management_planting_density = management_planting_density
         self._on_start_executed = False
+        self.sim_idx = 1
 
         # mesa setup
         self.space = StudyArea(bounds, epsg=epsg, model=self)
@@ -267,6 +272,26 @@ class Vegetation(mesa.Model):
             }
         )
 
+        self.life_stage_zarr = None
+
+    def _initialize_zarr(self):
+
+        self.life_stage_zarr = initialize_synchronized_zarr(
+            (self.space.raster_layer._width, self.space.raster_layer._height),
+            ".life_stage.zarr",
+            crs=self.space.crs.to_string(),
+            transformer_json=self.space._transformer.to_json(),
+        )
+
+    def _append_current_timestep_to_zarr(self):
+        timestep_array = get_array_from_nested_cell_list(self.space.raster_layer.cells)
+        append_synchronized_timestep(
+            zarr_array=self.life_stage_zarr,
+            sim_idx=self.sim_idx,
+            timestep_idx=self.steps,
+            timestep_array=timestep_array,
+        )
+
     def _on_start(self):
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_START)
@@ -279,6 +304,8 @@ class Vegetation(mesa.Model):
             initial_agents_geojson = json.loads(f.read())
 
         self._add_agents_from_geojson(initial_agents_geojson)
+
+        self._initialize_zarr()
 
         self._on_start_executed = True
 
@@ -392,6 +419,8 @@ class Vegetation(mesa.Model):
             self._on_start()
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
+
+        self._append_current_timestep_to_zarr()
 
         # Step agents
         self.agents.shuffle_do("step")
