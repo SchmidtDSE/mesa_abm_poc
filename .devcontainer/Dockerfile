@@ -1,5 +1,5 @@
 # Use a jupyter base image for cirrus
-FROM quay.io/jupyter/minimal-notebook
+FROM quay.io/jupyter/minimal-notebook:latest
 
 # Create a user-writable space outside $HOME for apps to live.
 ENV XDG_DATA_HOME=/opt/share
@@ -12,6 +12,7 @@ RUN mkdir /opt/share && chown -R $NB_USER:users /opt/share
 # Install code server
 RUN curl -fsSL https://code-server.dev/install.sh | sh && rm -rf .cache 
 
+# Change from root to $NB_USER
 USER $NB_USER
 
 # codeserver extensions
