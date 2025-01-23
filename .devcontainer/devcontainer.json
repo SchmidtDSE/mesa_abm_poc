@@ -28,5 +28,7 @@
         "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.pixi/envs/default/bin/python"
       }
     }
-  }
+  },
+  "containerUser": "jovyan",
+  "remoteUser": "jovyan"
 }
