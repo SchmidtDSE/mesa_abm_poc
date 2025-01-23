@@ -5,7 +5,6 @@ FROM quay.io/jupyter/minimal-notebook:latest
 ENV XDG_DATA_HOME=/opt/share
 ENV PIXI_HOME $XDG_DATA_HOME/pixi
 ENV PATH $PIXI_HOME/bin:$PATH
-ENV GRANT_SUDO=yes
 
 USER root
 RUN mkdir /opt/share && chown -R $NB_USER:users /opt/share
