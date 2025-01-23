@@ -8,6 +8,7 @@ ENV PATH $PIXI_HOME/bin:$PATH
 
 USER root
 RUN mkdir /opt/share && chown -R $NB_USER:users /opt/share
+RUN echo "jovyan ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/jovyan
 
 # Install code server
 RUN curl -fsSL https://code-server.dev/install.sh | sh && rm -rf .cache 

@@ -7,4 +7,8 @@ if [ -d "/workspaces/mesa_abm_poc/.pixi" ]; then
   rm -rf /workspaces/mesa_abm_poc/.pixi/*
 fi
 
+# Ensure that the jovyan user owns the .pixi directory
+sudo chown -R jovyan:root .pixi
+
+# Install pixi dependencies according to pixi.toml and pixi.lock
 pixi install
