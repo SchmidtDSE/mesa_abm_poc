@@ -1,0 +1,11 @@
+name: "Check Style with Ruff"
+on: ["push"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ruff Style Check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
