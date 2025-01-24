@@ -5,6 +5,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out code for this commit
+        uses: actions/checkout@v4
+
       - name: Ruff Style Check
         uses: astral-sh/ruff-action@v3
         with:
