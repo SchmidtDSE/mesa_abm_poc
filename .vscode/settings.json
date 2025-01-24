@@ -2,9 +2,9 @@
     "python.defaultInterpreterPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
     "python.testing.pytestEnabled": true,
     "remote.extensionKind": {
-        "esbenp.prettier-vscode": ["workspace", "ui"],
-        "charliermarsh.ruff": ["workspace", "ui"],
-        "ms-python.python": ["workspace", "ui"]
+        "esbenp.prettier-vscode": ["workspace"],
+        "charliermarsh.ruff": ["workspace"],
+        "ms-python.python": ["workspace"]
     },
     "[python]": {
         "editor.formatOnSave": true,
