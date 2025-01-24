@@ -1,9 +1,7 @@
-# logging.py
-
-import logging
 import json
+import logging
 import string
-from enum import Enum, auto
+from enum import Enum
 from typing import Dict, Optional
 
 
@@ -32,7 +30,6 @@ STD_FORMATTERS = {
 
 class FallbackFormatter(string.Formatter):
     def get_field(self, field_name, args, kwargs):
-
         try:
             # Check if field_name contains dots (e.g., 'agent.unique_id')
             if "." in field_name:
@@ -122,7 +119,6 @@ class AgentLogger:
             self.logger.addHandler(ch)
 
     def log_agent_event(self, agent, event_type: AgentEventType, context: Dict = None):
-
         if not agent.log_level:
             return
 
@@ -165,7 +161,6 @@ class SimLogger:
     def log_sim_event(
         self, sim, event_type: SimEventType, context: Dict = None, level=logging.INFO
     ):
-
         if not sim.log_level:
             return
 

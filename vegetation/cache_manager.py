@@ -1,16 +1,17 @@
+import hashlib
+import logging
 import os
 import time
-import hashlib
-import numpy as np
-import stackstac
-import mesa_geo as mg
 from functools import cached_property
-from pystac_client import Client as PystacClient
-import planetary_computer
-import logging
 
-from vegetation.config.paths import DEM_STAC_PATH, LOCAL_STAC_CACHE_FSTRING
+import mesa_geo as mg
+import numpy as np
+import planetary_computer
+import stackstac
+from pystac_client import Client as PystacClient
+
 from vegetation.config.aoi import TST_JOTR_BOUNDS
+from vegetation.config.paths import DEM_STAC_PATH, LOCAL_STAC_CACHE_FSTRING
 from vegetation.patch.model import Vegetation
 
 
@@ -51,7 +52,6 @@ class CacheManager:
         return docker_host_cache_dict
 
     def get_elevation_from_stac(self):
-
         logging.debug("Collecting STAC Items for elevation")
         items_generator = self.pystac_client.search(
             collections=["cop-dem-glo-30"],
@@ -79,7 +79,6 @@ class CacheManager:
         return elevation
 
     def populate_elevation_cache_if_not_exists(self):
-
         elevation_cache_path = self._cache_paths["elevation"]
 
         if os.path.exists(elevation_cache_path):
@@ -111,7 +110,6 @@ class CacheManager:
         elevation_layer.to_file(elevation_cache_path)
 
         if os.getenv("DOCKER_HOST_STAC_CACHE_FSTRING"):
-
             docker_host_elevation_cache_path = self._docker_host_cache_paths[
                 "elevation"
             ]

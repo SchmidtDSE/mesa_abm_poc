@@ -1,41 +1,40 @@
+import json
+import logging
+import random
+
 import mesa
 import mesa_geo as mg
 import numpy as np
 import shapely.geometry as sg
-from shapely.ops import transform
-import random
-import json
 from scipy.stats import poisson
-from pyproj import Transformer
-import logging
+from shapely.ops import transform
 
-from vegetation.config.stages import LifeStage
-from vegetation.patch.space import StudyArea, VegCell
-from vegetation.patch.utils import transform_point_wgs84_utm, generate_point_in_utm
-from vegetation.config.transitions import (
-    JOTR_JUVENILE_AGE,
-    JOTR_REPRODUCTIVE_AGE,
-    JOTR_ADULT_AGE,
-    JOTR_SEED_DISPERSAL_DISTANCE,
-    get_jotr_emergence_rate,
-    get_jotr_survival_rate,
-    get_jotr_breeding_poisson_lambda,
+from vegetation.config.logging import (
+    AgentEventType,
+    AgentLogger,
+    LogConfig,
+    SimEventType,
+    SimLogger,
 )
 from vegetation.config.paths import INITIAL_AGENTS_PATH
-from vegetation.config.logging import (
-    LogConfig,
-    AgentLogger,
-    SimLogger,
-    AgentEventType,
-    SimEventType,
+from vegetation.config.stages import LifeStage
+from vegetation.config.transitions import (
+    JOTR_ADULT_AGE,
+    JOTR_JUVENILE_AGE,
+    JOTR_REPRODUCTIVE_AGE,
+    JOTR_SEED_DISPERSAL_DISTANCE,
+    get_jotr_breeding_poisson_lambda,
+    get_jotr_emergence_rate,
+    get_jotr_survival_rate,
 )
+from vegetation.patch.space import StudyArea, VegCell
+from vegetation.patch.utils import generate_point_in_utm, transform_point_wgs84_utm
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 STD_INDENT = "    "
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
-
     @property
     def agent_logger(self):
         if not hasattr(self, "_agent_logger"):
@@ -98,7 +97,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # self._update_life_stage()
 
     def step(self):
-
         # Check if agent is dead - if yes, skip
         if self.life_stage == LifeStage.DEAD:
             return
@@ -151,7 +149,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # Disperse
         if self.life_stage == LifeStage.BREEDING:
-
             jotr_breeding_poisson_lambda = get_jotr_breeding_poisson_lambda(
                 intersecting_cell.aridity
             )
@@ -164,7 +161,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
             self._disperse_seeds(n_seeds)
 
     def _update_life_stage(self):
-
         initial_life_stage = self.life_stage
 
         if self.life_stage == LifeStage.DEAD:
@@ -220,7 +216,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
 
 class Vegetation(mesa.Model):
-
     @property
     def sim_logger(self):
         if not hasattr(self, "_sim_logger"):
@@ -267,7 +262,6 @@ class Vegetation(mesa.Model):
         )
 
     def _on_start(self):
-
         self.sim_logger.log_sim_event(self, SimEventType.ON_START)
 
         self.space.get_elevation()
@@ -297,7 +291,6 @@ class Vegetation(mesa.Model):
 
     # def add_agents_from_management_draw(event, geo_json, action):
     def add_agents_from_management_draw(self, *args, **kwargs):
-
         assert kwargs.get("action") == "create"
         management_area = kwargs.get("geo_json")
 
@@ -310,7 +303,6 @@ class Vegetation(mesa.Model):
         )
 
         for management_x_wgs84, management_y_wgs84 in outplanting_point_locations:
-
             # TODO: Vegetation model doesn't know its own CRS
             # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/26
             management_agent = JoshuaTreeAgent(
@@ -386,7 +378,6 @@ class Vegetation(mesa.Model):
         )
 
     def step(self):
-
         if not self._on_start_executed:
             self._on_start()
 

@@ -1,7 +1,7 @@
-import shapely.geometry as sg
-from pyproj import Transformer, CRS
-import numpy as np
 import random
+
+import numpy as np
+from pyproj import Transformer
 
 
 def transform_point_wgs84_utm(lon: float, lat: float, utm_zone: int = None) -> tuple:

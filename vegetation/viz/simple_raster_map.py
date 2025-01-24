@@ -1,6 +1,6 @@
-import xyzservices
 import ipyleaflet
 import solara
+import xyzservices
 from mesa.visualization.utils import update_counter
 from mesa_geo.visualization.components.geospace_component import MapModule
 
