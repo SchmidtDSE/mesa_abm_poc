@@ -1,4 +1,6 @@
+import numpy as np
 from vegetation.config.stages import LifeStage
+
 
 JOTR_JUVENILE_AGE = 8
 JOTR_ADULT_AGE = 15
