@@ -18,6 +18,7 @@ from vegetation.config.logging import (
 from vegetation.utils.zarr_manager import (
     get_array_from_nested_cell_list,
 )
+from vegetation.model.joshua_tree_agent import JoshuaTreeAgent
 
 
 class Vegetation(mesa.Model):

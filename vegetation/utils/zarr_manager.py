@@ -6,6 +6,14 @@ import hashlib
 from vegetation.space.veg_cell import VegCell
 
 
+def get_array_from_nested_cell_list(veg_cells: List[List[VegCell]]) -> np.ndarray:
+    def safe_get_stage(cell: VegCell) -> int:
+        return -1 if cell.jotr_max_life_stage is None else cell.jotr_max_life_stage
+
+    veg_array = np.array([[safe_get_stage(cell) for cell in row] for row in veg_cells])
+    return veg_array
+
+
 class ZarrManager:
     def __init__(
         self, grid_shape, max_timestep, filename, crs=None, transformer_json=None
@@ -68,12 +76,3 @@ class ZarrManager:
             sim_array.attrs["run_parameters"] = run_parameters
 
         self._zarr_root_group[param_hash][replicate_idx][timestep_idx] = timestep_array
-
-    def get_array_from_nested_cell_list(veg_cells: List[List[VegCell]]) -> np.ndarray:
-        def safe_get_stage(cell: VegCell) -> int:
-            return -1 if cell.jotr_max_life_stage is None else cell.jotr_max_life_stage
-
-        veg_array = np.array(
-            [[safe_get_stage(cell) for cell in row] for row in veg_cells]
-        )
-        return veg_array

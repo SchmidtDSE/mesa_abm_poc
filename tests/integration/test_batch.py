@@ -1,5 +1,5 @@
 from vegetation.batch import TST_JOTR_BOUNDS, batch_run
-from vegetation.patch.model import Vegetation
+from vegetation.model.vegetation import Vegetation
 import pandas as pd
 
 

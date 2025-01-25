@@ -1,8 +1,8 @@
 from ipyleaflet.leaflet import GeomanDrawControl
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
-from vegetation.patch.model import Vegetation, JoshuaTreeAgent
-from vegetation.patch.space import VegCell
+from vegetation.model.joshua_tree_agent import Vegetation, JoshuaTreeAgent
+from vegetation.space.veg_cell import VegCell
 from vegetation.viz.simple_raster_map import make_simple_raster_geospace_component
 from vegetation.cache_manager import CacheManager
 

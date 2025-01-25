@@ -11,7 +11,7 @@ import logging
 
 from vegetation.config.paths import DEM_STAC_PATH, LOCAL_STAC_CACHE_FSTRING
 from vegetation.config.aoi import TST_JOTR_BOUNDS
-from vegetation.patch.model import Vegetation
+from vegetation.model.joshua_tree_agent import Vegetation
 
 
 class CacheManager:
