@@ -10,10 +10,12 @@ from vegetation.patch.model import Vegetation
 
 def get_interactive_params() -> dict:
     run_steps = input("Please enter the number of steps you want to simulate: ")
-    print(f"Simulating {run_steps} steps")
 
-    run_iter = input("Enter the number of model iterations you want to simulate: ")
-    print(f"Simulating {run_iter} iterations")
+    run_iterations = input(
+        "Enter the number of model iterations you want to simulate: "
+    )
+
+    run_overwrite = False
 
     while True:
         run_name = input("Enter the name of your simulation: ")
@@ -21,31 +23,43 @@ def get_interactive_params() -> dict:
         print(f"Saving results to {output_path}")
 
         if os.path.exists(output_path):
-            overwrite = input(
+            overwrite_prompt = input(
                 "That name already exists. Do you want to overwrite? (y/n) "
             )
-            if overwrite.lower() == "y":
-                break
-            elif overwrite.lower() == "n":
+            if overwrite_prompt.lower() == "y":
+                run_overwrite = True
+            elif overwrite_prompt.lower() == "n":
+                run_overwrite = False
+            else:
+                print("Invalid input. Please enter 'y' or 'n'")
                 continue
         else:
             break
 
     return {
+        "interactive": True,
         "run_steps": int(run_steps),
-        "run_iter": int(run_iter),
+        "run_iterations": int(run_iterations),
         "run_name": run_name,
+        "overwrite": run_overwrite,
     }
 
 
 def parse_args() -> dict:
     parser = argparse.ArgumentParser(description="Run vegetation simulation")
     parser.add_argument(
-        "--interactive", action="store_true", help="Run in interactive mode"
+        "--interactive",
+        action="store_true",
+        default=None,
+        help="Run in interactive mode",
     )
-    parser.add_argument("--steps", type=int, help="Number of simulation steps")
-    parser.add_argument("--iterations", type=int, help="Number of model iterations")
-    parser.add_argument("--name", type=str, help="Simulation name")
+    parser.add_argument(
+        "--steps", type=int, default=None, help="Number of simulation steps"
+    )
+    parser.add_argument(
+        "--iterations", type=int, default=None, help="Number of model iterations"
+    )
+    parser.add_argument("--name", type=str, default=None, help="Simulation name")
     parser.add_argument(
         "--overwrite",
         action="store_true",
@@ -56,9 +70,9 @@ def parse_args() -> dict:
 
     return {
         "interactive": parsed.interactive,
-        "steps": parsed.steps,
-        "iterations": parsed.iterations,
-        "name": parsed.name,
+        "run_steps": parsed.steps,
+        "run_iterations": parsed.iterations,
+        "run_name": parsed.name,
         "overwrite": parsed.overwrite,
     }
 
@@ -73,25 +87,25 @@ model_params = {
 }
 
 if __name__ == "__main__":
-    args = parse_args()
+    arg_dict = parse_args()
 
-    if args["interactive"]:
-        run_steps, run_iterations, run_name = get_interactive_params()
-    else:
-        if not all([args["steps"], args["iterations"], args["name"]]):
-            raise ValueError(
-                "In non-interactive mode, --steps, --iterations, and --name are required"
-            )
+    if arg_dict["interactive"]:
+        arg_dict = get_interactive_params()
 
-        output_path = f"vegetation/.local_dev_data/results/{args['name']}"
-        if os.path.exists(output_path) and not args["overwrite"]:
-            raise ValueError(
-                f"Output path {output_path} exists. Use --force to overwrite"
-            )
+    if not all(
+        [arg_dict["run_steps"], arg_dict["run_iterations"], arg_dict["run_name"]]
+    ):
+        raise ValueError(
+            "Either use --interactive, or in non-interactive mode, --steps, --iterations, and --name are required"
+        )
 
-        run_steps = args["steps"]
-        run_iterations = args["iterations"]
-        run_name = args["name"]
+    output_path = f"vegetation/.local_dev_data/results/{arg_dict['run_name']}"
+    if os.path.exists(output_path) and not arg_dict["overwrite"]:
+        raise ValueError(f"Output path {output_path} exists. Use --force to overwrite")
+
+    run_steps = arg_dict["run_steps"]
+    run_iterations = arg_dict["run_iterations"]
+    run_name = arg_dict["run_name"]
 
     results = batch_run(
         Vegetation,
@@ -103,5 +117,5 @@ if __name__ == "__main__":
         display_progress=True,
     )
 
-    output_path = f"vegetation/.local_dev_data/results/{run_name}"
+    output_path = f"vegetation/.local_dev_data/results/{run_name}.csv"
     pd.DataFrame(results).to_csv(output_path)
