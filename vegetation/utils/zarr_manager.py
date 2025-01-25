@@ -3,7 +3,7 @@ import zarr
 from typing import List, Dict, Any
 import json
 import hashlib
-from vegetation.patch.space import VegCell
+from vegetation.space.veg_cell import VegCell
 
 
 class ZarrManager:

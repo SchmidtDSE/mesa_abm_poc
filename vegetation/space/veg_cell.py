@@ -3,15 +3,10 @@ from __future__ import annotations
 import mesa
 import mesa_geo as mg
 import numpy as np
-import stackstac
-from pystac_client import Client as PystacClient
-import planetary_computer
 import random
 import os
 import hashlib
 import logging
-import time
-from functools import cached_property
 
 from vegetation.config.stages import LifeStage
 from vegetation.config.paths import LOCAL_STAC_CACHE_FSTRING
