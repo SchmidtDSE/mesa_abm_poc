@@ -8,7 +8,7 @@ from numpy import arange
 from vegetation.patch.model import Vegetation
 
 
-def get_interactive_params():
+def get_interactive_params() -> dict:
     run_steps = input("Please enter the number of steps you want to simulate: ")
     print(f"Simulating {run_steps} steps")
 
@@ -31,10 +31,14 @@ def get_interactive_params():
         else:
             break
 
-    return run_steps, run_iter, run_name
+    return {
+        "run_steps": int(run_steps),
+        "run_iter": int(run_iter),
+        "run_name": run_name,
+    }
 
 
-def parse_args():
+def parse_args() -> dict:
     parser = argparse.ArgumentParser(description="Run vegetation simulation")
     parser.add_argument(
         "--interactive", action="store_true", help="Run in interactive mode"
@@ -48,7 +52,15 @@ def parse_args():
         default=False,
         help="Overwrite existing results",
     )
-    return parser.parse_args()
+    parsed = parser.parse_args()
+
+    return {
+        "interactive": parsed.interactive,
+        "steps": parsed.steps,
+        "iterations": parsed.iterations,
+        "name": parsed.name,
+        "overwrite": parsed.overwrite,
+    }
 
 
 TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
@@ -63,23 +75,23 @@ model_params = {
 if __name__ == "__main__":
     args = parse_args()
 
-    if args.interactive:
-        run_steps, run_iter, run_name = get_interactive_params()
+    if args["interactive"]:
+        run_steps, run_iterations, run_name = get_interactive_params()
     else:
-        if not all([args.steps, args.iterations, args.name]):
+        if not all([args["steps"], args["iterations"], args["name"]]):
             raise ValueError(
                 "In non-interactive mode, --steps, --iterations, and --name are required"
             )
 
-        output_path = f"vegetation/.local_dev_data/results/{args.name}"
-        if os.path.exists(output_path) and not args.overwrite:
+        output_path = f"vegetation/.local_dev_data/results/{args['name']}"
+        if os.path.exists(output_path) and not args["overwrite"]:
             raise ValueError(
                 f"Output path {output_path} exists. Use --force to overwrite"
             )
 
-        run_steps = int(args.steps)
-        run_iterations = int(args.iterations)
-        run_name = args.name
+        run_steps = args["steps"]
+        run_iterations = args["iterations"]
+        run_name = args["name"]
 
     results = batch_run(
         Vegetation,
