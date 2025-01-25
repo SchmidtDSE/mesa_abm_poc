@@ -1,6 +1,6 @@
 import numpy as np
 import zarr
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any
 import json
 import hashlib
 from vegetation.patch.space import VegCell
