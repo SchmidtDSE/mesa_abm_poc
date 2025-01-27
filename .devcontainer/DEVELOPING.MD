@@ -90,6 +90,11 @@ We save model runs as `zarr` data structures according to the following approach
 
 Hashing logic will create a unique hash key from a `JSON` / Dict created using all releveant parameters for a particular simulation (and potentially a hash of the commit used to create the sims, if we are not done with our config logic?). For eg:
 
+TODO: formatting to make sure 0.05 and 0.050 are not different
+TODO: make robust to manual (non-hash) names
+TODO: Talk with ben or other NPS collaborators about RAD Coarsening logic
+
+
 `hash_A`
 ```
 {
@@ -110,5 +115,8 @@ Repeated model runs of `hash_A` will be added to the `hash_A` subgroup within th
 
 Questions:
 - Which dimensions are we most interested in aggregating regularly?
-    - all simulations at a particular timestep and param hash, potentially ignoring x, y? (for aggregations of tipping points)
-    - one simulation across all time, keeping x, y? (for visualization)
+    - all replicates at a particular timestep and param hash, potentially ignoring x, y? (for aggregations of tipping points - this is probably the one to optimize)
+    - one simulation across all time, keeping x, y? (for visualization - probably ok if this one is slow)
+- Outputs - what do we want to actually show at the end of of a suite of model run?
+    - sensitivity analysis - which parameters are important for emergent outcomes
+    - 
