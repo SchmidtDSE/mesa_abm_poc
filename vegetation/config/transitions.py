@@ -1,6 +1,6 @@
 from vegetation.config.stages import LifeStage
 
-JOTR_JUVENILE_AGE = 8
+JOTR_JUVENILE_AGE = 3
 JOTR_REPRODUCTIVE_AGE = 30
 JOTR_SEED_DISPERSAL_DISTANCE = 30
 
