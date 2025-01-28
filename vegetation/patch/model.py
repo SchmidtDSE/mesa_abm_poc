@@ -18,7 +18,7 @@ from vegetation.config.transitions import (
     JOTR_SEED_DISPERSAL_DISTANCE,
     get_jotr_germination_rate,
     get_jotr_survival_rate,
-    get_jotr_breeding_poisson_lambda,
+    get_jotr_adult_poisson_lambda,
 )
 from vegetation.config.paths import INITIAL_AGENTS_PATH
 from vegetation.config.logging import (
@@ -149,12 +149,12 @@ class JoshuaTreeAgent(mg.GeoAgent):
         intersecting_cell.add_agent_link(self)
 
         # Disperse
-        if self.life_stage == LifeStage.BREEDING:
+        if self.life_stage == LifeStage.ADULT:
 
-            jotr_breeding_poisson_lambda = get_jotr_breeding_poisson_lambda(
+            jotr_adult_poisson_lambda = get_jotr_adult_poisson_lambda(
                 intersecting_cell.aridity
             )
-            n_seeds = poisson.rvs(jotr_breeding_poisson_lambda)
+            n_seeds = poisson.rvs(jotr_adult_poisson_lambda)
 
             self.agent_logger.log_agent_event(
                 self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
@@ -177,7 +177,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         elif age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
             life_stage = LifeStage.JUVENILE
         else:
-            life_stage = LifeStage.BREEDING
+            life_stage = LifeStage.ADULT
         self.life_stage = life_stage
 
         if initial_life_stage != self.life_stage:
@@ -188,9 +188,9 @@ class JoshuaTreeAgent(mg.GeoAgent):
     def _disperse_seeds(
         self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
     ):
-        if self.life_stage != LifeStage.BREEDING:
+        if self.life_stage != LifeStage.ADULT:
             raise ValueError(
-                f"Agent {self.unique_id} is not breeding and cannot disperse seeds"
+                f"Agent {self.unique_id} is not reproductive yet and cannot disperse seeds"
             )
 
         wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(
@@ -257,7 +257,7 @@ class Vegetation(mesa.Model):
                 "N Seeds": "n_seeds",
                 "N Seedlings": "n_seedlings",
                 "N Juveniles": "n_juveniles",
-                "N Breeding": "n_breeding",
+                "N Adult": "n_adult",
                 "% Refugia Cells Occupied": "pct_refugia_cells_occupied",
             }
         )
@@ -362,7 +362,7 @@ class Vegetation(mesa.Model):
         self.n_seeds = count_dict.get(LifeStage.SEED, 0)
         self.n_seedlings = count_dict.get(LifeStage.SEEDLING, 0)
         self.n_juveniles = count_dict.get(LifeStage.JUVENILE, 0)
-        self.n_breeding = count_dict.get(LifeStage.BREEDING, 0)
+        self.n_adult = count_dict.get(LifeStage.ADULT, 0)
         self.n_dead = count_dict.get(LifeStage.DEAD, 0)
 
         # Number of agents (JoshuaTreeAgent)

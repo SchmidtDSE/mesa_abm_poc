@@ -21,7 +21,7 @@ def get_jotr_survival_rate(life_stage, aridity, nurse_indicator):
         rate = 0.55
     if life_stage == LifeStage.JUVENILE:
         rate = 0.8
-    if life_stage == LifeStage.BREEDING:
+    if life_stage == LifeStage.ADULT:
         rate = 0.97
 
     rate = rate - (aridity / 100_000)
@@ -31,5 +31,5 @@ def get_jotr_survival_rate(life_stage, aridity, nurse_indicator):
     return rate
 
 
-def get_jotr_breeding_poisson_lambda(aridity):
+def get_jotr_adult_poisson_lambda(aridity):
     return 10 - (aridity / 1000)
