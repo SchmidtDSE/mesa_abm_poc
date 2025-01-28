@@ -11,25 +11,20 @@ JOTR_SEED_DISPERSAL_DISTANCE = 30
 # to probably be more abstract and use a config for at least our initial
 
 
-def get_jotr_germination_rate(aridity):
-    rate = 0.8 - (aridity / 10000)
+def get_jotr_germination_rate():
+    rate = 0.8
     return rate
 
 
-def get_jotr_survival_rate(life_stage, aridity, nurse_indicator):
+def get_jotr_survival_rate(life_stage):
     if life_stage == LifeStage.SEEDLING:
         rate = 0.55
     if life_stage == LifeStage.JUVENILE:
         rate = 0.8
     if life_stage == LifeStage.ADULT:
         rate = 0.97
-
-    rate = rate - (aridity / 100_000)
-    if nurse_indicator:
-        rate = rate + 0.2
-
     return rate
 
 
-def get_jotr_adult_poisson_lambda(aridity):
-    return 10 - (aridity / 1000)
+def get_jotr_adult_poisson_lambda():
+    return 10

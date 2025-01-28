@@ -112,13 +112,10 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # If seed, get emergence rate, if not, get survival rate
         if self.life_stage == LifeStage.SEED:
-            survival_rate = get_jotr_germination_rate(intersecting_cell.aridity)
+            survival_rate = get_jotr_germination_rate()
         else:
             survival_rate = get_jotr_survival_rate(
-                self.life_stage,
-                intersecting_cell.aridity,
-                0,  # Assume no nurse plants for now
-            )
+                self.life_stage)
 
         # Roll the dice to see if the agent survives
         dice_roll_zero_to_one = random.random()
@@ -151,9 +148,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # Disperse
         if self.life_stage == LifeStage.ADULT:
 
-            jotr_adult_poisson_lambda = get_jotr_adult_poisson_lambda(
-                intersecting_cell.aridity
-            )
+            jotr_adult_poisson_lambda = get_jotr_adult_poisson_lambda()
             n_seeds = poisson.rvs(jotr_adult_poisson_lambda)
 
             self.agent_logger.log_agent_event(
@@ -267,7 +262,6 @@ class Vegetation(mesa.Model):
         self.sim_logger.log_sim_event(self, SimEventType.ON_START)
 
         self.space.get_elevation()
-        self.space.get_aridity()
         self.space.get_refugia_status()
 
         with open(INITIAL_AGENTS_PATH, "r") as f:

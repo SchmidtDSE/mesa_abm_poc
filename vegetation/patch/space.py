@@ -22,7 +22,6 @@ from vegetation.config.paths import LOCAL_STAC_CACHE_FSTRING
 
 class VegCell(mg.Cell):
     elevation: int | None
-    aridity: int | None
     refugia_status: bool = False
     jotr_max_life_stage: int | None
 
@@ -34,7 +33,6 @@ class VegCell(mg.Cell):
     ):
         super().__init__(model, pos, indices)
         self.elevation = None
-        self.aridity = None
 
         # TODO: Improve patch level tracking of JOTR agents
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/1
@@ -115,22 +113,6 @@ class StudyArea(mg.GeoSpace):
             raise ValueError("No local cache found for elevation data")
 
         super().add_layer(elevation_layer)
-
-    def get_aridity(self):
-
-        # TODO: Use something axtually real, but for now, assume this is an
-        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/8
-        # positive relationship with elevation, with a little noise. This is
-        # smelly because it relies on elevation being set first, but it's
-        # a placeholder for now
-        elevation_array = self.raster_layer.get_raster("elevation")
-        inverse_elevation = np.array(elevation_array + random.uniform(-300, 300))
-
-        self.raster_layer.apply_raster(
-            data=inverse_elevation,
-            attr_name="aridity",
-        )
-        super().add_layer(self.raster_layer)
 
     def get_refugia_status(self):
         elevation_array = self.raster_layer.get_raster("elevation")
