@@ -1,8 +1,10 @@
+import hashlib
+import json
+from typing import Any, Dict, List, Optional
+
 import numpy as np
 import zarr
-from typing import List, Dict, Any
-import json
-import hashlib
+
 from vegetation.space.veg_cell import VegCell
 
 
