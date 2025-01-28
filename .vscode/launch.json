@@ -19,7 +19,8 @@
       "request": "launch",
       "cwd": "${workspaceFolder}",
       "module": "vegetation.batch",
-      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python"
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
+      "args": ["--interactive"]
     },
     {
       "name": "Python: Build Cache",
