@@ -30,6 +30,31 @@ class ZarrManager:
         self._initialize_synchronizer(filename)
         self._initialize_zarr_root_group()
 
+    @staticmethod
+    def normalize_dict_for_hash(param_dict: Dict[str, Any]) -> Dict[str, Any]:
+
+        def _normalize_value(value: Any) -> Any:
+            if isinstance(value, dict):
+                return {k: _normalize_value(v) for k, v in sorted(value.items())}
+            elif isinstance(value, list):
+                return [_normalize_value(v) for v in value]
+            elif isinstance(value, str):
+                return value.lower()
+            return value
+
+        try:
+            return _normalize_value(param_dict)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON string: {e}")
+
+    @staticmethod
+    def get_run_parameter_hash(self, run_parameters: Dict[str, Any]) -> str:
+
+        param_str = json.dumps(run_parameters, sort_keys=True)
+        param_str_formatted = self.normalize_dict_for_hash(param_str)
+        param_hash = hashlib.sha256(param_str_formatted.encode()).hexdigest()
+        return param_hash
+
     def _initialize_zarr_store(self, filename):
         self._zarr_store = zarr.DirectoryStore(filename)
 
@@ -49,25 +74,24 @@ class ZarrManager:
 
         return zarr.group(store=store, synchronizer=sync_store)
 
-    def get_run_parameter_hash(run_parameters: Dict[str, Any]) -> str:
-        param_str = json.dumps(run_parameters, sort_keys=True)
-        return hashlib.sha256(param_str.encode()).hexdigest()
-
     def append_synchronized_timestep(
         self,
         run_parameters: Dict[str, Any],
         timestep_idx: int,
         replicate_idx: int,
         timestep_array: np.ndarray,
+        group_name: Optional[str] = None,
     ) -> None:
-        param_hash = self.get_run_parameter_hash(run_parameters)
 
-        if param_hash not in self._zarr_root_group:
+        if group_name is None:
+            group_name = self.get_run_parameter_hash(run_parameters)
 
-            param_hash_group = self._zarr_root_group.create_group(param_hash)
+        if group_name not in self._zarr_root_group:
 
-            sim_array = param_hash_group.create_dataset(
-                param_hash,
+            zarr_group = self._zarr_root_group.create_group(group_name)
+
+            sim_array = zarr_group.create_dataset(
+                group_name,
                 shape=(0, self.max_timestep, self.x_dim, self.y_dim),  # 0 replicates
                 chunks=(1, self.x_dim, self.y_dim),
                 dtype=np.int8,
@@ -75,4 +99,4 @@ class ZarrManager:
 
             sim_array.attrs["run_parameters"] = run_parameters
 
-        self._zarr_root_group[param_hash][replicate_idx][timestep_idx] = timestep_array
+        self._zarr_root_group[group_name][replicate_idx][timestep_idx] = timestep_array
