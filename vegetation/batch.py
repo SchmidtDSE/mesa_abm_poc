@@ -1,12 +1,11 @@
-import argparse
-import os
-
-import pandas as pd
 from mesa.batchrunner import batch_run
-from numpy import arange
-
 from vegetation.patch.model import Vegetation
-
+from numpy import arange
+from vegetation.config.paths import (
+    LOCAL_STAC_CACHE_FSTRING,
+    SAVE_LOCAL_STAC_CACHE,
+    DEM_STAC_PATH,
+)
 
 def get_interactive_params() -> dict:
     run_steps = input("Please enter the number of steps you want to simulate: ")
@@ -77,12 +76,14 @@ def parse_args() -> dict:
         "run_name": parsed.name,
         "overwrite": parsed.overwrite,
     }
-
+ 
+# TODO: Implement early stopping when all the JOTR die off
+# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/18
 
 TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 
 model_params = {
-    "num_steps": [3],
+    "num_steps": [100],
     "management_planting_density": arange(0, 1, 0.05),
     "export_data": [False],
     "bounds": [TST_JOTR_BOUNDS],
@@ -107,17 +108,4 @@ if __name__ == "__main__":
 
     run_steps = arg_dict["run_steps"]
     run_iterations = arg_dict["run_iterations"]
-    run_name = arg_dict["run_name"]
-
-    results = batch_run(
-        Vegetation,
-        parameters=model_params,
-        iterations=run_iterations,
-        max_steps=run_steps,
-        number_processes=1,
-        data_collection_period=1,
-        display_progress=True,
-    )
-
-    output_path = f"vegetation/.local_dev_data/results/{run_name}.csv"
-    pd.DataFrame(results).to_csv(output_path)
+    run_name = arg_dict["run_name"
