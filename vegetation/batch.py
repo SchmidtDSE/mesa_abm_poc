@@ -19,8 +19,8 @@ def get_interactive_params() -> dict:
 
     while True:
         run_name = input("Enter the name of your simulation: ")
-        output_path = f"vegetation/.local_dev_data/results/{run_name}"
-        print(f"Saving results to {output_path}")
+        output_path = f"vegetation/.local_dev_data/results/{run_name}.csv"
+        print(f"Saving results to {output_path}.csv")
 
         if os.path.exists(output_path):
             overwrite_prompt = input(
@@ -99,7 +99,7 @@ if __name__ == "__main__":
             "Either use --interactive, or in non-interactive mode, --steps, --iterations, and --name are required"
         )
 
-    output_path = f"vegetation/.local_dev_data/results/{arg_dict['run_name']}"
+    output_path = f"vegetation/.local_dev_data/results/{arg_dict['run_name']}.csv"
     if os.path.exists(output_path) and not arg_dict["overwrite"]:
         raise ValueError(f"Output path {output_path} exists. Use --force to overwrite")
 
