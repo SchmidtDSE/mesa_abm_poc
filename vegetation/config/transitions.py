@@ -29,9 +29,9 @@ def get_jotr_reproduction_rate() -> float:
 
 def get_jotr_survival_rate(life_stage):
     if life_stage == LifeStage.SEEDLING:
-        rate = 0.55
+        rate = (0.45 + 0.31)/2 #calculate mean of year 1 and year to from Esque et al (2015)
     if life_stage == LifeStage.JUVENILE:
-        rate = 0.8
+        rate = (1 - 0.025) # mortality of 2.5% each year (Esque et al, 2015)
     if life_stage == LifeStage.ADULT:
         rate = 0.97
     return rate
