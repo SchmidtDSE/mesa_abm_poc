@@ -19,8 +19,7 @@ def get_interactive_params() -> dict:
 
     while True:
         run_name = input("Enter the name of your simulation: ")
-        output_path = f"vegetation/.local_dev_data/results/{run_name}.csv"
-        
+        output_path = f"vegetation/.local_dev_data/results/{run_name}.csv"  
 
         if os.path.exists(output_path):
             overwrite_prompt = input(
