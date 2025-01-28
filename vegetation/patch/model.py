@@ -17,7 +17,7 @@ from vegetation.config.transitions import (
     JOTR_REPRODUCTIVE_AGE,
     JOTR_ADULT_AGE,
     JOTR_SEED_DISPERSAL_DISTANCE,
-    get_jotr_emergence_rate,
+    get_jotr_germination_rate,
     get_jotr_survival_rate,
     get_jotr_breeding_poisson_lambda,
 )
@@ -113,7 +113,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # If seed, get emergence rate, if not, get survival rate
         if self.life_stage == LifeStage.SEED:
-            survival_rate = get_jotr_emergence_rate(intersecting_cell.aridity)
+            survival_rate = get_jotr_germination_rate(intersecting_cell.aridity)
         else:
             survival_rate = get_jotr_survival_rate(
                 self.life_stage,

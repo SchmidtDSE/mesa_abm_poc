@@ -12,7 +12,7 @@ JOTR_SEED_DISPERSAL_DISTANCE = 30
 # to probably be more abstract and use a config for at least our initial
 
 
-def get_jotr_emergence_rate(aridity):
+def get_jotr_germination_rate(aridity):
     rate = 0.8 - (aridity / 10000)
     return rate
 
