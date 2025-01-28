@@ -8,6 +8,3 @@ vegetation/profile_output.prof# pixi environments
 
 .local_dev_data
 logs
-
-# .DS_Store files
-.DS_Store

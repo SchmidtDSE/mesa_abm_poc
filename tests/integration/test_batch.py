@@ -1,8 +1,6 @@
-import pandas as pd
-from mesa.batchrunner import batch_run
-
-from vegetation.batch import TST_JOTR_BOUNDS
+from vegetation.batch import TST_JOTR_BOUNDS, batch_run
 from vegetation.patch.model import Vegetation
+import pandas as pd
 
 
 def test_batch_run_basic():
