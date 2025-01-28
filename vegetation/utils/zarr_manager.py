@@ -28,10 +28,9 @@ def get_array_from_nested_cell_list(
 
 class ZarrManager:
     def __init__(
-        self, grid_shape, max_timestep, filename, crs=None, transformer_json=None
+        self, width, height, max_timestep, filename, crs=None, transformer_json=None
     ):
-        self.grid_shape = grid_shape
-        self.x_dim, self.y_dim = grid_shape
+        self.width, self.height = width, height
 
         self.max_timestep = max_timestep
         self.filename = filename
@@ -75,7 +74,7 @@ class ZarrManager:
 
     def _initialize_zarr_root_group(self):
         self._zarr_root_group = zarr.group(
-            store=self.zarr_store, synchronizer=self._synchronizer, path="/"
+            store=self._zarr_store, synchronizer=self._synchronizer, path="/"
         )
 
     def add_to_zarr_root_group(self, path: str):
@@ -101,9 +100,10 @@ class ZarrManager:
 
             sim_array = zarr_group.create_dataset(
                 group_name,
-                shape=(0, self.max_timestep, self.x_dim, self.y_dim),  # 0 replicates
-                chunks=(1, self.x_dim, self.y_dim),
+                shape=(0, self.max_timestep, self.width, self.height),  # 0 replicates
+                chunks=(1, self.width, self.height),
                 dtype=np.int8,
+                extendable=(True, False, False, False),
             )
 
             sim_array.attrs["run_parameters"] = run_parameters

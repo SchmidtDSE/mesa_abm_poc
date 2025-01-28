@@ -21,6 +21,8 @@ from vegetation.utils.zarr_manager import (
 from vegetation.model.joshua_tree_agent import JoshuaTreeAgent
 from vegetation.utils.zarr_manager import ZarrManager
 
+ZARR_FILENAME = "vegetation.zarr"
+
 
 class Vegetation(mesa.Model):
 
@@ -79,7 +81,14 @@ class Vegetation(mesa.Model):
     @property
     def zarr_manager(self):
         if self._zarr_manager is None:
-            self._zarr_manager = ZarrManager()
+            self._zarr_manager = ZarrManager(
+                width=self.space.raster_layer.width,
+                height=self.space.raster_layer.height,
+                max_timestep=self.num_steps,
+                crs=self.space.crs,
+                transformer_json=self.space.transformer.to_json(),
+                filename=ZARR_FILENAME,
+            )
             for attr in self.attrs_to_save:
                 self._zarr_manager.add_to_zarr_root_group(attr)
         return self._zarr_manager
@@ -203,10 +212,10 @@ class Vegetation(mesa.Model):
             count_dict.get(True, 0) + count_dict.get(False, 0)
         )
 
-    def append_to_zarr(self):
+    def _append_timestep_to_zarr(self):
 
         timestep_attr_dict = get_array_from_nested_cell_list(
-            veg_cells=self.space.raster_layer.get_cell_list(),
+            veg_cells=self.space.raster_layer.cells,
             attr_list=self.attrs_to_save,
         )
 
@@ -214,7 +223,7 @@ class Vegetation(mesa.Model):
             self.zarr_manager.append_synchronized_timestep(
                 replicate_idx=0,
                 timestep_idx=self.step,
-                timestep_array=timestep_attr_dict[attr]
+                timestep_array=timestep_attr_dict[attr],
             )
 
     def step(self):
@@ -224,12 +233,10 @@ class Vegetation(mesa.Model):
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
 
-        # Step agents
         self.agents.shuffle_do("step")
         self.update_metrics()
 
-        # Collect data
         self.datacollector.collect(self)
 
         if len(self.attrs_to_save) > 0:
-
+            self._append_timestep_to_zarr()

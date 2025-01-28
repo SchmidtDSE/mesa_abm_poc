@@ -92,6 +92,7 @@ model_params = {
     "management_planting_density": arange(0, 1, 0.05),
     "export_data": [False],
     "bounds": [TST_JOTR_BOUNDS],
+    "attrs_to_save": [["jotr_max_life_stage"]],
 }
 
 if __name__ == "__main__":
@@ -109,7 +110,9 @@ if __name__ == "__main__":
 
     output_path = f"vegetation/.local_dev_data/results/{arg_dict['run_name']}.csv"
     if os.path.exists(output_path) and not arg_dict["overwrite"]:
-        raise ValueError(f"Output path {output_path} exists. Use --force to overwrite")
+        raise ValueError(
+            f"Output path {output_path} exists. Use --overwrite to overwrite"
+        )
 
     run_steps = arg_dict["run_steps"]
     run_iterations = arg_dict["run_iterations"]
