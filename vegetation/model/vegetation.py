@@ -19,6 +19,7 @@ from vegetation.utils.zarr_manager import (
     get_array_from_nested_cell_list,
 )
 from vegetation.model.joshua_tree_agent import JoshuaTreeAgent
+from vegetation.utils.zarr_manager import ZarrManager
 
 
 class Vegetation(mesa.Model):
@@ -38,6 +39,7 @@ class Vegetation(mesa.Model):
         epsg=4326,
         log_config_path=None,
         log_level=None,
+        attrs_to_save=[],
     ):
         super().__init__()
 
@@ -45,8 +47,10 @@ class Vegetation(mesa.Model):
         if log_config_path:
             LogConfig.initialize(log_config_path)
 
-        # To get this set up, assume sim has logging.INFO level
-        self.log_level = logging.INFO
+        if not log_level:
+            self.log_level = logging.INFO
+        else:
+            self.log_level = log_level
 
         self.bounds = bounds
         self.num_steps = num_steps
@@ -69,25 +73,16 @@ class Vegetation(mesa.Model):
             }
         )
 
-        self.life_stage_zarr = None
+        self.attrs_to_save = attrs_to_save
+        self._zarr_manager = None
 
-    def _initialize_zarr(self):
-
-        self.life_stage_zarr = initialize_synchronized_zarr(
-            (self.space.raster_layer._width, self.space.raster_layer._height),
-            ".life_stage.zarr",
-            crs=self.space.crs.to_string(),
-            transformer_json=self.space._transformer.to_json(),
-        )
-
-    def _append_current_timestep_to_zarr(self):
-        timestep_array = get_array_from_nested_cell_list(self.space.raster_layer.cells)
-        append_synchronized_timestep(
-            zarr_array=self.life_stage_zarr,
-            sim_idx=self.sim_idx,
-            timestep_idx=self.steps,
-            timestep_array=timestep_array,
-        )
+    @property
+    def zarr_manager(self):
+        if self._zarr_manager is None:
+            self._zarr_manager = ZarrManager()
+            for attr in self.attrs_to_save:
+                self._zarr_manager.add_to_zarr_root_group(attr)
+        return self._zarr_manager
 
     def _on_start(self):
 
@@ -101,8 +96,6 @@ class Vegetation(mesa.Model):
             initial_agents_geojson = json.loads(f.read())
 
         self._add_agents_from_geojson(initial_agents_geojson)
-
-        self._initialize_zarr()
 
         self._on_start_executed = True
 
@@ -210,6 +203,20 @@ class Vegetation(mesa.Model):
             count_dict.get(True, 0) + count_dict.get(False, 0)
         )
 
+    def append_to_zarr(self):
+
+        timestep_attr_dict = get_array_from_nested_cell_list(
+            veg_cells=self.space.raster_layer.get_cell_list(),
+            attr_list=self.attrs_to_save,
+        )
+
+        for attr in self.attrs_to_save:
+            self.zarr_manager.append_synchronized_timestep(
+                replicate_idx=0,
+                timestep_idx=self.step,
+                timestep_array=timestep_attr_dict[attr]
+            )
+
     def step(self):
 
         if not self._on_start_executed:
@@ -217,11 +224,12 @@ class Vegetation(mesa.Model):
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
 
-        self._append_current_timestep_to_zarr()
-
         # Step agents
         self.agents.shuffle_do("step")
         self.update_metrics()
 
         # Collect data
         self.datacollector.collect(self)
+
+        if len(self.attrs_to_save) > 0:
+

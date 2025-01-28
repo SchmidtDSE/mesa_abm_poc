@@ -8,12 +8,22 @@ import zarr
 from vegetation.space.veg_cell import VegCell
 
 
-def get_array_from_nested_cell_list(veg_cells: List[List[VegCell]]) -> np.ndarray:
-    def safe_get_stage(cell: VegCell) -> int:
-        return -1 if cell.jotr_max_life_stage is None else cell.jotr_max_life_stage
+def get_array_from_nested_cell_list(
+    veg_cells: List[List[VegCell]], attr_list: List[str]
+) -> Dict[str, np.ndarray]:
+    def safe_get_attr(cell: VegCell, attr: str) -> int:
+        if not hasattr(cell, attr):
+            raise AttributeError(f"VegCell object has no attribute '{attr}'")
+        value = getattr(cell, attr)
+        return -1 if value is None else value
 
-    veg_array = np.array([[safe_get_stage(cell) for cell in row] for row in veg_cells])
-    return veg_array
+    veg_arrays = {
+        attr: np.array(
+            [[safe_get_attr(cell, attr) for cell in row] for row in veg_cells]
+        )
+        for attr in attr_list
+    }
+    return veg_arrays
 
 
 class ZarrManager:
@@ -65,16 +75,13 @@ class ZarrManager:
 
     def _initialize_zarr_root_group(self):
         self._zarr_root_group = zarr.group(
-            store=self.zarr_store, synchronizer=self._synchronizer
+            store=self.zarr_store, synchronizer=self._synchronizer, path="/"
         )
 
-    def initialize_zarr_group(
-        filename: str,
-    ) -> zarr.Group:
-        store = zarr.DirectoryStore(filename)
-        sync_store = zarr.ProcessSynchronizer(filename + ".sync")
-
-        return zarr.group(store=store, synchronizer=sync_store)
+    def add_to_zarr_root_group(self, path: str):
+        self._zarr_root_group.group(
+            store=self.zarr_store, synchronizer=self._synchronizer, path=path
+        )
 
     def append_synchronized_timestep(
         self,

@@ -119,4 +119,4 @@ Questions:
     - one simulation across all time, keeping x, y? (for visualization - probably ok if this one is slow)
 - Outputs - what do we want to actually show at the end of of a suite of model run?
     - sensitivity analysis - which parameters are important for emergent outcomes
-    - 
+
