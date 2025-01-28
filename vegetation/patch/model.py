@@ -15,7 +15,6 @@ from vegetation.patch.utils import transform_point_wgs84_utm, generate_point_in_
 from vegetation.config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
-    JOTR_ADULT_AGE,
     JOTR_SEED_DISPERSAL_DISTANCE,
     get_jotr_germination_rate,
     get_jotr_survival_rate,
@@ -175,10 +174,8 @@ class JoshuaTreeAgent(mg.GeoAgent):
             life_stage = LifeStage.SEED
         elif age > 0 and age <= JOTR_JUVENILE_AGE:
             life_stage = LifeStage.SEEDLING
-        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_ADULT_AGE:
+        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
             life_stage = LifeStage.JUVENILE
-        elif age > JOTR_ADULT_AGE and age < JOTR_REPRODUCTIVE_AGE:
-            life_stage = LifeStage.ADULT
         else:
             life_stage = LifeStage.BREEDING
         self.life_stage = life_stage
@@ -260,7 +257,6 @@ class Vegetation(mesa.Model):
                 "N Seeds": "n_seeds",
                 "N Seedlings": "n_seedlings",
                 "N Juveniles": "n_juveniles",
-                "N Adults": "n_adults",
                 "N Breeding": "n_breeding",
                 "% Refugia Cells Occupied": "pct_refugia_cells_occupied",
             }
@@ -366,7 +362,6 @@ class Vegetation(mesa.Model):
         self.n_seeds = count_dict.get(LifeStage.SEED, 0)
         self.n_seedlings = count_dict.get(LifeStage.SEEDLING, 0)
         self.n_juveniles = count_dict.get(LifeStage.JUVENILE, 0)
-        self.n_adults = count_dict.get(LifeStage.ADULT, 0)
         self.n_breeding = count_dict.get(LifeStage.BREEDING, 0)
         self.n_dead = count_dict.get(LifeStage.DEAD, 0)
 

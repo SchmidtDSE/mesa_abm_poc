@@ -1,7 +1,6 @@
 from vegetation.config.stages import LifeStage
 
 JOTR_JUVENILE_AGE = 8
-JOTR_ADULT_AGE = 15
 JOTR_REPRODUCTIVE_AGE = 30
 JOTR_SEED_DISPERSAL_DISTANCE = 30
 
@@ -22,8 +21,6 @@ def get_jotr_survival_rate(life_stage, aridity, nurse_indicator):
         rate = 0.55
     if life_stage == LifeStage.JUVENILE:
         rate = 0.8
-    if life_stage == LifeStage.ADULT:
-        rate = 0.99
     if life_stage == LifeStage.BREEDING:
         rate = 0.97
 

@@ -101,7 +101,6 @@ page = SolaraViz(
                 "N Seeds",
                 "N Seedlings",
                 "N Juveniles",
-                "N Adults",
                 "N Breeding",
             ],
         ),
