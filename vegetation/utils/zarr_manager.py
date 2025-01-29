@@ -36,10 +36,10 @@ class ZarrManager:
         max_timestep,
         filename,
         attribute_list,
+        attribute_encodings,
         run_parameter_dict,
         crs=None,
         transformer_json=None,
-        group_name=None,
     ):
         self.width, self.height = width, height
 
@@ -48,6 +48,8 @@ class ZarrManager:
         self.crs = crs
         self.transformer_json = transformer_json
         self.attribute_list = attribute_list
+        self.attribute_encodings = attribute_encodings
+
         self.run_parameter_dict = self.normalize_dict_for_hash(run_parameter_dict)
         self._attr_list = attribute_list
 
@@ -102,35 +104,45 @@ class ZarrManager:
         else:
             sim_group = self._zarr_root_group[self._group_name]
 
-        sim_group.attrs["run_parameters"] = json.dumps(self.run_parameter_dict)
+        sim_group.attrs["run_parameters"] = self.run_parameter_dict
         return sim_group
 
-    def _get_or_create_attribute_dataset(self, attribute_name) -> zarr.core.Array:
+    def _get_or_create_attribute_dataset(self, attribute_name: str) -> zarr.core.Array:
 
         sim_group = self._get_or_create_sim_group()
 
         if attribute_name not in sim_group:
-            self._zarr_root_group[self._group_name].create_dataset(
-                attribute_name,
-                shape=(
-                    0,
-                    self.max_timestep,
-                    self.width,
-                    self.height,
-                ),  # 0 replicates
-                chunks=(1, self.width, self.height),
-                dtype=np.int8,
-                extendable=(True, False, False, False),
-            )
-
-            # Xarray needs to know the dimensions of the array, so we store them as
-            # `_ARRAY_DIMENSIONS` attribute - see https://docs.xarray.dev/en/latest/internals/zarr-encoding-spec.html
-            self._zarr_root_group[self._group_name][attribute_name].attrs[
-                "_ARRAY_DIMENSIONS"
-            ] = ["replicate_id", "timestep", "x", "y"]
+            self._initialize_attribute_dataset(attribute_name=attribute_name)
 
         attribute_dataset = self._zarr_root_group[self._group_name][attribute_name]
         return attribute_dataset
+
+    def _initialize_attribute_dataset(self, attribute_name: str) -> None:
+
+        attribute_encoding = self.attribute_encodings[attribute_name]
+
+        self._zarr_root_group[self._group_name].create_dataset(
+            attribute_name,
+            shape=(
+                0,
+                self.max_timestep,
+                self.width,
+                self.height,
+            ),  # 0 replicates
+            chunks=(1, self.width, self.height),
+            dtype=np.int8,
+            extendable=(True, False, False, False),
+        )
+
+        # Xarray needs to know the dimensions of the array, so we store them as
+        # `_ARRAY_DIMENSIONS` attribute - see https://docs.xarray.dev/en/latest/internals/zarr-encoding-spec.html
+        self._zarr_root_group[self._group_name][attribute_name].attrs[
+            "_ARRAY_DIMENSIONS"
+        ] = ["replicate_id", "timestep", "x", "y"]
+
+        self._zarr_root_group[self._group_name][attribute_name].attrs[
+            "attribute_encoding"
+        ] = attribute_encoding
 
     def resize_array_for_next_replicate(self) -> int:
 

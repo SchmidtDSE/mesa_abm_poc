@@ -82,12 +82,32 @@ def parse_args() -> dict:
 
 TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 
+# TODO: Figure out how model_params is passed to mesa
+# This is causing issues regarding how many sims are actually run
 model_params = {
     "num_steps": [100],
     "management_planting_density": arange(0, 1, 0.05),
-    "export_data": [False],
     "bounds": [TST_JOTR_BOUNDS],
     "attrs_to_save": [["jotr_max_life_stage", "test_attribute"]],
+    "attribute_encodings": [
+        {
+            "jotr_max_life_stage": {
+                "description": "the max life stage of any jotr agent within this VegCell",
+                "encoding": {
+                    "-1": "No JOTR",
+                    "0": "Seed",
+                    "1": "Seedling",
+                    "2": "Juvenile",
+                    "3": "Adult",
+                    "4": "Breeding",
+                },
+            },
+            "test_attribute": {
+                "description": "A meaningless test attribute",
+                "encoding": {"0": "Test 0", "1": "Test 1", "2": "Test 2"},
+            },
+        }
+    ],
     "zarr_group_name": ["initial_test"],
 }
 

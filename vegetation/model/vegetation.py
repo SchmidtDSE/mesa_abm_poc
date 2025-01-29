@@ -39,13 +39,13 @@ class Vegetation(mesa.Model):
     def __init__(
         self,
         bounds,
-        export_data=False,
         num_steps=20,
         management_planting_density=0.01,
         epsg=4326,
         log_config_path=None,
         log_level=None,
         attrs_to_save=[],
+        attribute_encodings={},
         zarr_group_name=None,
     ):
         super().__init__()
@@ -81,6 +81,7 @@ class Vegetation(mesa.Model):
         )
 
         self.attrs_to_save = attrs_to_save
+        self.attribute_encodings = attribute_encodings
         self.zarr_group_name = zarr_group_name
         self._zarr_manager = None
 
@@ -97,6 +98,7 @@ class Vegetation(mesa.Model):
                 transformer_json=self.space.transformer.to_json(),
                 run_parameter_dict=TEST_RUN_PARAMETERS,
                 attribute_list=self.attrs_to_save,
+                attribute_encodings=self.attribute_encodings,
                 filename=ZARR_FILENAME,
             )
 
