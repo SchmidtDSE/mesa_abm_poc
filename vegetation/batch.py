@@ -4,11 +4,6 @@ from numpy import arange
 import os
 import argparse
 import pandas as pd
-from vegetation.config.paths import (
-    LOCAL_STAC_CACHE_FSTRING,
-    SAVE_LOCAL_STAC_CACHE,
-    DEM_STAC_PATH,
-)
 
 
 def get_interactive_params() -> dict:

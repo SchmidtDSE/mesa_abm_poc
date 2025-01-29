@@ -99,10 +99,19 @@ class ZarrManager:
     def set_group_name_by_run_parameter_hash(self) -> None:
         self._group_name = self.get_run_parameter_hash(self.run_parameter_dict)
 
-    def _get_or_create_attribute_dataset(self, attribute_name) -> zarr.core.Array:
+    def _get_or_create_sim_group(self) -> zarr.core.Group:
         if self._group_name not in self._zarr_root_group:
-            self._zarr_root_group.create_group(self._group_name)
+            sim_group = self._zarr_root_group.create_group(self._group_name)
+        else:
+            sim_group = self._zarr_root_group[self._group_name]
 
+        return sim_group
+
+    def _get_or_create_attribute_dataset(self, attribute_name) -> zarr.core.Array:
+
+        sim_group = self._get_or_create_sim_group()
+
+        if attribute_name not in sim_group:
             self._zarr_root_group[self._group_name].create_dataset(
                 attribute_name,
                 shape=(
