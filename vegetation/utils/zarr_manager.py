@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import zarr
+import zarr.hierarchy
 
 from vegetation.space.veg_cell import VegCell
 
@@ -48,13 +49,14 @@ class ZarrManager:
         self.transformer_json = transformer_json
         self.attribute_list = attribute_list
         self.run_parameter_dict = run_parameter_dict
+        self._attr_list = attribute_list
+
+        self._group_name = None
+        self._replicate_idx = None
 
         self._initialize_zarr_store(filename)
         self._initialize_synchronizer(filename)
         self._initialize_zarr_root_group()
-        self._attr_list = attribute_list
-
-        self._group_name = None
 
     @staticmethod
     def normalize_dict_for_hash(param_dict: Dict[str, Any]) -> Dict[str, Any]:
@@ -99,7 +101,7 @@ class ZarrManager:
     def set_group_name_by_run_parameter_hash(self) -> None:
         self._group_name = self.get_run_parameter_hash(self.run_parameter_dict)
 
-    def _get_or_create_sim_group(self) -> zarr.core.Group:
+    def _get_or_create_sim_group(self) -> zarr.hierarchy.Group:
         if self._group_name not in self._zarr_root_group:
             sim_group = self._zarr_root_group.create_group(self._group_name)
         else:
@@ -137,11 +139,14 @@ class ZarrManager:
                 attribute_name=attribute_name
             )
 
-            next_replicate_idx = attribute_dataset.shape[0] + 1
+            # The next replicate index is the current shape of the dataset - this is
+            # a fencepost issue, since the replicate number is 0-indexed but we need to have
+            # a dim of the replicate number + 1 to have a space for the next replicate
+            next_replicate_idx = attribute_dataset.shape[0]
             all_next_replicate_idx.append(next_replicate_idx)
 
             attribute_dataset.resize(
-                next_replicate_idx,
+                next_replicate_idx + 1,  # +1 for the next replicate
                 attribute_dataset.shape[1],
                 attribute_dataset.shape[2],
                 attribute_dataset.shape[3],
@@ -150,17 +155,20 @@ class ZarrManager:
         # Check that all attributes have the same number of replicates -
         # since we will aggregate on replicate_id, this would cause issues
         # since idx X would correspond to different replicates for different attributes
-        assert len(np.unique(all_next_replicate_idx)) == 1
+        replicate_idx = np.unique(all_next_replicate_idx)
+        assert len(replicate_idx) == 1
 
-        return next_replicate_idx
+        self.replicate_idx = replicate_idx[0]
+        return self.replicate_idx
 
     def add_to_zarr_root_group(self, name: str):
         if name not in self._zarr_root_group:
             self._zarr_root_group.create_group(name)
 
     def append_synchronized_timestep(
-        self, timestep_idx: int, replicate_idx: int, timestep_array: np.ndarray
+        self, timestep_idx: int, timestep_array_dict: Dict[str, np.ndarray]
     ) -> None:
 
-        sim_array = self._get_or_create_attribute_dataset()
-        sim_array[replicate_idx, timestep_idx] = timestep_array
+        for attribute_name, timestep_array in timestep_array_dict.items():
+            sim_array = self._get_or_create_attribute_dataset(attribute_name)
+            sim_array[self.replicate_idx, timestep_idx] = timestep_array

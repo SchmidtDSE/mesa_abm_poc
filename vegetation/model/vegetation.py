@@ -111,6 +111,37 @@ class Vegetation(mesa.Model):
 
         return self._zarr_manager
 
+    @classmethod
+    def _generate_planting_points(self, geo_json):
+        # Convert GeoJSON to Shapely polygon
+        coords = geo_json[0]["geometry"]["coordinates"][0]
+        polygon = sg.Polygon(coords)
+
+        # Get UTM zone from polygon centroid
+        lon, lat = polygon.centroid.x, polygon.centroid.y
+        wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(lon, lat)
+
+        # Project polygon to UTM
+        utm_polygon = transform(wgs84_to_utm.transform, polygon)
+        area = utm_polygon.area
+        num_points = int(area * self.management_planting_density)
+
+        points = []
+        minx, miny, maxx, maxy = utm_polygon.bounds
+
+        while len(points) < num_points:
+            x_utm = np.random.uniform(minx, maxx)
+            y_utm = np.random.uniform(miny, maxy)
+            point_utm = sg.Point(x_utm, y_utm)
+
+            if utm_polygon.contains(point_utm):
+                management_x_wgs84, management_y_wgs84 = utm_to_wgs84.transform(
+                    x_utm, y_utm
+                )
+                points.append((management_x_wgs84, management_y_wgs84))
+
+        return points
+
     def _on_start(self):
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_START)
@@ -169,36 +200,6 @@ class Vegetation(mesa.Model):
 
             self.space.add_agents(management_agent)
 
-    def _generate_planting_points(self, geo_json):
-        # Convert GeoJSON to Shapely polygon
-        coords = geo_json[0]["geometry"]["coordinates"][0]
-        polygon = sg.Polygon(coords)
-
-        # Get UTM zone from polygon centroid
-        lon, lat = polygon.centroid.x, polygon.centroid.y
-        wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(lon, lat)
-
-        # Project polygon to UTM
-        utm_polygon = transform(wgs84_to_utm.transform, polygon)
-        area = utm_polygon.area
-        num_points = int(area * self.management_planting_density)
-
-        points = []
-        minx, miny, maxx, maxy = utm_polygon.bounds
-
-        while len(points) < num_points:
-            x_utm = np.random.uniform(minx, maxx)
-            y_utm = np.random.uniform(miny, maxy)
-            point_utm = sg.Point(x_utm, y_utm)
-
-            if utm_polygon.contains(point_utm):
-                management_x_wgs84, management_y_wgs84 = utm_to_wgs84.transform(
-                    x_utm, y_utm
-                )
-                points.append((management_x_wgs84, management_y_wgs84))
-
-        return points
-
     def update_metrics(self):
         # Mean age
         mean_age = self.agents.select(agent_type=JoshuaTreeAgent).agg("age", np.mean)
@@ -237,14 +238,10 @@ class Vegetation(mesa.Model):
             attr_list=self.attrs_to_save,
         )
 
-        for attr_name in self.attrs_to_save:
-            self.zarr_manager.append_synchronized_timestep(
-                group_name="test_config_dict_hash",
-                attr_name=attr_name,
-                replicate_idx=0,
-                timestep_idx=self.steps,
-                timestep_array=timestep_attr_dict[attr_name],
-            )
+        self.zarr_manager.append_synchronized_timestep(
+            timestep_idx=self.steps,
+            timestep_array_dict=timestep_attr_dict,
+        )
 
     def step(self):
 
