@@ -11,3 +11,6 @@ vegetation/profile_output.prof# pixi environments
 
 .local_dev_data
 logs
+
+*.zarr
+*.zarr.sync
