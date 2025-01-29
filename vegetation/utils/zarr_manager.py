@@ -4,8 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import zarr
-import zarr.hierarchy
-
+from zarr.storage import FsspecStore
 from vegetation.space.veg_cell import VegCell
 
 
@@ -40,6 +39,7 @@ class ZarrManager:
         run_parameter_dict,
         crs=None,
         transformer_json=None,
+        zarr_store_type="gcp",
     ):
         self.width, self.height = width, height
 
@@ -56,7 +56,7 @@ class ZarrManager:
         self._group_name = None
         self._replicate_idx = None
 
-        self._initialize_zarr_store(filename)
+        self._initialize_zarr_store(filename, type=zarr_store_type)
         self._initialize_synchronizer(filename)
         self._initialize_zarr_root_group()
 
@@ -83,8 +83,16 @@ class ZarrManager:
         param_hash = hashlib.sha256(run_parameter_str.encode()).hexdigest()
         return param_hash
 
-    def _initialize_zarr_store(self, filename):
-        self._zarr_store = zarr.DirectoryStore(filename)
+    def _initialize_zarr_store(self, filename, type="directory"):
+        if type == "directory":
+            self._zarr_store = zarr.DirectoryStore(filename)
+        elif type == "gcp":
+            self._zarr_store = FsspecStore(
+                "gs://dse-nps-mesa/mesa_jotr_poc/" + filename,
+                read_only=False,
+            )
+        else:
+            raise ValueError(f"Invalid store type: {type}")
 
     def _initialize_synchronizer(self, filename):
         self._synchronizer = zarr.ProcessSynchronizer(filename + ".sync")
