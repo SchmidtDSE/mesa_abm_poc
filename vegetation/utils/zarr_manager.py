@@ -69,7 +69,8 @@ class ZarrManager:
             elif isinstance(value, list):
                 return [_normalize_value(v) for v in value]
             elif isinstance(value, str):
-                return value.lower()
+                stripped_value = value.strip()  # remove leading/trailing whitespace
+                return stripped_value.lower()  # normalize to lowercase
             return value
 
         try:
