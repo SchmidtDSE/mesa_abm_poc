@@ -83,6 +83,7 @@ def parse_args() -> dict:
 TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 
 # TODO: Figure out how model_params is passed to mesa
+# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/38
 # This is causing issues regarding how many sims are actually run
 model_params = {
     "num_steps": [100],
