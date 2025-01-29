@@ -48,7 +48,7 @@ class ZarrManager:
         self.crs = crs
         self.transformer_json = transformer_json
         self.attribute_list = attribute_list
-        self.run_parameter_dict = run_parameter_dict
+        self.run_parameter_dict = self.normalize_dict_for_hash(run_parameter_dict)
         self._attr_list = attribute_list
 
         self._group_name = None
@@ -75,13 +75,8 @@ class ZarrManager:
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON string: {e}")
 
-    @staticmethod
-    def get_run_parameter_hash(self, run_parameters: Dict[str, Any]) -> str:
-
-        param_str = json.dumps(run_parameters, sort_keys=True)
-        param_str_formatted = self.normalize_dict_for_hash(param_str)
-        param_hash = hashlib.sha256(param_str_formatted.encode()).hexdigest()
-
+    def _get_run_parameter_hash(self) -> str:
+        param_hash = hashlib.sha256(self.run_parameter_dict.encode()).hexdigest()
         return param_hash
 
     def _initialize_zarr_store(self, filename):
@@ -99,7 +94,7 @@ class ZarrManager:
         self._group_name = group_name
 
     def set_group_name_by_run_parameter_hash(self) -> None:
-        self._group_name = self.get_run_parameter_hash(self.run_parameter_dict)
+        self._group_name = self._get_run_parameter_hash()
 
     def _get_or_create_sim_group(self) -> zarr.hierarchy.Group:
         if self._group_name not in self._zarr_root_group:
@@ -107,6 +102,7 @@ class ZarrManager:
         else:
             sim_group = self._zarr_root_group[self._group_name]
 
+        sim_group.attrs["run_parameters"] = json.dumps(self.run_parameter_dict)
         return sim_group
 
     def _get_or_create_attribute_dataset(self, attribute_name) -> zarr.core.Array:
@@ -126,6 +122,12 @@ class ZarrManager:
                 dtype=np.int8,
                 extendable=(True, False, False, False),
             )
+
+            # Xarray needs to know the dimensions of the array, so we store them as
+            # `_ARRAY_DIMENSIONS` attribute - see https://docs.xarray.dev/en/latest/internals/zarr-encoding-spec.html
+            self._zarr_root_group[self._group_name][attribute_name].attrs[
+                "_ARRAY_DIMENSIONS"
+            ] = ["replicate_id", "timestep", "x", "y"]
 
         attribute_dataset = self._zarr_root_group[self._group_name][attribute_name]
         return attribute_dataset
@@ -172,3 +174,8 @@ class ZarrManager:
         for attribute_name, timestep_array in timestep_array_dict.items():
             sim_array = self._get_or_create_attribute_dataset(attribute_name)
             sim_array[self.replicate_idx, timestep_idx] = timestep_array
+
+        self.consolidate_metadata()
+
+    def consolidate_metadata(self):
+        zarr.consolidate_metadata(self._zarr_store)
