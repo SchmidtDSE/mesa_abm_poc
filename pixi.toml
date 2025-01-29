@@ -31,6 +31,7 @@ sqlite = "*"
 solara = "*"
 pip = "*"
 zarr = ">=2.13.3,<3"
+xarray = ">=2024.11.0,<2025"
 
 [pypi-dependencies]
 mesa = { version = "==3.1.1" }
