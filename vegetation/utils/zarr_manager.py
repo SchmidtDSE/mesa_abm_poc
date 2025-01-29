@@ -78,7 +78,8 @@ class ZarrManager:
             raise ValueError(f"Invalid JSON string: {e}")
 
     def _get_run_parameter_hash(self) -> str:
-        param_hash = hashlib.sha256(self.run_parameter_dict.encode()).hexdigest()
+        run_parameter_str = json.dumps(self.run_parameter_dict, sort_keys=True)
+        param_hash = hashlib.sha256(run_parameter_str.encode()).hexdigest()
         return param_hash
 
     def _initialize_zarr_store(self, filename):

@@ -109,7 +109,7 @@ model_params = {
             },
         }
     ],
-    "zarr_group_name": ["initial_test"],
+    # "zarr_group_name": ["initial_test"],
 }
 
 if __name__ == "__main__":

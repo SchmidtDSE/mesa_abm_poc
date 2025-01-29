@@ -24,7 +24,7 @@ from vegetation.utils.zarr_manager import ZarrManager
 ZARR_FILENAME = "vegetation.zarr"
 TEST_RUN_PARAMETERS = {
     "seedling_mortality_rate": 0.1,
-    "juvenile_mortality_rate": 0.5,
+    "juvenile_mortality_rate": 0.7,
 }
 
 
@@ -104,7 +104,7 @@ class Vegetation(mesa.Model):
 
             if self.zarr_group_name is None:
                 self.zarr_group_name = (
-                    self._zarr_manager.set_group_name_by_parameter_hash()
+                    self._zarr_manager.set_group_name_by_run_parameter_hash()
                 )
             else:
                 self._zarr_manager.set_group_name(self.zarr_group_name)
