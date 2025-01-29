@@ -39,7 +39,7 @@ class ZarrManager:
         run_parameter_dict,
         crs=None,
         transformer_json=None,
-        zarr_store_type="gcp",
+        zarr_store_type="directory",
     ):
         self.width, self.height = width, height
 
