@@ -27,8 +27,18 @@ def get_array_from_nested_cell_list(
 
 
 class ZarrManager:
+
     def __init__(
-        self, width, height, max_timestep, filename, crs=None, transformer_json=None
+        self,
+        width,
+        height,
+        max_timestep,
+        filename,
+        attribute_list,
+        run_parameter_dict,
+        crs=None,
+        transformer_json=None,
+        group_name=None,
     ):
         self.width, self.height = width, height
 
@@ -36,10 +46,15 @@ class ZarrManager:
         self.filename = filename
         self.crs = crs
         self.transformer_json = transformer_json
+        self.attribute_list = attribute_list
+        self.run_parameter_dict = run_parameter_dict
 
         self._initialize_zarr_store(filename)
         self._initialize_synchronizer(filename)
         self._initialize_zarr_root_group()
+        self._attr_list = attribute_list
+
+        self._group_name = None
 
     @staticmethod
     def normalize_dict_for_hash(param_dict: Dict[str, Any]) -> Dict[str, Any]:
@@ -64,6 +79,7 @@ class ZarrManager:
         param_str = json.dumps(run_parameters, sort_keys=True)
         param_str_formatted = self.normalize_dict_for_hash(param_str)
         param_hash = hashlib.sha256(param_str_formatted.encode()).hexdigest()
+
         return param_hash
 
     def _initialize_zarr_store(self, filename):
@@ -73,39 +89,69 @@ class ZarrManager:
         self._synchronizer = zarr.ProcessSynchronizer(filename + ".sync")
 
     def _initialize_zarr_root_group(self):
-        self._zarr_root_group = zarr.group(
+        self._zarr_root_group = zarr.open_group(
             store=self._zarr_store, synchronizer=self._synchronizer, path="/"
         )
 
-    def add_to_zarr_root_group(self, path: str):
-        self._zarr_root_group.group(
-            store=self.zarr_store, synchronizer=self._synchronizer, path=path
-        )
+    def set_group_name(self, group_name: str):
+        self._group_name = group_name
 
-    def append_synchronized_timestep(
-        self,
-        run_parameters: Dict[str, Any],
-        timestep_idx: int,
-        replicate_idx: int,
-        timestep_array: np.ndarray,
-        group_name: Optional[str] = None,
-    ) -> None:
+    def set_group_name_by_run_parameter_hash(self) -> None:
+        self._group_name = self.get_run_parameter_hash(self.run_parameter_dict)
 
-        if group_name is None:
-            group_name = self.get_run_parameter_hash(run_parameters)
+    def _get_or_create_attribute_dataset(self, attribute_name) -> zarr.core.Array:
+        if self._group_name not in self._zarr_root_group:
+            self._zarr_root_group.create_group(self._group_name)
 
-        if group_name not in self._zarr_root_group:
-
-            zarr_group = self._zarr_root_group.create_group(group_name)
-
-            sim_array = zarr_group.create_dataset(
-                group_name,
-                shape=(0, self.max_timestep, self.width, self.height),  # 0 replicates
+            self._zarr_root_group[self._group_name].create_dataset(
+                attribute_name,
+                shape=(
+                    0,
+                    self.max_timestep,
+                    self.width,
+                    self.height,
+                ),  # 0 replicates
                 chunks=(1, self.width, self.height),
                 dtype=np.int8,
                 extendable=(True, False, False, False),
             )
 
-            sim_array.attrs["run_parameters"] = run_parameters
+        attribute_dataset = self._zarr_root_group[self._group_name][attribute_name]
+        return attribute_dataset
 
-        self._zarr_root_group[group_name][replicate_idx][timestep_idx] = timestep_array
+    def resize_array_for_next_replicate(self) -> int:
+
+        all_next_replicate_idx = []
+
+        for attribute_name in self.attribute_list:
+            attribute_dataset = self._get_or_create_attribute_dataset(
+                attribute_name=attribute_name
+            )
+
+            next_replicate_idx = attribute_dataset.shape[0] + 1
+            all_next_replicate_idx.append(next_replicate_idx)
+
+            attribute_dataset.resize(
+                next_replicate_idx,
+                attribute_dataset.shape[1],
+                attribute_dataset.shape[2],
+                attribute_dataset.shape[3],
+            )
+
+        # Check that all attributes have the same number of replicates -
+        # since we will aggregate on replicate_id, this would cause issues
+        # since idx X would correspond to different replicates for different attributes
+        assert len(np.unique(all_next_replicate_idx)) == 1
+
+        return next_replicate_idx
+
+    def add_to_zarr_root_group(self, name: str):
+        if name not in self._zarr_root_group:
+            self._zarr_root_group.create_group(name)
+
+    def append_synchronized_timestep(
+        self, timestep_idx: int, replicate_idx: int, timestep_array: np.ndarray
+    ) -> None:
+
+        sim_array = self._get_or_create_attribute_dataset()
+        sim_array[replicate_idx, timestep_idx] = timestep_array

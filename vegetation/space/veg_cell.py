@@ -42,6 +42,9 @@ class VegCell(mg.Cell):
         self.occupied_by_jotr_agents = False
         self.jotr_max_life_stage = 0
 
+        # DEBUG: Test attribute to see how this interacts with Zarr groups / datasets
+        self.test_attribute = 1
+
     def step(self):
         self.update_occupancy()
 

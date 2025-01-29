@@ -92,7 +92,8 @@ model_params = {
     "management_planting_density": arange(0, 1, 0.05),
     "export_data": [False],
     "bounds": [TST_JOTR_BOUNDS],
-    "attrs_to_save": [["jotr_max_life_stage"]],
+    "attrs_to_save": [["jotr_max_life_stage", "test_attribute"]],
+    "zarr_group_name": ["initial_test"],
 }
 
 if __name__ == "__main__":

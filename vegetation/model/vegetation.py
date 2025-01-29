@@ -22,6 +22,10 @@ from vegetation.model.joshua_tree_agent import JoshuaTreeAgent
 from vegetation.utils.zarr_manager import ZarrManager
 
 ZARR_FILENAME = "vegetation.zarr"
+TEST_RUN_PARAMETERS = {
+    "seedling_mortality_rate": 0.1,
+    "juvenile_mortality_rate": 0.5,
+}
 
 
 class Vegetation(mesa.Model):
@@ -42,6 +46,7 @@ class Vegetation(mesa.Model):
         log_config_path=None,
         log_level=None,
         attrs_to_save=[],
+        zarr_group_name=None,
     ):
         super().__init__()
 
@@ -76,21 +81,34 @@ class Vegetation(mesa.Model):
         )
 
         self.attrs_to_save = attrs_to_save
+        self.zarr_group_name = zarr_group_name
         self._zarr_manager = None
 
     @property
     def zarr_manager(self):
+
         if self._zarr_manager is None:
+
             self._zarr_manager = ZarrManager(
                 width=self.space.raster_layer.width,
                 height=self.space.raster_layer.height,
                 max_timestep=self.num_steps,
                 crs=self.space.crs,
                 transformer_json=self.space.transformer.to_json(),
+                run_parameter_dict=TEST_RUN_PARAMETERS,
+                attribute_list=self.attrs_to_save,
                 filename=ZARR_FILENAME,
             )
-            for attr in self.attrs_to_save:
-                self._zarr_manager.add_to_zarr_root_group(attr)
+
+            if self.zarr_group_name is None:
+                self.zarr_group_name = (
+                    self._zarr_manager.set_group_name_by_parameter_hash()
+                )
+            else:
+                self._zarr_manager.set_group_name(self.zarr_group_name)
+
+            self.replicate_idx = self._zarr_manager.resize_array_for_next_replicate()
+
         return self._zarr_manager
 
     def _on_start(self):
@@ -219,11 +237,13 @@ class Vegetation(mesa.Model):
             attr_list=self.attrs_to_save,
         )
 
-        for attr in self.attrs_to_save:
+        for attr_name in self.attrs_to_save:
             self.zarr_manager.append_synchronized_timestep(
+                group_name="test_config_dict_hash",
+                attr_name=attr_name,
                 replicate_idx=0,
-                timestep_idx=self.step,
-                timestep_array=timestep_attr_dict[attr],
+                timestep_idx=self.steps,
+                timestep_array=timestep_attr_dict[attr_name],
             )
 
     def step(self):
