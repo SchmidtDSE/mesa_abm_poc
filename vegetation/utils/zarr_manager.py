@@ -104,7 +104,6 @@ class ZarrManager:
 
             self._zarr_store = FSStore(
                 "gs://dse-nps-mesa/mesa_jotr_poc/" + filename,
-                read_only=False,
                 fs=fs,
             )
         else:

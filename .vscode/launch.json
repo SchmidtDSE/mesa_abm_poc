@@ -20,7 +20,8 @@
       "cwd": "${workspaceFolder}",
       "module": "vegetation.batch",
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
-      "args": ["--interactive"]
+      "args": ["--interactive"],
+      "envFile": "${workspaceFolder}/.devcontainer/.env"
     },
     {
       "name": "Python: Mesa Batch Run (CLI Args)",
@@ -29,7 +30,8 @@
       "cwd": "${workspaceFolder}",
       "module": "vegetation.batch",
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
-      "args": ["--steps", "2", "--iterations", "2", "--name", "tst", "--overwrite"]
+      "args": ["--steps", "2", "--iterations", "2", "--name", "tst", "--overwrite"],
+      "envFile": "${workspaceFolder}/.devcontainer/.env"
     },
     {
       "name": "Python: Build Cache",
