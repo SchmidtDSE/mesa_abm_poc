@@ -268,7 +268,7 @@ class Vegetation(mesa.Model):
                 "N Seeds": "n_seeds",
                 "N Seedlings": "n_seedlings",
                 "N Juveniles": "n_juveniles",
-                "N Adult": "n_adult",
+                "N Adults": "n_adults",
                 "% Refugia Cells Occupied": "pct_refugia_cells_occupied",
             }
         )
@@ -372,7 +372,7 @@ class Vegetation(mesa.Model):
         self.n_seeds = count_dict.get(LifeStage.SEED, 0)
         self.n_seedlings = count_dict.get(LifeStage.SEEDLING, 0)
         self.n_juveniles = count_dict.get(LifeStage.JUVENILE, 0)
-        self.n_adult = count_dict.get(LifeStage.ADULT, 0)
+        self.n_adults = count_dict.get(LifeStage.ADULT, 0)
         self.n_dead = count_dict.get(LifeStage.DEAD, 0)
 
         # Number of agents (JoshuaTreeAgent)
