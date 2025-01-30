@@ -16,8 +16,9 @@ from vegetation.config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
     JOTR_SEED_DISPERSAL_DISTANCE,
-    get_jotr_reproduction_rate,
     get_jotr_survival_rate,
+    get_jotr_dispersal_rate,
+    get_jotr_germination_rate,
     get_jotr_seeds_expected_value,
 )
 from vegetation.config.paths import INITIAL_AGENTS_PATH
@@ -95,6 +96,37 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # after init when the age is known to the agent
 
         # self._update_life_stage()
+    def _disperse_seeds(
+        self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
+    ):
+        n_seeds = get_jotr_dispersal_rate(n_seeds)
+
+        if self.life_stage != LifeStage.ADULT:
+            raise ValueError(
+                f"Agent {self.unique_id} is not reproductive yet and cannot disperse seeds"
+            )
+
+        wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(
+            self.geometry.x, self.geometry.y
+        )
+        x_utm, y_utm = wgs84_to_utm.transform(self.geometry.x, self.geometry.y)
+
+        for __seed_idx in np.arange(0, n_seeds):
+            seed_x_utm, seed_y_utm = generate_point_in_utm(
+                x_utm, y_utm, max_dispersal_distance
+            )
+            seed_x_wgs84, seed_y_wgs84 = utm_to_wgs84.transform(seed_x_utm, seed_y_utm)
+
+            seed_agent = JoshuaTreeAgent(
+                model=self.model,
+                geometry=sg.Point(seed_x_wgs84, seed_y_wgs84),
+                crs=self.crs,
+                age=0,
+                parent_id=self.unique_id,
+            )
+            seed_agent._update_life_stage()
+
+            self.model.space.add_agents(seed_agent)
 
     def step(self):
 
@@ -112,7 +144,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # If seed, get emergence rate, if not, get survival rate
         if self.life_stage == LifeStage.SEED:
-            survival_rate = get_jotr_reproduction_rate(self.age)
+            survival_rate = get_jotr_germination_rate(self.age)
         else:
             survival_rate = get_jotr_survival_rate(
                 self.life_stage)
@@ -180,35 +212,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         else:
             return False
 
-    def _disperse_seeds(
-        self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
-    ):
-        if self.life_stage != LifeStage.ADULT:
-            raise ValueError(
-                f"Agent {self.unique_id} is not reproductive yet and cannot disperse seeds"
-            )
-
-        wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(
-            self.geometry.x, self.geometry.y
-        )
-        x_utm, y_utm = wgs84_to_utm.transform(self.geometry.x, self.geometry.y)
-
-        for __seed_idx in np.arange(0, n_seeds):
-            seed_x_utm, seed_y_utm = generate_point_in_utm(
-                x_utm, y_utm, max_dispersal_distance
-            )
-            seed_x_wgs84, seed_y_wgs84 = utm_to_wgs84.transform(seed_x_utm, seed_y_utm)
-
-            seed_agent = JoshuaTreeAgent(
-                model=self.model,
-                geometry=sg.Point(seed_x_wgs84, seed_y_wgs84),
-                crs=self.crs,
-                age=0,
-                parent_id=self.unique_id,
-            )
-            seed_agent._update_life_stage()
-
-            self.model.space.add_agents(seed_agent)
+    
 
 
 class Vegetation(mesa.Model):

@@ -10,7 +10,6 @@ JOTR_SEED_DISPERSAL_DISTANCE = 30
 # valid for the JOTR model, but this doesn't scale well - we need this
 # to probably be more abstract and use a config for at least our initial
 
-
 def get_jotr_dispersal_rate() -> float:
     '''caching of seeds'''
     rate = 0.95*0.84 #(van der Wall, 2006)
@@ -24,10 +23,6 @@ def get_jotr_germination_rate(age) -> float:
         rate = 0.004 #including the effects of rodents and climate (van der Wall, 2006)
     return rate
 
-def get_jotr_reproduction_rate(age) -> float:
-    ''' Based on the number of seeds, calculates the percentage that transitions to seedlings'''
-    reproduction_rate = get_jotr_dispersal_rate()*get_jotr_germination_rate(age)
-    return reproduction_rate
 
 
 def get_jotr_survival_rate(life_stage):
