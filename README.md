@@ -9,6 +9,7 @@ If going the dev container route, you will need the following:
 - `ssh` installed on the host machine, to access git from within
 - A folder `local_dev_data` needs to be created in your home directory
 - a `.env` file in the `.devcontainer` folder, in the following format:
+- authentication with `gcloud` via `gcloud auth application-default login` on the host system
 
 ```
 DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
