@@ -1,7 +1,7 @@
 import hashlib
 import json
 from typing import Any, Dict, List, Optional
-
+import os
 import numpy as np
 import zarr
 from zarr.storage import FSStore
@@ -92,9 +92,13 @@ class ZarrManager:
 
             import gcsfs
 
+            GCP_APPLICATION_DEFAULT_CREDENTIALS_PATH = os.getenv(
+                "GCP_APPLICATION_DEFAULT_CREDENTIALS_PATH",
+                "~/.config/gcloud/application_default_credentials.json",
+            )
             fs = gcsfs.GCSFileSystem(
-                token="cloud"
-            )  # 'cloud' uses application default credentials
+                token=GCP_APPLICATION_DEFAULT_CREDENTIALS_PATH,
+            )
 
             self._zarr_store = FSStore(
                 "gs://dse-nps-mesa/mesa_jotr_poc/" + filename,
