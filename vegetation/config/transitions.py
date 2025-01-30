@@ -10,6 +10,10 @@ JOTR_SEED_DISPERSAL_DISTANCE = 30
 # valid for the JOTR model, but this doesn't scale well - we need this
 # to probably be more abstract and use a config for at least our initial
 
+def get_jotr_seeds_expected_value():
+    ''' expected value for seeds per tree, will then be drawn from a Poisson distribution in model.py''' 
+    return 100
+
 def get_jotr_dispersal_rate() -> float:
     '''caching of seeds'''
     rate = 0.95*0.84 #(van der Wall, 2006)
@@ -35,6 +39,4 @@ def get_jotr_survival_rate(life_stage):
     return rate
 
 
-def get_jotr_seeds_expected_value():
-    ''' expected value for seeds per tree, will then be drawn from a Poisson distribution in model.py''' 
-    return 100
+

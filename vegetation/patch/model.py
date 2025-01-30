@@ -96,10 +96,9 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # after init when the age is known to the agent
 
         # self._update_life_stage()
-    def _disperse_seeds(
+    def _disperse_seeds_in_landscape(
         self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
     ):
-        n_seeds = get_jotr_dispersal_rate(n_seeds)
 
         if self.life_stage != LifeStage.ADULT:
             raise ValueError(
@@ -181,13 +180,13 @@ class JoshuaTreeAgent(mg.GeoAgent):
         if self.life_stage == LifeStage.ADULT:
 
             jotr_adult_poisson_lambda = get_jotr_seeds_expected_value()
-            n_seeds = poisson.rvs(jotr_adult_poisson_lambda)
+            n_seeds = get_jotr_dispersal_rate(poisson.rvs(jotr_adult_poisson_lambda))
 
             self.agent_logger.log_agent_event(
                 self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
             )
 
-            self._disperse_seeds(n_seeds)
+            self._disperse_seeds_in_landscape(n_seeds)
 
     def _update_life_stage(self):
 
