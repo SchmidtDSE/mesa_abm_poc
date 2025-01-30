@@ -112,7 +112,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # If seed, get emergence rate, if not, get survival rate
         if self.life_stage == LifeStage.SEED:
-            survival_rate = get_jotr_reproduction_rate()
+            survival_rate = get_jotr_reproduction_rate(self.age)
         else:
             survival_rate = get_jotr_survival_rate(
                 self.life_stage)

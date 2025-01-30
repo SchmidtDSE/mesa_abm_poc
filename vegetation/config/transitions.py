@@ -16,14 +16,17 @@ def get_jotr_dispersal_rate() -> float:
     rate = 0.95*0.84 #(van der Wall, 2006)
     return rate
 
-def get_jotr_germination_rate() -> float:
+def get_jotr_germination_rate(age) -> float:
     ''' germination of cached seeds'''
-    rate = 0.004 #including the effects of rodents and climate (van der Wall, 2006)
+    if age > 3:
+        rate = 0
+    else:
+        rate = 0.004 #including the effects of rodents and climate (van der Wall, 2006)
     return rate
 
-def get_jotr_reproduction_rate() -> float:
+def get_jotr_reproduction_rate(age) -> float:
     ''' Based on the number of seeds, calculates the percentage that transitions to seedlings'''
-    reproduction_rate = get_jotr_dispersal_rate()*get_jotr_germination_rate()
+    reproduction_rate = get_jotr_dispersal_rate()*get_jotr_germination_rate(age)
     return reproduction_rate
 
 
@@ -38,5 +41,5 @@ def get_jotr_survival_rate(life_stage):
 
 
 def get_jotr_seeds_expected_value():
-    ''' expected value for seeds per tree, will then be drawn from a Poisson distribution in model.py'''
+    ''' expected value for seeds per tree, will then be drawn from a Poisson distribution in model.py''' 
     return 100
