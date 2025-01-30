@@ -18,7 +18,7 @@ from vegetation.config.transitions import (
     JOTR_SEED_DISPERSAL_DISTANCE,
     get_jotr_reproduction_rate,
     get_jotr_survival_rate,
-    get_jotr_adult_poisson_lambda,
+    get_jotr_seeds_expected_value,
 )
 from vegetation.config.paths import INITIAL_AGENTS_PATH
 from vegetation.config.logging import (
@@ -148,7 +148,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # Disperse
         if self.life_stage == LifeStage.ADULT:
 
-            jotr_adult_poisson_lambda = get_jotr_adult_poisson_lambda()
+            jotr_adult_poisson_lambda = get_jotr_seeds_expected_value()
             n_seeds = poisson.rvs(jotr_adult_poisson_lambda)
 
             self.agent_logger.log_agent_event(

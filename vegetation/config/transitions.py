@@ -13,7 +13,7 @@ JOTR_SEED_DISPERSAL_DISTANCE = 30
 
 def get_jotr_dispersal_rate() -> float:
     '''caching of seeds'''
-    rate = 0.95*0.84  #(van der Wall, 2006)
+    rate = 0.95*0.84 #(van der Wall, 2006)
     return rate
 
 def get_jotr_germination_rate() -> float:
@@ -22,7 +22,7 @@ def get_jotr_germination_rate() -> float:
     return rate
 
 def get_jotr_reproduction_rate() -> float:
-    ''' Based on the number of seeds, calculates the percentage that transition to seedlings'''
+    ''' Based on the number of seeds, calculates the percentage that transitions to seedlings'''
     reproduction_rate = get_jotr_dispersal_rate()*get_jotr_germination_rate()
     return reproduction_rate
 
@@ -31,11 +31,12 @@ def get_jotr_survival_rate(life_stage):
     if life_stage == LifeStage.SEEDLING:
         rate = (0.45 + 0.31)/2 #calculate mean of year 1 and year to from Esque et al (2015)
     if life_stage == LifeStage.JUVENILE:
-        rate = (1 - 0.025) # mortality of 2.5% each year (Esque et al, 2015)
+        rate = (1 - 0.025) #mortality of 2.5% each year (Esque et al, 2015)
     if life_stage == LifeStage.ADULT:
         rate = 0.97
     return rate
 
 
-def get_jotr_adult_poisson_lambda():
-    return 10
+def get_jotr_seeds_expected_value():
+    ''' expected value for seeds per tree, will then be drawn from a Poisson distribution in model.py'''
+    return 100
