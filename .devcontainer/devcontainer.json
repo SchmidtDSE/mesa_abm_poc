@@ -20,7 +20,8 @@
     "ms-python.black-formatter",
     "jjjermiah.pixi-vscode",
     "github.vscode-github-actions",
-    "ms-azuretools.vscode-docker"
+    "ms-azuretools.vscode-docker",
+    "charliermarsh.ruff"
   ],
   "postCreateCommand": ".devcontainer/scripts/run_post_create.sh",
   "customizations": {
