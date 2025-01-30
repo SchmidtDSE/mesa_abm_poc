@@ -1,10 +1,12 @@
 import hashlib
 import json
-from typing import Any, Dict, List, Optional
 import os
+from typing import Any, Dict, List
+
 import numpy as np
 import zarr
 from zarr.storage import FSStore
+
 from vegetation.space.veg_cell import VegCell
 
 
