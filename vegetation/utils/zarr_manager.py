@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import zarr
-from zarr.storage import FsspecStore
+from zarr.storage import FSStore
 from vegetation.space.veg_cell import VegCell
 
 
@@ -39,7 +39,7 @@ class ZarrManager:
         run_parameter_dict,
         crs=None,
         transformer_json=None,
-        zarr_store_type="directory",
+        zarr_store_type="gcp",
     ):
         self.width, self.height = width, height
 
@@ -87,7 +87,7 @@ class ZarrManager:
         if type == "directory":
             self._zarr_store = zarr.DirectoryStore(filename)
         elif type == "gcp":
-            self._zarr_store = FsspecStore(
+            self._zarr_store = FSStore(
                 "gs://dse-nps-mesa/mesa_jotr_poc/" + filename,
                 read_only=False,
             )
