@@ -85,11 +85,21 @@ class ZarrManager:
 
     def _initialize_zarr_store(self, filename, type="directory"):
         if type == "directory":
+
             self._zarr_store = zarr.DirectoryStore(filename)
+
         elif type == "gcp":
+
+            import gcsfs
+
+            fs = gcsfs.GCSFileSystem(
+                token="cloud"
+            )  # 'cloud' uses application default credentials
+
             self._zarr_store = FSStore(
                 "gs://dse-nps-mesa/mesa_jotr_poc/" + filename,
                 read_only=False,
+                fs=fs,
             )
         else:
             raise ValueError(f"Invalid store type: {type}")
