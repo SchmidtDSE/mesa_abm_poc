@@ -151,7 +151,6 @@ def construct_model_run_parameters_from_file(
     attribute_encodings_path: Optional[str],
     aoi_bounds_path: Optional[str],
 ):
-
     # Read in the configs
     batch_parameters = json.load(open(batch_parameters_path, "r"))
 
@@ -221,7 +220,7 @@ if __name__ == "__main__":
 
     results = batch_run(
         Vegetation,
-        parameters=model_params,
+        parameters=model_run_parameters,
         iterations=run_iterations,
         max_steps=run_steps,
         number_processes=1,

@@ -29,7 +29,6 @@ TEST_RUN_PARAMETERS = {
 
 
 class Vegetation(mesa.Model):
-
     @property
     def sim_logger(self):
         if not hasattr(self, "_sim_logger"):
@@ -44,9 +43,9 @@ class Vegetation(mesa.Model):
         epsg=4326,
         log_config_path=None,
         log_level=None,
-        attrs_to_save=[],
+        cell_attributes_to_save=[],
         attribute_encodings={},
-        zarr_group_name=None,
+        simulation_name=None,
     ):
         super().__init__()
 
@@ -80,16 +79,14 @@ class Vegetation(mesa.Model):
             }
         )
 
-        self.attrs_to_save = attrs_to_save
+        self.cell_attributes_to_save = cell_attributes_to_save
         self.attribute_encodings = attribute_encodings
-        self.zarr_group_name = zarr_group_name
+        self.simulation_name = simulation_name
         self._zarr_manager = None
 
     @property
     def zarr_manager(self):
-
         if self._zarr_manager is None:
-
             self._zarr_manager = ZarrManager(
                 width=self.space.raster_layer.width,
                 height=self.space.raster_layer.height,
@@ -97,17 +94,20 @@ class Vegetation(mesa.Model):
                 crs=self.space.crs,
                 transformer_json=self.space.transformer.to_json(),
                 run_parameter_dict=TEST_RUN_PARAMETERS,
-                attribute_list=self.attrs_to_save,
+                attribute_list=self.cell_attributes_to_save,
                 attribute_encodings=self.attribute_encodings,
                 filename=ZARR_FILENAME,
             )
 
-            if self.zarr_group_name is None:
-                self.zarr_group_name = (
+            if self.simulation_name is None:
+                self.simulation_name = (
                     self._zarr_manager.set_group_name_by_run_parameter_hash()
                 )
+                logging.info(
+                    "Setting simulation name (zarr group name) by run parameter hash"
+                )
             else:
-                self._zarr_manager.set_group_name(self.zarr_group_name)
+                self._zarr_manager.set_group_name(self.simulation_name)
 
             self.replicate_idx = self._zarr_manager.resize_array_for_next_replicate()
 
@@ -145,7 +145,6 @@ class Vegetation(mesa.Model):
         return points
 
     def _on_start(self):
-
         self.sim_logger.log_sim_event(self, SimEventType.ON_START)
 
         self.space.get_elevation()
@@ -175,7 +174,6 @@ class Vegetation(mesa.Model):
 
     # def add_agents_from_management_draw(event, geo_json, action):
     def add_agents_from_management_draw(self, *args, **kwargs):
-
         assert kwargs.get("action") == "create"
         management_area = kwargs.get("geo_json")
 
@@ -188,7 +186,6 @@ class Vegetation(mesa.Model):
         )
 
         for management_x_wgs84, management_y_wgs84 in outplanting_point_locations:
-
             # TODO: Vegetation model doesn't know its own CRS
             # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/26
             management_agent = JoshuaTreeAgent(
@@ -234,19 +231,17 @@ class Vegetation(mesa.Model):
         )
 
     def _append_timestep_to_zarr(self):
-
-        timestep_attr_dict = get_array_from_nested_cell_list(
+        timestep_cell_attribute_dict = get_array_from_nested_cell_list(
             veg_cells=self.space.raster_layer.cells,
-            attr_list=self.attrs_to_save,
+            cell_attributes_to_get=self.cell_attributes_to_save,
         )
 
         self.zarr_manager.append_synchronized_timestep(
             timestep_idx=self.steps,
-            timestep_array_dict=timestep_attr_dict,
+            timestep_array_dict=timestep_cell_attribute_dict,
         )
 
     def step(self):
-
         if not self._on_start_executed:
             self._on_start()
 
@@ -257,5 +252,5 @@ class Vegetation(mesa.Model):
 
         self.datacollector.collect(self)
 
-        if len(self.attrs_to_save) > 0:
+        if len(self.cell_attributes_to_save) > 0:
             self._append_timestep_to_zarr()
