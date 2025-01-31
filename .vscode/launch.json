@@ -44,7 +44,7 @@
       "envFile": "${workspaceFolder}/.devcontainer/.env"
     },
     {
-      "name": "Python: Process Zarr (Custom Path)",
+      "name": "Python: Process Zarr",
       "type": "debugpy",
       "request": "launch",
       "cwd": "${workspaceFolder}",
