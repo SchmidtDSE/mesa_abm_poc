@@ -1,8 +1,10 @@
 from vegetation.config.stages import LifeStage
+from scipy.stats import poisson
 
 JOTR_JUVENILE_AGE = 3
 JOTR_REPRODUCTIVE_AGE = 30
 JOTR_SEED_DISPERSAL_DISTANCE = 30
+JOTR_SEEDS_EXPECTED_VALUE = 100
 
 # TODO: Refactor to be more like a config
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/14
@@ -10,14 +12,11 @@ JOTR_SEED_DISPERSAL_DISTANCE = 30
 # valid for the JOTR model, but this doesn't scale well - we need this
 # to probably be more abstract and use a config for at least our initial
 
-def get_jotr_seeds_expected_value():
-    ''' expected value for seeds per tree, will then be drawn from a Poisson distribution in model.py''' 
-    return 100
 
-def get_jotr_dispersal_rate() -> float:
-    '''caching of seeds'''
-    rate = 0.95*0.84 #(van der Wall, 2006)
-    return rate
+def get_jotr_number_seeds(expected_value) -> float:
+    ''' draws the numbers of seeds produced by a tree in a given year from a Poisson distribution'''   
+    n_seeds = poisson.rvs(expected_value) 
+    return n_seeds
 
 def get_jotr_germination_rate(age) -> float:
     ''' germination of cached seeds'''
