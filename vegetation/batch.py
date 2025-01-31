@@ -174,6 +174,7 @@ def construct_model_run_parameters_from_file(
         model_run_parameters["attribute_encodings"] = attribute_encodings
 
         # TODO: This might be worth enforcing for all simulations (either provided at runtime or in
+        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/39
         # the config file, but since the attrs are within the agent class, it seems like it should be
         # enforced via config)
         assert all(
