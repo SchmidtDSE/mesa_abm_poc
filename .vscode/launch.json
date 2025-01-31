@@ -30,7 +30,7 @@
       "cwd": "${workspaceFolder}",
       "module": "vegetation.batch",
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
-      "args": ["--steps", "2", "--iterations", "2", "--name", "tst", "--overwrite"],
+      "args": ["--steps", "2", "--iterations", "2", "--name", "initial_test_from_config", "--overwrite"],
       "envFile": "${workspaceFolder}/.devcontainer/.env"
     },
     {

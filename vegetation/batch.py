@@ -4,6 +4,7 @@ import json
 import os
 import argparse
 import pandas as pd
+from typing import Optional
 
 
 def get_interactive_params() -> dict:
@@ -144,27 +145,47 @@ def parse_args() -> dict:
 # }
 
 
-def construct_model_params_from_file(
+def construct_model_run_parameters_from_file(
     simulation_name: str,
-    attribute_encodings_path: str,
-    aoi_bounds_path: str,
     batch_parameters_path: str,
+    attribute_encodings_path: Optional[str],
+    aoi_bounds_path: Optional[str],
 ):
 
-    attribute_encodings = json.load(open(attribute_encodings_path, "r"))
-    aoi_bounds = json.load(open(aoi_bounds_path, "r"))
+    # Read in the configs
     batch_parameters = json.load(open(batch_parameters_path, "r"))
 
-    aoi_bounds = batch_parameters[simulation_name]["model_run_params"]["bounds"]
-    batch_parameters = batch_parameters[simulation_name]
+    # Get the model parameters for this particular simulation
+    model_run_parameters = batch_parameters[simulation_name]["model_run_params"]
+    cell_attributes_to_save = batch_parameters[simulation_name][
+        "cell_attributes_to_save"
+    ]
+    # Replace the string key for bounds with the actual bounds, if provided
+    if aoi_bounds_path is not None:
+        aoi_bounds = json.load(open(aoi_bounds_path, "r"))
+        model_run_parameters["bounds"] = aoi_bounds[model_run_parameters["bounds"]]
+    assert "bounds" in model_run_parameters
+    assert len(model_run_parameters["bounds"]) == 4
+    assert all([isinstance(x, float) for x in model_run_parameters["bounds"]])
 
-    model_params = {}
-    model_params = model_params.extend(aoi_bounds)
-    model_params = model_params.extend(attribute_encodings)
-    model_params["bounds"] = aoi_bounds
-    model_params["zarr_group_name"] = simulation_name
+    # Include the attribute encodings, for zarr to save within metadata, if provided
+    if attribute_encodings_path is not None:
+        attribute_encodings = json.load(open(attribute_encodings_path, "r"))
+        model_run_parameters["attribute_encodings"] = attribute_encodings
 
-    return model_params
+        # TODO: This might be worth enforcing for all simulations (either provided at runtime or in
+        # the config file, but since the attrs are within the agent class, it seems like it should be
+        # enforced via config)
+        assert all(
+            [
+                attr in model_run_parameters["attribute_encodings"]["cell"].keys()
+                for attr in cell_attributes_to_save
+            ]
+        )
+        model_run_parameters["cell_attributes_to_save"] = cell_attributes_to_save
+
+    model_run_parameters["simulation_name"] = simulation_name
+    return model_run_parameters
 
 
 if __name__ == "__main__":
@@ -190,7 +211,7 @@ if __name__ == "__main__":
     run_iterations = arg_dict["run_iterations"]
     run_name = arg_dict["run_name"]
 
-    model_params = construct_model_params_from_file(
+    model_run_parameters = construct_model_run_parameters_from_file(
         simulation_name=run_name,
         attribute_encodings_path=arg_dict["attribute_encodings_json"],
         aoi_bounds_path=arg_dict["aoi_bounds_json"],
