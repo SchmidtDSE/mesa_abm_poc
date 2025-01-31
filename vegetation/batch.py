@@ -152,7 +152,7 @@ def construct_model_run_parameters_from_file(
         # the attrs are within the agent class, it seems like it in config)
         assert all(
             [
-                attr in model_run_parameters["attribute_encodings"]["cell"].keys()
+                attr in model_run_parameters["attribute_encodings"]["VegCell"].keys()
                 for attr in cell_attributes_to_save
             ]
         )

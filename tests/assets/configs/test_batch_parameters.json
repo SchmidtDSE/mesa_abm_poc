@@ -1,0 +1,10 @@
+{
+  "initial_test_from_config": {
+    "model_run_params": {
+      "num_steps": [3],
+      "management_planting_density": [0.0, 0.5],
+      "bounds": "TST_JOTR_BOUNDS"
+    },
+    "cell_attributes_to_save": ["jotr_max_life_stage", "test_attribute"]
+  }
+}

@@ -1,20 +1,31 @@
-from vegetation.batch import TST_JOTR_BOUNDS, batch_run
+from vegetation.batch import batch_run, construct_model_run_parameters_from_file
 from vegetation.model.vegetation import Vegetation
 import pandas as pd
+import os
+import pathlib
 
 
 def test_batch_run_basic():
     # Set up minimal test parameters
-    test_params = {
-        "num_steps": [3],  # Reduced from 100 to 3 steps
-        "management_planting_density": [0.0, 0.5],  # Just test two values
-        "bounds": [TST_JOTR_BOUNDS],
-    }
+
+    test_configs_dir = os.getenv(
+        "TEST_ASSETS_DIR", "/workspaces/mesa_abm_poc/tests/assets/configs"
+    )
+    test_configs_dir = pathlib.Path(test_configs_dir)
+
+    model_run_parameters = construct_model_run_parameters_from_file(
+        "initial_test_from_config",
+        batch_parameters_path=test_configs_dir.joinpath("test_batch_parameters.json"),
+        attribute_encodings_path=test_configs_dir.joinpath(
+            "test_attribute_encodings.json"
+        ),
+        aoi_bounds_path=test_configs_dir.joinpath("test_aoi_bounds.json"),
+    )
 
     # Run simulation with minimal parameters
     results = batch_run(
         Vegetation,
-        parameters=test_params,
+        parameters=model_run_parameters,
         iterations=1,
         max_steps=3,
         number_processes=1,
