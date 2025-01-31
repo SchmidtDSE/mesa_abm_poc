@@ -1,6 +1,6 @@
 from mesa.batchrunner import batch_run
 from vegetation.model.vegetation import Vegetation
-from numpy import arange
+import json
 import os
 import argparse
 import pandas as pd
@@ -59,13 +59,43 @@ def parse_args() -> dict:
     parser.add_argument(
         "--iterations", type=int, default=None, help="Number of model iterations"
     )
-    parser.add_argument("--name", type=str, default=None, help="Simulation name")
+    parser.add_argument(
+        "--name",
+        type=str,
+        default=None,
+        help="Simulation name (used as the Zarr group name)",
+    )
     parser.add_argument(
         "--overwrite",
         action="store_true",
         default=False,
         help="Overwrite existing results",
     )
+    parser.add_argument(
+        "--batch_parameters_json",
+        type=str,
+        default="vegetation/config/batch_parameters.json",
+        help="Path to batch parameters JSON file",
+    )
+    parser.add_argument(
+        "--attribute_encodings_json",
+        type=str,
+        default="vegetation/config/attribute_encodings.json",
+        help="Path to attribute encodings JSON file",
+    )
+    parser.add_argument(
+        "--aoi_bounds_json",
+        type=str,
+        default="vegetation/config/aoi_bounds.json",
+        help="Path to AOI bounds JSON file",
+    )
+    parser.add_argument(
+        "--save_to_zarr",
+        action="store_true",
+        default=False,
+        help="Save results to Zarr",
+    )
+
     parsed = parser.parse_args()
 
     return {
@@ -74,43 +104,68 @@ def parse_args() -> dict:
         "run_iterations": parsed.iterations,
         "run_name": parsed.name,
         "overwrite": parsed.overwrite,
+        "batch_parameters_json": parsed.batch_parameters_json,
+        "attribute_encodings_json": parsed.attribute_encodings_json,
+        "aoi_bounds_json": parsed.aoi_bounds_json,
     }
 
 
 # TODO: Implement early stopping when all the JOTR die off
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/18
 
-TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
-
 # TODO: Figure out how model_params is passed to mesa
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/38
 # This is causing issues regarding how many sims are actually run
-model_params = {
-    "num_steps": [100],
-    "management_planting_density": arange(0, 1, 0.05),
-    "bounds": [TST_JOTR_BOUNDS],
-    "attrs_to_save": [["jotr_max_life_stage", "test_attribute"]],
-    "attribute_encodings": [
-        {
-            "jotr_max_life_stage": {
-                "description": "the max life stage of any jotr agent within this VegCell",
-                "encoding": {
-                    "-1": "No JOTR",
-                    "0": "Seed",
-                    "1": "Seedling",
-                    "2": "Juvenile",
-                    "3": "Adult",
-                    "4": "Breeding",
-                },
-            },
-            "test_attribute": {
-                "description": "A meaningless test attribute",
-                "encoding": {"0": "Test 0", "1": "Test 1", "2": "Test 2"},
-            },
-        }
-    ],
-    # "zarr_group_name": ["initial_test"],
-}
+# model_params = {
+#     "num_steps": [100],
+#     "management_planting_density": arange(0, 1, 0.05),
+#     "bounds": [TST_JOTR_BOUNDS],
+#     "attrs_to_save": [["jotr_max_life_stage", "test_attribute"]],
+#     "attribute_encodings": [
+#         {
+#             "jotr_max_life_stage": {
+#                 "description": "the max life stage of any jotr agent within this VegCell",
+#                 "encoding": {
+#                     "-1": "No JOTR",
+#                     "0": "Seed",
+#                     "1": "Seedling",
+#                     "2": "Juvenile",
+#                     "3": "Adult",
+#                     "4": "Breeding",
+#                 },
+#             },
+#             "test_attribute": {
+#                 "description": "A meaningless test attribute",
+#                 "encoding": {"0": "Test 0", "1": "Test 1", "2": "Test 2"},
+#             },
+#         }
+#     ],
+#     # "zarr_group_name": ["initial_test"],
+# }
+
+
+def construct_model_params_from_file(
+    simulation_name: str,
+    attribute_encodings_path: str,
+    aoi_bounds_path: str,
+    batch_parameters_path: str,
+):
+
+    attribute_encodings = json.load(open(attribute_encodings_path, "r"))
+    aoi_bounds = json.load(open(aoi_bounds_path, "r"))
+    batch_parameters = json.load(open(batch_parameters_path, "r"))
+
+    aoi_bounds = batch_parameters["model_run_params"]["bounds"]
+    batch_parameters = batch_parameters[simulation_name]
+
+    model_params = {}
+    model_params = model_params.extend(aoi_bounds)
+    model_params = model_params.extend(attribute_encodings)
+    model_params["bounds"] = aoi_bounds
+    model_params["zarr_group_name"] = simulation_name
+
+    return model_params
+
 
 if __name__ == "__main__":
     arg_dict = parse_args()
@@ -134,6 +189,12 @@ if __name__ == "__main__":
     run_steps = arg_dict["run_steps"]
     run_iterations = arg_dict["run_iterations"]
     run_name = arg_dict["run_name"]
+
+    model_params = construct_model_params_from_file(
+        arg_dict["attribute_encodings_json"],
+        arg_dict["aoi_bounds_json"],
+        arg_dict["batch_parameters_json"],
+    )
 
     results = batch_run(
         Vegetation,
