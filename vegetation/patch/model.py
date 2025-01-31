@@ -97,6 +97,30 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # after init when the age is known to the agent
 
         # self._update_life_stage()
+
+    def _update_life_stage(self):
+
+        initial_life_stage = self.life_stage
+
+        if self.life_stage == LifeStage.DEAD:
+            return
+
+        age = self.age if self.age else 0
+        if age == 0:
+            life_stage = LifeStage.SEED
+        elif age > 0 and age <= JOTR_JUVENILE_AGE:
+            life_stage = LifeStage.SEEDLING
+        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
+            life_stage = LifeStage.JUVENILE
+        else:
+            life_stage = LifeStage.ADULT
+        self.life_stage = life_stage
+
+        if initial_life_stage != self.life_stage:
+            return True
+        else:
+            return False
+        
     def _disperse_seeds_in_landscape(
         self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
     ):
@@ -188,28 +212,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
             self._disperse_seeds_in_landscape(n_seeds)
 
-    def _update_life_stage(self):
-
-        initial_life_stage = self.life_stage
-
-        if self.life_stage == LifeStage.DEAD:
-            return
-
-        age = self.age if self.age else 0
-        if age == 0:
-            life_stage = LifeStage.SEED
-        elif age > 0 and age <= JOTR_JUVENILE_AGE:
-            life_stage = LifeStage.SEEDLING
-        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
-            life_stage = LifeStage.JUVENILE
-        else:
-            life_stage = LifeStage.ADULT
-        self.life_stage = life_stage
-
-        if initial_life_stage != self.life_stage:
-            return True
-        else:
-            return False
+    
 
     
 
