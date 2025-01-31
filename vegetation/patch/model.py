@@ -167,11 +167,19 @@ class JoshuaTreeAgent(mg.GeoAgent):
             raise ValueError("No intersecting cell found")
 
         # If seed, get emergence rate, if not, get survival rate
+        survival_rate = 0
+        
         if self.life_stage == LifeStage.SEED:
             if self.age > 3:
                 self.life_stage =LifeStage.DEAD
             else:
-                survival_rate = get_jotr_germination_rate(self.age)
+                germination_rate = get_jotr_germination_rate(self.age)
+
+                # Roll the dice to see if the agent survives
+                dice_roll_zero_to_one = random.random()
+
+                if dice_roll_zero_to_one < germination_rate:
+                    self.life_stage = LifeStage.SEEDLING
 
         else:
             survival_rate = get_jotr_survival_rate(
