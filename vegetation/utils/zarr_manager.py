@@ -29,7 +29,6 @@ def get_array_from_nested_cell_list(
 
 
 class ZarrManager:
-
     def __init__(
         self,
         width,
@@ -64,7 +63,6 @@ class ZarrManager:
 
     @staticmethod
     def normalize_dict_for_hash(param_dict: Dict[str, Any]) -> Dict[str, Any]:
-
         def _normalize_value(value: Any) -> Any:
             if isinstance(value, dict):
                 return {k: _normalize_value(v) for k, v in sorted(value.items())}
@@ -87,11 +85,9 @@ class ZarrManager:
 
     def _initialize_zarr_store(self, filename, type="directory"):
         if type == "directory":
-
             self._zarr_store = zarr.DirectoryStore(filename)
 
         elif type == "gcp":
-
             import gcsfs
 
             GCP_APPLICATION_DEFAULT_CREDENTIALS_PATH = os.getenv(
@@ -133,7 +129,6 @@ class ZarrManager:
         return sim_group
 
     def _get_or_create_attribute_dataset(self, attribute_name: str) -> zarr.core.Array:
-
         sim_group = self._get_or_create_sim_group()
 
         if attribute_name not in sim_group:
@@ -143,7 +138,6 @@ class ZarrManager:
         return attribute_dataset
 
     def _initialize_attribute_dataset(self, attribute_name: str) -> None:
-
         attribute_encoding = self.attribute_encodings[attribute_name]
 
         self._zarr_root_group[self._group_name].create_dataset(
@@ -160,7 +154,8 @@ class ZarrManager:
         )
 
         # Xarray needs to know the dimensions of the array, so we store them as
-        # `_ARRAY_DIMENSIONS` attribute - see https://docs.xarray.dev/en/latest/internals/zarr-encoding-spec.html
+        # `_ARRAY_DIMENSIONS` attribute - see
+        # https://docs.xarray.dev/en/latest/internals/zarr-encoding-spec.html
         self._zarr_root_group[self._group_name][attribute_name].attrs[
             "_ARRAY_DIMENSIONS"
         ] = ["replicate_id", "timestep", "x", "y"]
@@ -170,7 +165,6 @@ class ZarrManager:
         ] = attribute_encoding
 
     def resize_array_for_next_replicate(self) -> int:
-
         all_next_replicate_idx = []
 
         for attribute_name in self.attribute_list:
@@ -179,7 +173,7 @@ class ZarrManager:
             )
 
             # The next replicate index is the current shape of the dataset - this is
-            # a fencepost issue, since the replicate number is 0-indexed but we need to have
+            # a fencepost issue, since the replicate number is 0-indexed but we need
             # a dim of the replicate number + 1 to have a space for the next replicate
             next_replicate_idx = attribute_dataset.shape[0]
             all_next_replicate_idx.append(next_replicate_idx)
@@ -207,7 +201,6 @@ class ZarrManager:
     def append_synchronized_timestep(
         self, timestep_idx: int, timestep_array_dict: Dict[str, np.ndarray]
     ) -> None:
-
         for attribute_name, timestep_array in timestep_array_dict.items():
             sim_array = self._get_or_create_attribute_dataset(attribute_name)
             sim_array[self.replicate_idx, timestep_idx] = timestep_array

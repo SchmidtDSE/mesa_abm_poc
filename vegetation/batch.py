@@ -117,32 +117,6 @@ def parse_args() -> dict:
 # TODO: Figure out how model_params is passed to mesa
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/38
 # This is causing issues regarding how many sims are actually run
-# model_params = {
-#     "num_steps": [100],
-#     "management_planting_density": arange(0, 1, 0.05),
-#     "bounds": [TST_JOTR_BOUNDS],
-#     "attrs_to_save": [["jotr_max_life_stage", "test_attribute"]],
-#     "attribute_encodings": [
-#         {
-#             "jotr_max_life_stage": {
-#                 "description": "the max life stage of any jotr agent within this VegCell",
-#                 "encoding": {
-#                     "-1": "No JOTR",
-#                     "0": "Seed",
-#                     "1": "Seedling",
-#                     "2": "Juvenile",
-#                     "3": "Adult",
-#                     "4": "Breeding",
-#                 },
-#             },
-#             "test_attribute": {
-#                 "description": "A meaningless test attribute",
-#                 "encoding": {"0": "Test 0", "1": "Test 1", "2": "Test 2"},
-#             },
-#         }
-#     ],
-#     # "zarr_group_name": ["initial_test"],
-# }
 
 
 def construct_model_run_parameters_from_file(
@@ -172,10 +146,10 @@ def construct_model_run_parameters_from_file(
         attribute_encodings = json.load(open(attribute_encodings_path, "r"))
         model_run_parameters["attribute_encodings"] = attribute_encodings
 
-        # TODO: This might be worth enforcing for all simulations (either provided at runtime or in
+        # TODO: This might be worth enforcing for all simulations
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/39
-        # the config file, but since the attrs are within the agent class, it seems like it should be
-        # enforced via config)
+        #  (either provided at runtime or in  the config file, but since
+        # the attrs are within the agent class, it seems like it in config)
         assert all(
             [
                 attr in model_run_parameters["attribute_encodings"]["cell"].keys()
@@ -198,7 +172,8 @@ if __name__ == "__main__":
         [arg_dict["run_steps"], arg_dict["run_iterations"], arg_dict["run_name"]]
     ):
         raise ValueError(
-            "Either use --interactive, or in non-interactive mode, --steps, --iterations, and --name are required"
+            "Either use --interactive, or in non-interactive mode, "
+            "--steps, --iterations, and --name are required"
         )
 
     output_path = f"vegetation/.local_dev_data/results/{arg_dict['run_name']}.csv"
