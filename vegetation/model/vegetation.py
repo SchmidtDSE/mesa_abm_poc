@@ -6,11 +6,11 @@ from shapely.ops import transform
 import json
 import logging
 
-from vegetation.config.stages import LifeStage
+from vegetation.config.life_stages import LifeStage
 from vegetation.space.veg_cell import StudyArea, VegCell
 from vegetation.utils.spatial import transform_point_wgs84_utm
-from vegetation.config.paths import INITIAL_AGENTS_PATH
-from vegetation.config.logging import (
+from vegetation.config.global_paths import INITIAL_AGENTS_PATH
+from vegetation.logging.logging import (
     LogConfig,
     SimLogger,
     SimEventType,

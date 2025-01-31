@@ -5,7 +5,7 @@ import random
 from scipy.stats import poisson
 import logging
 
-from vegetation.config.stages import LifeStage
+from vegetation.config.life_stages import LifeStage
 from vegetation.utils.spatial import transform_point_wgs84_utm, generate_point_in_utm
 from vegetation.config.transitions import (
     JOTR_JUVENILE_AGE,
@@ -16,7 +16,7 @@ from vegetation.config.transitions import (
     get_jotr_survival_rate,
     get_jotr_breeding_poisson_lambda,
 )
-from vegetation.config.logging import (
+from vegetation.logging.logging import (
     AgentLogger,
     AgentEventType,
 )

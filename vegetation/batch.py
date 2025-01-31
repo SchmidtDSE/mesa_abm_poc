@@ -155,7 +155,7 @@ def construct_model_params_from_file(
     aoi_bounds = json.load(open(aoi_bounds_path, "r"))
     batch_parameters = json.load(open(batch_parameters_path, "r"))
 
-    aoi_bounds = batch_parameters["model_run_params"]["bounds"]
+    aoi_bounds = batch_parameters[simulation_name]["model_run_params"]["bounds"]
     batch_parameters = batch_parameters[simulation_name]
 
     model_params = {}
@@ -191,9 +191,10 @@ if __name__ == "__main__":
     run_name = arg_dict["run_name"]
 
     model_params = construct_model_params_from_file(
-        arg_dict["attribute_encodings_json"],
-        arg_dict["aoi_bounds_json"],
-        arg_dict["batch_parameters_json"],
+        simulation_name=run_name,
+        attribute_encodings_path=arg_dict["attribute_encodings_json"],
+        aoi_bounds_path=arg_dict["aoi_bounds_json"],
+        batch_parameters_path=arg_dict["batch_parameters_json"],
     )
 
     results = batch_run(

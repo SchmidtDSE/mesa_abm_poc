@@ -9,7 +9,7 @@ from pystac_client import Client as PystacClient
 import planetary_computer
 import logging
 
-from vegetation.config.paths import DEM_STAC_PATH, LOCAL_STAC_CACHE_FSTRING
+from vegetation.config.global_paths import DEM_STAC_PATH, LOCAL_STAC_CACHE_FSTRING
 from vegetation.config.aoi import TST_JOTR_BOUNDS
 from vegetation.model.joshua_tree_agent import Vegetation
 

@@ -8,8 +8,8 @@ import os
 import hashlib
 import logging
 
-from vegetation.config.stages import LifeStage
-from vegetation.config.paths import LOCAL_STAC_CACHE_FSTRING
+from vegetation.config.life_stages import LifeStage
+from vegetation.config.global_paths import LOCAL_STAC_CACHE_FSTRING
 
 # from patch.model import JoshuaTreeAgent
 # import rioxarray as rxr

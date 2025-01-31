@@ -8,12 +8,12 @@
                 "1": "Seedling",
                 "2": "Juvenile",
                 "3": "Adult",
-                "4": "Breeding",
+                "4": "Breeding"
             }
         },
         "test_attribute": {
             "description": "A meaningless test attribute",
-            "encoding": {"0": "Test 0", "1": "Test 1", "2": "Test 2"},
+            "encoding": {"0": "Test 0", "1": "Test 1", "2": "Test 2"}
         }
     },
     "sim": {}
