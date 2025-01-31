@@ -166,7 +166,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         if not intersecting_cell:
             raise ValueError("No intersecting cell found")
 
-        # If seed, get emergence rate, if not, get survival rate
+        # add dummy survival rate such that variable always exist during debugging phase
         survival_rate = 0
 
         # Roll the dice to see if the agent survives
@@ -185,22 +185,20 @@ class JoshuaTreeAgent(mg.GeoAgent):
             survival_rate = get_jotr_survival_rate(
                 self.life_stage)
 
-        # Check survival, comparing dice roll to survival rate
-        if dice_roll_zero_to_one < survival_rate:
-            self.agent_logger.log_agent_event(
-                self,
-                AgentEventType.ON_SURVIVE,
-                context={"survival_rate": survival_rate},
-            )
-
-        else:
-            self.agent_logger.log_agent_event(
-                self,
-                AgentEventType.ON_DEATH,
-                context={"survival_rate": survival_rate},
-            )
-            self.life_stage = LifeStage.DEAD
-
+            if dice_roll_zero_to_one < survival_rate:
+                self.agent_logger.log_agent_event(
+                    self,
+                    AgentEventType.ON_SURVIVE,
+                    context={"survival_rate": survival_rate},
+                    )
+            else:
+                self.agent_logger.log_agent_event(
+                    self,
+                    AgentEventType.ON_DEATH,
+                    context={"survival_rate": survival_rate},
+                    )
+                    self.life_stage = LifeStage.DEAD
+                
         # Increment age
         self.age += 1
         life_stage_promotion = self._update_life_stage()
