@@ -91,6 +91,7 @@ environments:
       - conda: https://conda.anaconda.org/main/noarch/humanize-3.10.0-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/icu-73.1-h6a678d5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/idna-3.7-py311h06a4308_0.tar.bz2
+      - conda: https://conda.anaconda.org/main/linux-64/imageio-2.37.0-py311h06a4308_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/importlib-metadata-8.5.0-py311h06a4308_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/iniconfig-1.1.1-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/ipykernel-6.29.5-py311h06a4308_0.tar.bz2
@@ -444,6 +445,7 @@ environments:
       - conda: https://conda.anaconda.org/main/noarch/humanize-3.10.0-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-64/icu-73.1-hcec6c5f_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-64/idna-3.7-py311hecd8cb5_0.tar.bz2
+      - conda: https://conda.anaconda.org/main/osx-64/imageio-2.37.0-py311hecd8cb5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-64/importlib-metadata-8.5.0-py311hecd8cb5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/iniconfig-1.1.1-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-64/ipykernel-6.29.5-py311hecd8cb5_0.tar.bz2
@@ -782,6 +784,7 @@ environments:
       - conda: https://conda.anaconda.org/main/noarch/humanize-3.10.0-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-arm64/icu-73.1-h313beb8_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-arm64/idna-3.7-py311hca03da5_0.tar.bz2
+      - conda: https://conda.anaconda.org/main/osx-arm64/imageio-2.37.0-py311hca03da5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-arm64/importlib-metadata-8.5.0-py311hca03da5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/iniconfig-1.1.1-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-arm64/ipykernel-6.29.5-py311hca03da5_0.tar.bz2
@@ -1118,6 +1121,7 @@ environments:
       - conda: https://conda.anaconda.org/main/win-64/icc_rt-2022.1.0-h6049295_2.tar.bz2
       - conda: https://conda.anaconda.org/main/win-64/icu-73.1-h6c2663c_0.tar.bz2
       - conda: https://conda.anaconda.org/main/win-64/idna-3.7-py311haa95532_0.tar.bz2
+      - conda: https://conda.anaconda.org/main/win-64/imageio-2.37.0-py311haa95532_0.tar.bz2
       - conda: https://conda.anaconda.org/main/win-64/importlib-metadata-8.5.0-py311haa95532_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/iniconfig-1.1.1-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/win-64/intel-openmp-2023.1.0-h59b6b97_46320.tar.bz2
@@ -5044,6 +5048,50 @@ packages:
   license_family: BSD
   size: 148193
   timestamp: 1714399061601
+- conda: https://conda.anaconda.org/main/linux-64/imageio-2.37.0-py311h06a4308_0.tar.bz2
+  sha256: 67fa968580722a3f4c5ebfeab2748daa58518e2bb005d5214962e39021329751
+  md5: 813d87f2c2922f553bdbd29d1cca7592
+  depends:
+  - numpy
+  - pillow >=8.3.2
+  - python >=3.11,<3.12.0a0
+  license: BSD-2-Clause
+  license_family: BSD
+  size: 665720
+  timestamp: 1738160075021
+- conda: https://conda.anaconda.org/main/osx-64/imageio-2.37.0-py311hecd8cb5_0.tar.bz2
+  sha256: 906bf47c416726871147f56e4b8d75f4dfeb75a91ccecb05a0f32179b9562f3a
+  md5: b149364a17be4799847816671d4e044b
+  depends:
+  - numpy
+  - pillow >=8.3.2
+  - python >=3.11,<3.12.0a0
+  license: BSD-2-Clause
+  license_family: BSD
+  size: 666913
+  timestamp: 1738160330852
+- conda: https://conda.anaconda.org/main/osx-arm64/imageio-2.37.0-py311hca03da5_0.tar.bz2
+  sha256: 059f09774e28cdd37bf51f6410a1cde8b497ec6cca172dc4f22ebbb0e25943d9
+  md5: 0356fc829cf5c3446da583357f7c2627
+  depends:
+  - numpy
+  - pillow >=8.3.2
+  - python >=3.11,<3.12.0a0
+  license: BSD-2-Clause
+  license_family: BSD
+  size: 668629
+  timestamp: 1738160418012
+- conda: https://conda.anaconda.org/main/win-64/imageio-2.37.0-py311haa95532_0.tar.bz2
+  sha256: e88c34e7e4eaa942efa89c84df74dccf91c39c58752ac09e9e455793cc38d887
+  md5: 1caa9f6da3b317477c08109cb424ef11
+  depends:
+  - numpy
+  - pillow >=8.3.2
+  - python >=3.11,<3.12.0a0
+  license: BSD-2-Clause
+  license_family: BSD
+  size: 703019
+  timestamp: 1738161011503
 - conda: https://conda.anaconda.org/main/linux-64/importlib-metadata-8.5.0-py311h06a4308_0.tar.bz2
   sha256: 0b292de5578240518ff0e3e829a836e29b75fede7dd6b77d87e635680b3cd970
   md5: 6a34f99c9b49a106851598516cb2ee9f
