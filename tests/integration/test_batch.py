@@ -8,7 +8,6 @@ def test_batch_run_basic():
     test_params = {
         "num_steps": [3],  # Reduced from 100 to 3 steps
         "management_planting_density": [0.0, 0.5],  # Just test two values
-        "export_data": [False],
         "bounds": [TST_JOTR_BOUNDS],
     }
 
