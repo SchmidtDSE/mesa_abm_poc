@@ -5,6 +5,7 @@ JOTR_JUVENILE_AGE = 3
 JOTR_REPRODUCTIVE_AGE = 30
 JOTR_SEED_DISPERSAL_DISTANCE = 30
 JOTR_SEEDS_EXPECTED_VALUE = 100
+JOTR_SEED_MAX_AGE = 3
 
 # TODO: Refactor to be more like a config
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/14
@@ -19,10 +20,7 @@ def get_jotr_number_seeds(expected_value) -> float:
 
 def get_jotr_germination_rate(age) -> float:
     ''' germination of cached seeds'''
-    if age > 3:
-        rate = 0
-    else:
-        rate = 0.004 #including the effects of rodents and climate (van der Wall, 2006)
+    rate = 0.004 #including the effects of rodents and climate (van der Wall, 2006)
     return rate
 
 
