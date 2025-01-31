@@ -101,7 +101,7 @@ page = SolaraViz(
                 "N Seeds",
                 "N Seedlings",
                 "N Juveniles",
-                "N Adult",
+                "N Adults",
             ],
         ),
         make_plot_component(
