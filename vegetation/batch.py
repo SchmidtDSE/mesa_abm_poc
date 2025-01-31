@@ -136,15 +136,18 @@ def construct_model_run_parameters_from_file(
     # Replace the string key for bounds with the actual bounds, if provided
     if aoi_bounds_path is not None:
         aoi_bounds = json.load(open(aoi_bounds_path, "r"))
-        model_run_parameters["bounds"] = aoi_bounds[model_run_parameters["bounds"]]
+        model_run_parameters["bounds"] = [aoi_bounds[model_run_parameters["bounds"]]]
     assert "bounds" in model_run_parameters
-    assert len(model_run_parameters["bounds"]) == 4
-    assert all([isinstance(x, float) for x in model_run_parameters["bounds"]])
+    assert (
+        len(model_run_parameters["bounds"]) == 1
+    )  # pass a list of bounds, to match mesa
+    assert len(model_run_parameters["bounds"][0]) == 4
+    assert all([isinstance(x, float) for x in model_run_parameters["bounds"][0]])
 
     # Include the attribute encodings, for zarr to save within metadata, if provided
     if attribute_encodings_path is not None:
         attribute_encodings = json.load(open(attribute_encodings_path, "r"))
-        model_run_parameters["attribute_encodings"] = attribute_encodings
+        model_run_parameters["attribute_encodings"] = [attribute_encodings]
 
         # TODO: This might be worth enforcing for all simulations
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/39
@@ -152,8 +155,8 @@ def construct_model_run_parameters_from_file(
         # the attrs are within the agent class, it seems like it in config)
         assert all(
             [
-                attr in model_run_parameters["attribute_encodings"]["VegCell"].keys()
-                for attr in cell_attributes_to_save
+                attr in model_run_parameters["attribute_encodings"][0]["VegCell"].keys()
+                for attr in cell_attributes_to_save[0]
             ]
         )
         model_run_parameters["cell_attributes_to_save"] = cell_attributes_to_save

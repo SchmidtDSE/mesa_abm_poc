@@ -9,9 +9,15 @@ from zarr.storage import FSStore
 
 from vegetation.space.veg_cell import VegCell
 
+## TODO: Make Zarr saving robust to many types of agents / cells
+## For now we use this smelly Env var to look just at VegCell, since
+## for now we have only one patch class. But this might not work in the
+## future if we have multiple types of agents / cells we want to save
+CELL_CLASS = "VegCell"
+
 
 def get_array_from_nested_cell_list(
-    veg_cells: List[List[VegCell]], attr_list: List[str]
+    veg_cells: List[List[VegCell]], cell_attributes_to_get: List[str]
 ) -> Dict[str, np.ndarray]:
     def safe_get_attr(cell: VegCell, attr: str) -> int:
         if not hasattr(cell, attr):
@@ -23,7 +29,7 @@ def get_array_from_nested_cell_list(
         attr: np.array(
             [[safe_get_attr(cell, attr) for cell in row] for row in veg_cells]
         )
-        for attr in attr_list
+        for attr in cell_attributes_to_get
     }
     return veg_arrays
 
@@ -49,7 +55,9 @@ class ZarrManager:
         self.crs = crs
         self.transformer_json = transformer_json
         self.attribute_list = attribute_list
-        self.attribute_encodings = attribute_encodings
+
+        # See todo comment above with CELL_CLASS
+        self.attribute_encodings = attribute_encodings[CELL_CLASS]
 
         self.run_parameter_dict = self.normalize_dict_for_hash(run_parameter_dict)
         self._attr_list = attribute_list
