@@ -168,15 +168,15 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # If seed, get emergence rate, if not, get survival rate
         survival_rate = 0
+
+        # Roll the dice to see if the agent survives
+        dice_roll_zero_to_one = random.random()
         
         if self.life_stage == LifeStage.SEED:
             if self.age > 3:
                 self.life_stage =LifeStage.DEAD
             else:
-                germination_rate = get_jotr_germination_rate(self.age)
-
-                # Roll the dice to see if the agent survives
-                dice_roll_zero_to_one = random.random()
+                germination_rate = get_jotr_germination_rate(self.age)  
 
                 if dice_roll_zero_to_one < germination_rate:
                     self.life_stage = LifeStage.SEEDLING
@@ -184,9 +184,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
         else:
             survival_rate = get_jotr_survival_rate(
                 self.life_stage)
-
-        # Roll the dice to see if the agent survives
-        dice_roll_zero_to_one = random.random()
 
         # Check survival, comparing dice roll to survival rate
         if dice_roll_zero_to_one < survival_rate:
