@@ -180,7 +180,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         if self.life_stage == LifeStage.ADULT:
 
             jotr_adult_poisson_lambda = get_jotr_seeds_expected_value()
-            n_seeds = get_jotr_dispersal_rate(poisson.rvs(jotr_adult_poisson_lambda))
+            n_seeds = get_jotr_dispersal_rate()*(poisson.rvs(jotr_adult_poisson_lambda))
 
             self.agent_logger.log_agent_event(
                 self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
