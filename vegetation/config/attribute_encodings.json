@@ -1,20 +1,20 @@
 {
-    "agent": {
-        "jotr_max_life_stage": {
-            "description": "the max life stage of any jotr agent within this VegCell",
-            "encoding": {
-                "-1": "No JOTR",
-                "0": "Seed",
-                "1": "Seedling",
-                "2": "Juvenile",
-                "3": "Adult",
-                "4": "Breeding"
-            }
-        },
-        "test_attribute": {
-            "description": "A meaningless test attribute",
-            "encoding": {"0": "Test 0", "1": "Test 1", "2": "Test 2"}
-        }
+  "agent": {
+    "jotr_max_life_stage": {
+      "description": "the max life stage of any jotr agent within this VegCell",
+      "encoding": {
+        "-1": "No JOTR",
+        "0": "Seed",
+        "1": "Seedling",
+        "2": "Juvenile",
+        "3": "Adult",
+        "4": "Breeding"
+      }
     },
-    "sim": {}
+    "test_attribute": {
+      "description": "A meaningless test attribute",
+      "encoding": { "0": "Test 0", "1": "Test 1", "2": "Test 2" }
+    }
+  },
+  "sim": {}
 }
