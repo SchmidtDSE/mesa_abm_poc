@@ -10,6 +10,7 @@ from zarr.storage import FSStore
 from vegetation.space.veg_cell import VegCell
 
 ## TODO: Make Zarr saving robust to many types of agents / cells
+#Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/43
 ## For now we use this smelly Env var to look just at VegCell, since
 ## for now we have only one patch class. But this might not work in the
 ## future if we have multiple types of agents / cells we want to save
@@ -57,6 +58,7 @@ class ZarrManager:
         self.attribute_list = attribute_list
 
         # See todo comment above with CELL_CLASS
+        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/42
         self.attribute_encodings = attribute_encodings[CELL_CLASS]
 
         self.run_parameter_dict = self.normalize_dict_for_hash(run_parameter_dict)
