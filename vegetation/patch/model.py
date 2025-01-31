@@ -106,15 +106,18 @@ class JoshuaTreeAgent(mg.GeoAgent):
             return
 
         age = self.age if self.age else 0
+        
+        #transitions from seed to seedling are handled elsewhere since they do not only depend on age
         if age == 0:
-            life_stage = LifeStage.SEED
-        elif age > 0 and age <= JOTR_JUVENILE_AGE:
-            life_stage = LifeStage.SEEDLING
+            life_stage = LifeStage.SEED  #newly created seeds    
         elif age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
             life_stage = LifeStage.JUVENILE
-        else:
+        elif age > JOTR_REPRODUCTIVE_AGE:
             life_stage = LifeStage.ADULT
-        self.life_stage = life_stage
+        else:
+            life_stage = self.life_stage
+            
+        self.life_stage = life_stage 
 
         if initial_life_stage != self.life_stage:
             return True
@@ -197,7 +200,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
                     AgentEventType.ON_DEATH,
                     context={"survival_rate": survival_rate},
                     )
-                    self.life_stage = LifeStage.DEAD
+                self.life_stage = LifeStage.DEAD
                 
         # Increment age
         self.age += 1
