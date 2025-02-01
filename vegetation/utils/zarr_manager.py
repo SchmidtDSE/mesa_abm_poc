@@ -58,6 +58,7 @@ class ZarrManager:
         self.attribute_list = attribute_list
 
         # See todo comment above with CELL_CLASS
+        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/48
         self.attribute_encodings = attribute_encodings[CELL_CLASS]
 
         self.run_parameter_dict = self.normalize_dict_for_hash(run_parameter_dict)
