@@ -34,16 +34,6 @@
       "envFile": "${workspaceFolder}/.devcontainer/.env"
     },
     {
-      "name": "Python: Build Cache",
-      "type": "debugpy",
-      "request": "launch",
-      "cwd": "${workspaceFolder}",
-      "module": "vegetation.cache_manager",
-      "justMyCode": false,
-      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
-      "envFile": "${workspaceFolder}/.devcontainer/.env"
-    },
-    {
       "name": "Python: Process Zarr",
       "type": "debugpy",
       "request": "launch",

@@ -27,6 +27,7 @@ from vegetation.logging.logging import (
     AgentEventType,
     SimEventType,
 )
+from vegetation.config.global_paths import INITIAL_AGENTS_PATH
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
