@@ -107,17 +107,13 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         age = self.age if self.age else 0
         
-        #transitions from seed to seedling are handled elsewhere since they do not only depend on age
-        if age == 0:
-            life_stage = LifeStage.SEED  #newly created seeds    
-        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
-            life_stage = LifeStage.JUVENILE
+        #update purely age-driven transitions
+        if age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
+            self.life_stage = LifeStage.JUVENILE
         elif age > JOTR_REPRODUCTIVE_AGE:
-            life_stage = LifeStage.ADULT
-        else:
-            life_stage = self.life_stage
-            
-        self.life_stage = life_stage 
+            self.life_stage = LifeStage.ADULT
+        elif age == 0:
+            self.life_stage = LifeStage.SEED
 
         if initial_life_stage != self.life_stage:
             return True
@@ -169,17 +165,15 @@ class JoshuaTreeAgent(mg.GeoAgent):
         if not intersecting_cell:
             raise ValueError("No intersecting cell found")
 
-        # add dummy survival rate such that variable always exist during debugging phase
-        survival_rate = 0
-
         # Roll the dice to see if the agent survives
         dice_roll_zero_to_one = random.random()
-        
+
+
         if self.life_stage == LifeStage.SEED:
             if self.age > 3:
                 self.life_stage =LifeStage.DEAD
             else:
-                germination_rate = get_jotr_germination_rate()  
+                germination_rate = get_jotr_germination_rate()
 
                 if dice_roll_zero_to_one < germination_rate:
                     self.life_stage = LifeStage.SEEDLING
@@ -221,11 +215,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
             )
 
             self._disperse_seeds_in_landscape(n_seeds)
-
-    
-
-    
-
 
 class Vegetation(mesa.Model):
 
