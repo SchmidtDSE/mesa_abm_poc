@@ -110,6 +110,8 @@ class JoshuaTreeAgent(mg.GeoAgent):
         
         #update purely age-driven transitions
         if age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
+            #uncomment to debug
+            #print(f'stage is {self.life_stage} and age is {self.age}.')
             self.life_stage = LifeStage.JUVENILE
         elif age > JOTR_REPRODUCTIVE_AGE:
             self.life_stage = LifeStage.ADULT
