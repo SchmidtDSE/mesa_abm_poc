@@ -18,7 +18,7 @@ def get_jotr_number_seeds(expected_value) -> float:
     n_seeds = poisson.rvs(expected_value) 
     return n_seeds
 
-def get_jotr_germination_rate(age) -> float:
+def get_jotr_germination_rate() -> float:
     ''' germination of cached seeds'''
     rate = 0.004 #including the effects of rodents and climate (van der Wall, 2006)
     return rate

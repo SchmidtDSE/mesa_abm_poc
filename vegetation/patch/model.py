@@ -179,7 +179,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             if self.age > 3:
                 self.life_stage =LifeStage.DEAD
             else:
-                germination_rate = get_jotr_germination_rate(self.age)  
+                germination_rate = get_jotr_germination_rate()  
 
                 if dice_roll_zero_to_one < germination_rate:
                     self.life_stage = LifeStage.SEEDLING
