@@ -7,6 +7,7 @@ import hashlib
 import logging
 
 from vegetation.config.global_paths import LOCAL_STAC_CACHE_FSTRING
+from vegetation.space.veg_cell import VegCell
 
 
 class StudyArea(mg.GeoSpace):

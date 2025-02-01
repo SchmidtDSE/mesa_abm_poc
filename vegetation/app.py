@@ -8,7 +8,6 @@ from vegetation.cache_manager import CacheManager
 
 # from patch.management import init_tree_management_control
 from vegetation.config.life_stages import LIFE_STAGE_RGB_VIZ_MAP
-from config.aoi import TST_JOTR_BOUNDS
 
 # TODO: Push working build to artifact registry, or dockerhub, or something, while
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/10
@@ -26,15 +25,12 @@ model_params = {
 
 
 def cell_portrayal(agent):
-
     if isinstance(agent, VegCell):
-
         # This is very primitive, but essentially we color based on the furthest
         # life stage of any Joshua Tree agent in the cell. If there are no agents,
         # we color based on elevation.
 
         if agent.jotr_max_life_stage and agent.jotr_max_life_stage > 0:
-
             rgba = LIFE_STAGE_RGB_VIZ_MAP[agent.jotr_max_life_stage]
 
         else:
@@ -51,7 +47,6 @@ def cell_portrayal(agent):
         return rgba
 
     if isinstance(agent, JoshuaTreeAgent):
-
         portrayal = {}
         portrayal["shape"] = "circle"
         portrayal["color"] = "red"

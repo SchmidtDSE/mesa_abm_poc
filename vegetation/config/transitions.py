@@ -1,4 +1,4 @@
-from vegetation.config.stages import LifeStage
+from vegetation.config.life_stages import LifeStage
 from scipy.stats import poisson
 
 JOTR_JUVENILE_AGE = 3

@@ -149,7 +149,6 @@ class Vegetation(mesa.Model):
         self.sim_logger.log_sim_event(self, SimEventType.ON_START)
 
         self.space.get_elevation()
-        self.space.get_aridity()
         self.space.get_refugia_status()
 
         with open(INITIAL_AGENTS_PATH, "r") as f:
