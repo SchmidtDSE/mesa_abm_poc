@@ -9,7 +9,7 @@ def test_batch_run_basic():
     # Set up minimal test parameters
 
     test_configs_dir = os.getenv(
-        "TEST_ASSETS_DIR", "/workspaces/mesa_abm_poc/tests/assets/configs"
+        "TEST_CONFIGS_DIR", "/workspaces/mesa_abm_poc/tests/assets/configs"
     )
     test_configs_dir = pathlib.Path(test_configs_dir)
 

@@ -25,3 +25,4 @@ jobs:
         env:
           INITIAL_AGENTS_PATH: "/home/runner/work/mesa_abm_poc/mesa_abm_poc/vegetation/data/initial_agents.json"
           LOCAL_STAC_CACHE_FSTRING: "/home/runner/work/mesa_abm_poc/mesa_abm_poc/.local_dev_data/{band_name}_{bounds_md5}.tif"
+          TEST_CONFIGS_DIR: "/home/runner/work/mesa_abm_poc/mesa_abm_poc/tests/assets/configs"
