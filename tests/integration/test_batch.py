@@ -13,8 +13,8 @@ def test_batch_run_basic():
     )
     test_configs_dir = pathlib.Path(test_configs_dir)
 
-    model_run_parameters = construct_model_run_parameters_from_file(
-        "initial_test_from_config",
+    parameters_dict = construct_model_run_parameters_from_file(
+        "pytest",
         batch_parameters_path=test_configs_dir.joinpath("test_batch_parameters.json"),
         attribute_encodings_path=test_configs_dir.joinpath(
             "test_attribute_encodings.json"
@@ -22,13 +22,15 @@ def test_batch_run_basic():
         aoi_bounds_path=test_configs_dir.joinpath("test_aoi_bounds.json"),
     )
 
+    model_run_parameters = parameters_dict["model_run_parameters"]
+    meta_parameters = parameters_dict["meta_parameters"]
+
     # Run simulation with minimal parameters
     results = batch_run(
         Vegetation,
         parameters=model_run_parameters,
-        iterations=1,
-        max_steps=3,
-        number_processes=1,
+        iterations=meta_parameters["num_iterations_per_worker"],
+        number_processes=meta_parameters["num_workers"],
         data_collection_period=1,
         display_progress=False,
     )

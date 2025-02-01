@@ -24,13 +24,13 @@
       "envFile": "${workspaceFolder}/.devcontainer/.env"
     },
     {
-      "name": "Python: Mesa Batch Run (CLI Args)",
+      "name": "Python: Mesa Batch Run (Config JSON)",
       "type": "debugpy",
       "request": "launch",
       "cwd": "${workspaceFolder}",
       "module": "vegetation.batch",
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
-      "args": ["--steps", "2", "--iterations", "2", "--name", "initial_test_from_config", "--overwrite"],
+      "args": ["--attribute_encodings_json", "vegetation/config/attribute_encodings.json", "--aoi_bounds_json", "vegetation/config/aoi_bounds.json", "--batch_parameters_json", "vegetation/config/batch_parameters.json", "--name", "initial_test_from_config", "--overwrite"],
       "envFile": "${workspaceFolder}/.devcontainer/.env"
     },
     {
@@ -51,7 +51,7 @@
       "module": "vegetation.analysis.process_zarr",
       "justMyCode": false,
       "envFile": "${workspaceFolder}/.devcontainer/.env",
-      "args": ["--zarr_path", "/workspaces/mesa_abm_poc/vegetation.zarr", "--group_name", "initial_test"],
+      "args": ["--zarr_path", "/workspaces/mesa_abm_poc/vegetation.zarr", "--group_name", "initial_test_from_config"],
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
     }
   ]

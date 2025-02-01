@@ -1,10 +1,14 @@
 {
-  "initial_test_from_config": {
+  "pytest": {
     "model_run_params": {
-      "num_steps": [3],
+      "num_steps": [2],
       "management_planting_density": [0.0, 0.5],
       "bounds": "TST_JOTR_BOUNDS"
     },
-    "cell_attributes_to_save": ["jotr_max_life_stage", "test_attribute"]
+    "meta_parameters": {
+      "num_iterations_per_worker": 2,
+      "num_workers": 1
+    },
+    "cell_attributes_to_save": [["jotr_max_life_stage", "test_attribute"]]
   }
 }
