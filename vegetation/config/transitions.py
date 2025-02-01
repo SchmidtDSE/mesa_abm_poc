@@ -5,7 +5,7 @@ JOTR_JUVENILE_AGE = 3
 JOTR_REPRODUCTIVE_AGE = 30
 JOTR_SEED_DISPERSAL_DISTANCE = 30
 JOTR_SEEDS_EXPECTED_VALUE = 100
-JOTR_SEED_MAX_AGE = 3
+JOTR_SEED_MAX_AGE = 2
 
 # TODO: Refactor to be more like a config
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/14

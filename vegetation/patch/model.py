@@ -17,6 +17,7 @@ from vegetation.config.transitions import (
     JOTR_REPRODUCTIVE_AGE,
     JOTR_SEED_DISPERSAL_DISTANCE,
     JOTR_SEEDS_EXPECTED_VALUE,
+    JOTR_SEED_MAX_AGE,
     get_jotr_survival_rate,
     get_jotr_number_seeds,
     get_jotr_germination_rate,
@@ -170,7 +171,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
 
         if self.life_stage == LifeStage.SEED:
-            if self.age > 3:
+            if self.age > JOTR_SEED_MAX_AGE:
                 self.life_stage =LifeStage.DEAD
             else:
                 germination_rate = get_jotr_germination_rate()
