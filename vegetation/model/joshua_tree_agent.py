@@ -100,31 +100,16 @@ class JoshuaTreeAgent(mg.GeoAgent):
             return
 
         age = self.age if self.age else 0
-<<<<<<< HEAD:vegetation/model/joshua_tree_agent.py
 
-        # transitions from seed to seedling are handled elsewhere since they do not only depend on age
-        if age == 0:
-            life_stage = LifeStage.SEED  # newly created seeds
-        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
-            life_stage = LifeStage.JUVENILE
-        elif age > JOTR_REPRODUCTIVE_AGE:
-            life_stage = LifeStage.ADULT
-        else:
-            life_stage = self.life_stage
-
-        self.life_stage = life_stage
-=======
-        
-        #update purely age-driven transitions
+        # update purely age-driven transitions
         if age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
-            #uncomment to debug
-            #print(f'stage is {self.life_stage} and age is {self.age}.')
+            # uncomment to debug
+            # print(f'stage is {self.life_stage} and age is {self.age}.')
             self.life_stage = LifeStage.JUVENILE
         elif age > JOTR_REPRODUCTIVE_AGE:
             self.life_stage = LifeStage.ADULT
         elif age == 0:
             self.life_stage = LifeStage.SEED
->>>>>>> b71f6f67c8225991e53063fce8401643bd99c95f:vegetation/patch/model.py
 
         if initial_life_stage != self.life_stage:
             return True
@@ -177,20 +162,11 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # Roll the dice to see if the agent survives
         dice_roll_zero_to_one = random.random()
 
-<<<<<<< HEAD:vegetation/model/joshua_tree_agent.py
-        if self.life_stage == LifeStage.SEED:
-            if self.age > 3:
-                self.life_stage = LifeStage.DEAD
-            else:
-                germination_rate = get_jotr_germination_rate(self.age)
-=======
-
         if self.life_stage == LifeStage.SEED:
             if self.age > JOTR_SEED_MAX_AGE:
-                self.life_stage =LifeStage.DEAD
+                self.life_stage = LifeStage.DEAD
             else:
                 germination_rate = get_jotr_germination_rate()
->>>>>>> b71f6f67c8225991e53063fce8401643bd99c95f:vegetation/patch/model.py
 
                 if dice_roll_zero_to_one < germination_rate:
                     self.life_stage = LifeStage.SEEDLING
@@ -231,10 +207,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
             self._disperse_seeds_in_landscape(n_seeds)
 
-<<<<<<< HEAD:vegetation/model/joshua_tree_agent.py
 
-=======
->>>>>>> b71f6f67c8225991e53063fce8401643bd99c95f:vegetation/patch/model.py
 class Vegetation(mesa.Model):
     @property
     def sim_logger(self):
