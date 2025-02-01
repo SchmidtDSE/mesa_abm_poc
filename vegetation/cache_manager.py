@@ -51,7 +51,6 @@ class CacheManager:
         return docker_host_cache_dict
 
     def get_elevation_from_stac(self):
-
         logging.debug("Collecting STAC Items for elevation")
         items_generator = self.pystac_client.search(
             collections=["cop-dem-glo-30"],
@@ -79,7 +78,6 @@ class CacheManager:
         return elevation
 
     def populate_elevation_cache_if_not_exists(self):
-
         elevation_cache_path = self._cache_paths["elevation"]
 
         if os.path.exists(elevation_cache_path):
@@ -111,7 +109,6 @@ class CacheManager:
         elevation_layer.to_file(elevation_cache_path)
 
         if os.getenv("DOCKER_HOST_STAC_CACHE_FSTRING"):
-
             docker_host_elevation_cache_path = self._docker_host_cache_paths[
                 "elevation"
             ]

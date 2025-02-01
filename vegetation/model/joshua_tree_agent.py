@@ -2,7 +2,6 @@ import mesa_geo as mg
 import numpy as np
 import shapely.geometry as sg
 import random
-from scipy.stats import poisson
 import logging
 
 from vegetation.config.life_stages import LifeStage
