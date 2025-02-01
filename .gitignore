@@ -6,5 +6,11 @@ tst*.*
 vegetation/profile_output.prof# pixi environments
 .pixi
 
+.life_stage.zarr/
+.life_stage.zarr.sync/
+
 .local_dev_data
 logs
+
+*.zarr
+*.zarr.sync

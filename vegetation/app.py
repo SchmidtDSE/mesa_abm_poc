@@ -1,16 +1,13 @@
-import cProfile
-import pstats
-from typing import Tuple
 from ipyleaflet.leaflet import GeomanDrawControl
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
-from vegetation.patch.model import Vegetation, JoshuaTreeAgent
-from vegetation.patch.space import VegCell
+from vegetation.model.joshua_tree_agent import Vegetation, JoshuaTreeAgent
+from vegetation.space.veg_cell import VegCell
 from vegetation.viz.simple_raster_map import make_simple_raster_geospace_component
 from vegetation.cache_manager import CacheManager
 
 # from patch.management import init_tree_management_control
-from config.stages import LIFE_STAGE_RGB_VIZ_MAP
+from vegetation.config.life_stages import LIFE_STAGE_RGB_VIZ_MAP
 from config.aoi import TST_JOTR_BOUNDS
 
 # TODO: Push working build to artifact registry, or dockerhub, or something, while

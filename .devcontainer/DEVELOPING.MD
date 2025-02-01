@@ -71,3 +71,52 @@ self.agent_logger.log_agent_event(
 
 Using this method call, the `agent_logger` will grab the appropriate log method defined in `logging_config.json`, according to the log event type (here `AgentEventType.ON_SURVIVE`), and pass along the agent itself (here, `self`, since this method is triggered from within the agent class method `on_step`) and any additional context necessary (here `survival_rate`, since this is ephemeral and not stored by the agent - but do we want to log it, so we pass it for just this log event).
 
+## Model Run Artifact Structure
+
+We save model runs as `zarr` data structures according to the following approach.
+
+```
+├── root
+│   ├── hash_A
+│   │   ├── 0.0.100 (x, y, timestep, replicate)
+│   │   ├── 1.0.100
+│   │   ├── ...
+│   ├── hash_B
+│   │   ├── 0.0.100 (x, y, timestep, replicate)
+│   │   ├── 1.0.100
+│   │   ├── ...
+│   ├── ...
+```
+
+Hashing logic will create a unique hash key from a `JSON` / Dict created using all releveant parameters for a particular simulation (and potentially a hash of the commit used to create the sims, if we are not done with our config logic?). For eg:
+
+TODO: formatting to make sure 0.05 and 0.050 are not different
+TODO: make robust to manual (non-hash) names
+TODO: Talk with ben or other NPS collaborators about RAD Coarsening logic
+
+
+`hash_A`
+```
+{
+    "seed_emergence_rate": 0.05,
+    "jotr_breeding_age": 30
+}
+```
+
+`hash_B`
+```
+{
+    "seed_emergence_rate": 0.15,
+    "jotr_breeding_age": 30
+}
+```
+
+Repeated model runs of `hash_A` will be added to the `hash_A` subgroup within the zarr sub-group as additional replicates. If model config changes (a new key is added, or an existing key is removed, or the name / value of a key is changed), the hash will change and thus a new subgroup will be greated according to that new hash key. Then, the first model replicate will be saved as replicate 0 within that subgroup, appending there-after for additional replicates. 
+
+Questions:
+- Which dimensions are we most interested in aggregating regularly?
+    - all replicates at a particular timestep and param hash, potentially ignoring x, y? (for aggregations of tipping points - this is probably the one to optimize)
+    - one simulation across all time, keeping x, y? (for visualization - probably ok if this one is slow)
+- Outputs - what do we want to actually show at the end of of a suite of model run?
+    - sensitivity analysis - which parameters are important for emergent outcomes
+

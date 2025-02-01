@@ -3,18 +3,13 @@ from __future__ import annotations
 import mesa
 import mesa_geo as mg
 import numpy as np
-import stackstac
-from pystac_client import Client as PystacClient
-import planetary_computer
 import random
 import os
 import hashlib
 import logging
-import time
-from functools import cached_property
 
-from vegetation.config.stages import LifeStage
-from vegetation.config.paths import LOCAL_STAC_CACHE_FSTRING
+from vegetation.config.life_stages import LifeStage
+from vegetation.config.global_paths import LOCAL_STAC_CACHE_FSTRING
 
 # from patch.model import JoshuaTreeAgent
 # import rioxarray as rxr
@@ -44,6 +39,9 @@ class VegCell(mg.Cell):
         self.jotr_agents = []
         self.occupied_by_jotr_agents = False
         self.jotr_max_life_stage = 0
+
+        # DEBUG: Test attribute to see how this interacts with Zarr groups / datasets
+        self.test_attribute = 1
 
     def step(self):
         self.update_occupancy()
