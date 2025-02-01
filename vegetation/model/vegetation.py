@@ -241,6 +241,9 @@ class Vegetation(mesa.Model):
             timestep_array_dict=timestep_cell_attribute_dict,
         )
 
+    def cleanup(self):
+        self.zarr_manager.consolidate_metadata()
+
     def step(self):
         if not self._on_start_executed:
             self._on_start()
@@ -254,3 +257,7 @@ class Vegetation(mesa.Model):
 
         if len(self.cell_attributes_to_save) > 0:
             self._append_timestep_to_zarr()
+
+        if self.steps >= self.num_steps:
+            self.running = False
+            self.cleanup()

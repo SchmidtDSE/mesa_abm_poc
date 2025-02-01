@@ -55,12 +55,6 @@ def parse_args() -> dict:
         help="Run in interactive mode",
     )
     parser.add_argument(
-        "--steps", type=int, default=None, help="Number of simulation steps"
-    )
-    parser.add_argument(
-        "--iterations", type=int, default=None, help="Number of model iterations"
-    )
-    parser.add_argument(
         "--name",
         type=str,
         default=None,
@@ -91,18 +85,16 @@ def parse_args() -> dict:
         help="Path to AOI bounds JSON file",
     )
     parser.add_argument(
-        "--save_to_zarr",
-        action="store_true",
-        default=False,
-        help="Save results to Zarr",
+        "--zarr_store",
+        type=str,
+        default="directory",
+        help="Type of Zarr store for saving artifacts ('directory' or 'gcp')",
     )
 
     parsed = parser.parse_args()
 
     return {
         "interactive": parsed.interactive,
-        "run_steps": parsed.steps,
-        "run_iterations": parsed.iterations,
         "run_name": parsed.name,
         "overwrite": parsed.overwrite,
         "batch_parameters_json": parsed.batch_parameters_json,
@@ -127,12 +119,17 @@ def construct_model_run_parameters_from_file(
 ):
     # Read in the configs
     batch_parameters = json.load(open(batch_parameters_path, "r"))
+    # Get meta parameters for this batch run (things not relevant to specific model runs)
+    meta_parameters = batch_parameters[simulation_name]["meta_parameters"]
 
     # Get the model parameters for this particular simulation
     model_run_parameters = batch_parameters[simulation_name]["model_run_params"]
+
+    # Get the cell-level attributes to save to zarr
     cell_attributes_to_save = batch_parameters[simulation_name][
         "cell_attributes_to_save"
     ]
+
     # Replace the string key for bounds with the actual bounds, if provided
     if aoi_bounds_path is not None:
         aoi_bounds = json.load(open(aoi_bounds_path, "r"))
@@ -162,7 +159,11 @@ def construct_model_run_parameters_from_file(
         model_run_parameters["cell_attributes_to_save"] = cell_attributes_to_save
 
     model_run_parameters["simulation_name"] = simulation_name
-    return model_run_parameters
+
+    return {
+        "meta_parameters": meta_parameters,
+        "model_run_parameters": model_run_parameters,
+    }
 
 
 if __name__ == "__main__":
@@ -172,11 +173,15 @@ if __name__ == "__main__":
         arg_dict = get_interactive_params()
 
     if not all(
-        [arg_dict["run_steps"], arg_dict["run_iterations"], arg_dict["run_name"]]
+        [
+            arg_dict["attribute_encodings_json"],
+            arg_dict["aoi_bounds_json"],
+            arg_dict["batch_parameters_json"],
+        ]
     ):
         raise ValueError(
-            "Either use --interactive, or in non-interactive mode, "
-            "--steps, --iterations, and --name are required"
+            "Either use --interactive, or supply all of --attribute_encodings_json,"
+            "--aoi_bounds_json, and --batch_parameters_json"
         )
 
     output_path = f"vegetation/.local_dev_data/results/{arg_dict['run_name']}.csv"
@@ -185,23 +190,23 @@ if __name__ == "__main__":
             f"Output path {output_path} exists. Use --overwrite to overwrite"
         )
 
-    run_steps = arg_dict["run_steps"]
-    run_iterations = arg_dict["run_iterations"]
     run_name = arg_dict["run_name"]
 
-    model_run_parameters = construct_model_run_parameters_from_file(
+    parameters_dict = construct_model_run_parameters_from_file(
         simulation_name=run_name,
         attribute_encodings_path=arg_dict["attribute_encodings_json"],
         aoi_bounds_path=arg_dict["aoi_bounds_json"],
         batch_parameters_path=arg_dict["batch_parameters_json"],
     )
 
+    model_run_parameters = parameters_dict["model_run_parameters"]
+    meta_parameters = parameters_dict["meta_parameters"]
+
     results = batch_run(
         Vegetation,
         parameters=model_run_parameters,
-        iterations=run_iterations,
-        max_steps=run_steps,
-        number_processes=1,
+        iterations=meta_parameters["num_iterations_per_worker"],
+        number_processes=meta_parameters["num_workers"],
         data_collection_period=1,
         display_progress=True,
     )

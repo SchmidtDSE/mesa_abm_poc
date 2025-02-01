@@ -47,7 +47,7 @@ class ZarrManager:
         run_parameter_dict,
         crs=None,
         transformer_json=None,
-        zarr_store_type="gcp",
+        zarr_store_type="directory",
     ):
         self.width, self.height = width, height
 
@@ -153,13 +153,13 @@ class ZarrManager:
             attribute_name,
             shape=(
                 0,
-                self.max_timestep,
+                self.max_timestep + 1,  # dim needs to be 1 size larger than contents
                 self.width,
                 self.height,
             ),  # 0 replicates
             chunks=(1, self.width, self.height),
             dtype=np.int8,
-            extendable=(True, False, False, False),
+            extendable=[True, False, False, False],
         )
 
         # Xarray needs to know the dimensions of the array, so we store them as
@@ -213,8 +213,6 @@ class ZarrManager:
         for attribute_name, timestep_array in timestep_array_dict.items():
             sim_array = self._get_or_create_attribute_dataset(attribute_name)
             sim_array[self.replicate_idx, timestep_idx] = timestep_array
-
-        self.consolidate_metadata()
 
     def consolidate_metadata(self):
         zarr.consolidate_metadata(self._zarr_store)
