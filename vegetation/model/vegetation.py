@@ -7,7 +7,8 @@ import json
 import logging
 
 from vegetation.config.life_stages import LifeStage
-from vegetation.space.veg_cell import StudyArea, VegCell
+from vegetation.space.veg_cell import VegCell
+from vegetation.space.study_area import StudyArea
 from vegetation.utils.spatial import transform_point_wgs84_utm
 from vegetation.config.global_paths import INITIAL_AGENTS_PATH
 from vegetation.logging.logging import (

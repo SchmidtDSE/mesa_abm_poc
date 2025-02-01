@@ -3,7 +3,12 @@ import numpy as np
 import shapely.geometry as sg
 import random
 import logging
+import json
+import mesa
+from shapely.ops import transform
 
+from vegetation.space.veg_cell import VegCell
+from vegetation.space.study_area import StudyArea
 from vegetation.config.life_stages import LifeStage
 from vegetation.utils.spatial import transform_point_wgs84_utm, generate_point_in_utm
 from vegetation.config.transitions import (
@@ -16,8 +21,11 @@ from vegetation.config.transitions import (
     get_jotr_germination_rate,
 )
 from vegetation.logging.logging import (
+    LogConfig,
     AgentLogger,
+    SimLogger,
     AgentEventType,
+    SimEventType,
 )
 
 
