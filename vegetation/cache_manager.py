@@ -10,8 +10,6 @@ import planetary_computer
 import logging
 
 from vegetation.config.global_paths import DEM_STAC_PATH, LOCAL_STAC_CACHE_FSTRING
-from vegetation.config.aoi import TST_JOTR_BOUNDS
-from vegetation.model.joshua_tree_agent import Vegetation
 
 
 class CacheManager:
@@ -51,7 +49,6 @@ class CacheManager:
         return docker_host_cache_dict
 
     def get_elevation_from_stac(self):
-
         logging.debug("Collecting STAC Items for elevation")
         items_generator = self.pystac_client.search(
             collections=["cop-dem-glo-30"],
@@ -79,7 +76,6 @@ class CacheManager:
         return elevation
 
     def populate_elevation_cache_if_not_exists(self):
-
         elevation_cache_path = self._cache_paths["elevation"]
 
         if os.path.exists(elevation_cache_path):
@@ -111,7 +107,6 @@ class CacheManager:
         elevation_layer.to_file(elevation_cache_path)
 
         if os.getenv("DOCKER_HOST_STAC_CACHE_FSTRING"):
-
             docker_host_elevation_cache_path = self._docker_host_cache_paths[
                 "elevation"
             ]
@@ -125,9 +120,3 @@ class CacheManager:
             elevation_layer.to_file(docker_host_elevation_cache_path)
 
         logging.debug(f"Downloaded elevation in {time.time() - time_at_start} seconds")
-
-
-if __name__ == "__main__":
-    vegetation_model = Vegetation(bounds=TST_JOTR_BOUNDS)
-    cache_manager = CacheManager(TST_JOTR_BOUNDS, 4326, vegetation_model)
-    cache_manager.populate_elevation_cache_if_not_exists()

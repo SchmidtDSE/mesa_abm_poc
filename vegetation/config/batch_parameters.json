@@ -1,14 +1,14 @@
 {
-  "initial_test_from_config": {
+  "first_realish_run": {
     "model_run_params": {
-      "num_steps": [40],
-      "management_planting_density": [0.0, 0.5],
+      "num_steps": [100],
+      "management_planting_density": [0.0],
       "bounds": "TST_JOTR_BOUNDS"
     },
     "meta_parameters": {
-      "num_iterations_per_worker": 2,
-      "num_workers": 1
+      "num_iterations_per_worker": 100,
+      "num_workers": 2
     },
-    "cell_attributes_to_save": [["jotr_max_life_stage", "test_attribute"]]
+    "cell_attributes_to_save": [["jotr_max_life_stage"]]
   }
 }

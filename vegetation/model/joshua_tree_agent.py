@@ -2,28 +2,36 @@ import mesa_geo as mg
 import numpy as np
 import shapely.geometry as sg
 import random
-from scipy.stats import poisson
 import logging
+import json
+import mesa
+from shapely.ops import transform
 
+from vegetation.space.veg_cell import VegCell
+from vegetation.space.study_area import StudyArea
 from vegetation.config.life_stages import LifeStage
 from vegetation.utils.spatial import transform_point_wgs84_utm, generate_point_in_utm
 from vegetation.config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
-    JOTR_ADULT_AGE,
     JOTR_SEED_DISPERSAL_DISTANCE,
-    get_jotr_emergence_rate,
+    JOTR_SEEDS_EXPECTED_VALUE,
+    JOTR_SEED_MAX_AGE,
     get_jotr_survival_rate,
-    get_jotr_breeding_poisson_lambda,
+    get_jotr_number_seeds,
+    get_jotr_germination_rate,
 )
 from vegetation.logging.logging import (
+    LogConfig,
     AgentLogger,
+    SimLogger,
     AgentEventType,
+    SimEventType,
 )
+from vegetation.config.global_paths import INITIAL_AGENTS_PATH
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
-
     @property
     def agent_logger(self):
         if not hasattr(self, "_agent_logger"):
@@ -85,103 +93,35 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # self._update_life_stage()
 
-    def step(self):
-
-        # Check if agent is dead - if yes, skip
-        if self.life_stage == LifeStage.DEAD:
-            return
-
-        # Find the underlying cell - it must exist, else raise an error
-        intersecting_cell_filter = self.model.space.raster_layer.iter_neighbors(
-            self.indices, moore=False, include_center=True, radius=0
-        )
-        intersecting_cell = next(intersecting_cell_filter)
-        if not intersecting_cell:
-            raise ValueError("No intersecting cell found")
-
-        # If seed, get emergence rate, if not, get survival rate
-        if self.life_stage == LifeStage.SEED:
-            survival_rate = get_jotr_emergence_rate(intersecting_cell.aridity)
-        else:
-            survival_rate = get_jotr_survival_rate(
-                self.life_stage,
-                intersecting_cell.aridity,
-                0,  # Assume no nurse plants for now
-            )
-
-        # Roll the dice to see if the agent survives
-        dice_roll_zero_to_one = random.random()
-
-        # Check survival, comparing dice roll to survival rate
-        if dice_roll_zero_to_one < survival_rate:
-            self.agent_logger.log_agent_event(
-                self,
-                AgentEventType.ON_SURVIVE,
-                context={"survival_rate": survival_rate},
-            )
-
-        else:
-            self.agent_logger.log_agent_event(
-                self,
-                AgentEventType.ON_DEATH,
-                context={"survival_rate": survival_rate},
-            )
-            self.life_stage = LifeStage.DEAD
-
-        # Increment age
-        self.age += 1
-        life_stage_promotion = self._update_life_stage()
-
-        if life_stage_promotion:
-            self.agent_logger.log_agent_event(self, AgentEventType.ON_TRANSITION)
-        # Update underlying patch
-        intersecting_cell.add_agent_link(self)
-
-        # Disperse
-        if self.life_stage == LifeStage.BREEDING:
-
-            jotr_breeding_poisson_lambda = get_jotr_breeding_poisson_lambda(
-                intersecting_cell.aridity
-            )
-            n_seeds = poisson.rvs(jotr_breeding_poisson_lambda)
-
-            self.agent_logger.log_agent_event(
-                self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
-            )
-
-            self._disperse_seeds(n_seeds)
-
     def _update_life_stage(self):
-
         initial_life_stage = self.life_stage
 
         if self.life_stage == LifeStage.DEAD:
             return
 
         age = self.age if self.age else 0
-        if age == 0:
-            life_stage = LifeStage.SEED
-        elif age > 0 and age <= JOTR_JUVENILE_AGE:
-            life_stage = LifeStage.SEEDLING
-        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_ADULT_AGE:
-            life_stage = LifeStage.JUVENILE
-        elif age > JOTR_ADULT_AGE and age < JOTR_REPRODUCTIVE_AGE:
-            life_stage = LifeStage.ADULT
-        else:
-            life_stage = LifeStage.BREEDING
-        self.life_stage = life_stage
+
+        # update purely age-driven transitions
+        if age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
+            # uncomment to debug
+            # print(f'stage is {self.life_stage} and age is {self.age}.')
+            self.life_stage = LifeStage.JUVENILE
+        elif age > JOTR_REPRODUCTIVE_AGE:
+            self.life_stage = LifeStage.ADULT
+        elif age == 0:
+            self.life_stage = LifeStage.SEED
 
         if initial_life_stage != self.life_stage:
             return True
         else:
             return False
 
-    def _disperse_seeds(
+    def _disperse_seeds_in_landscape(
         self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
     ):
-        if self.life_stage != LifeStage.BREEDING:
+        if self.life_stage != LifeStage.ADULT:
             raise ValueError(
-                f"Agent {self.unique_id} is not breeding and cannot disperse seeds"
+                f"Agent {self.unique_id} is not reproductive yet and cannot disperse seeds"
             )
 
         wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(
@@ -205,3 +145,237 @@ class JoshuaTreeAgent(mg.GeoAgent):
             seed_agent._update_life_stage()
 
             self.model.space.add_agents(seed_agent)
+
+    def step(self):
+        # Check if agent is dead - if yes, skip
+        if self.life_stage == LifeStage.DEAD:
+            return
+
+        # Find the underlying cell - it must exist, else raise an error
+        intersecting_cell_filter = self.model.space.raster_layer.iter_neighbors(
+            self.indices, moore=False, include_center=True, radius=0
+        )
+        intersecting_cell = next(intersecting_cell_filter)
+        if not intersecting_cell:
+            raise ValueError("No intersecting cell found")
+
+        # Roll the dice to see if the agent survives
+        dice_roll_zero_to_one = random.random()
+
+        if self.life_stage == LifeStage.SEED:
+            if self.age > JOTR_SEED_MAX_AGE:
+                self.life_stage = LifeStage.DEAD
+            else:
+                germination_rate = get_jotr_germination_rate()
+
+                if dice_roll_zero_to_one < germination_rate:
+                    self.life_stage = LifeStage.SEEDLING
+
+        else:
+            survival_rate = get_jotr_survival_rate(self.life_stage)
+
+            if dice_roll_zero_to_one < survival_rate:
+                self.agent_logger.log_agent_event(
+                    self,
+                    AgentEventType.ON_SURVIVE,
+                    context={"survival_rate": survival_rate},
+                )
+            else:
+                self.agent_logger.log_agent_event(
+                    self,
+                    AgentEventType.ON_DEATH,
+                    context={"survival_rate": survival_rate},
+                )
+                self.life_stage = LifeStage.DEAD
+
+        # Increment age
+        self.age += 1
+        life_stage_promotion = self._update_life_stage()
+
+        if life_stage_promotion:
+            self.agent_logger.log_agent_event(self, AgentEventType.ON_TRANSITION)
+        # Update underlying patch
+        intersecting_cell.add_agent_link(self)
+
+        # Disperse
+        if self.life_stage == LifeStage.ADULT:
+            n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE)
+
+            self.agent_logger.log_agent_event(
+                self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
+            )
+
+            self._disperse_seeds_in_landscape(n_seeds)
+
+
+class Vegetation(mesa.Model):
+    @property
+    def sim_logger(self):
+        if not hasattr(self, "_sim_logger"):
+            self._sim_logger = SimLogger()
+        return self._sim_logger
+
+    def __init__(
+        self,
+        bounds,
+        export_data=False,
+        num_steps=20,
+        management_planting_density=0.01,
+        epsg=4326,
+        log_config_path=None,
+        log_level=None,
+    ):
+        super().__init__()
+
+        # Initialize logging config first
+        if log_config_path:
+            LogConfig.initialize(log_config_path)
+
+        # To get this set up, assume sim has logging.INFO level
+        self.log_level = logging.INFO
+
+        self.bounds = bounds
+        self.num_steps = num_steps
+        self.management_planting_density = management_planting_density
+        self._on_start_executed = False
+
+        # mesa setup
+        self.space = StudyArea(bounds, epsg=epsg, model=self)
+        self.datacollector = mesa.DataCollector(
+            {
+                "Mean Age": "mean_age",
+                "N Agents": "n_agents",
+                "N Seeds": "n_seeds",
+                "N Seedlings": "n_seedlings",
+                "N Juveniles": "n_juveniles",
+                "N Adults": "n_adults",
+                "% Refugia Cells Occupied": "pct_refugia_cells_occupied",
+            }
+        )
+
+    def _on_start(self):
+        self.sim_logger.log_sim_event(self, SimEventType.ON_START)
+
+        self.space.get_elevation()
+        self.space.get_refugia_status()
+
+        with open(INITIAL_AGENTS_PATH, "r") as f:
+            initial_agents_geojson = json.loads(f.read())
+
+        self._add_agents_from_geojson(initial_agents_geojson)
+
+        self._on_start_executed = True
+
+    def _add_agents_from_geojson(self, agents_geojson):
+        agents = mg.AgentCreator(JoshuaTreeAgent, model=self).from_GeoJSON(
+            agents_geojson
+        )
+
+        # TODO: Find a way to update life stage on init
+        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/9
+        # Since .from_GeoJSON() sets attributes after init, we call
+        # _update_life_stage after init, but before we add to the grid
+        self.agents.select(agent_type=JoshuaTreeAgent).do("_update_life_stage")
+
+        self.space.add_agents(agents)
+        self.update_metrics()
+
+    # def add_agents_from_management_draw(event, geo_json, action):
+    def add_agents_from_management_draw(self, *args, **kwargs):
+        assert kwargs.get("action") == "create"
+        management_area = kwargs.get("geo_json")
+
+        outplanting_point_locations = self._generate_planting_points(management_area)
+
+        self.sim_logger.log_sim_event(
+            self,
+            SimEventType.ON_MANAGE,
+            context={"n_agents": len(outplanting_point_locations)},
+        )
+
+        for management_x_wgs84, management_y_wgs84 in outplanting_point_locations:
+            # TODO: Vegetation model doesn't know its own CRS
+            # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/26
+            management_agent = JoshuaTreeAgent(
+                model=self,
+                geometry=sg.Point(management_x_wgs84, management_y_wgs84),
+                crs="EPSG:4326",
+                age=20,
+                parent_id=None,
+            )
+            management_agent._update_life_stage()
+
+            self.space.add_agents(management_agent)
+
+    def _generate_planting_points(self, geo_json):
+        # Convert GeoJSON to Shapely polygon
+        coords = geo_json[0]["geometry"]["coordinates"][0]
+        polygon = sg.Polygon(coords)
+
+        # Get UTM zone from polygon centroid
+        lon, lat = polygon.centroid.x, polygon.centroid.y
+        wgs84_to_utm, utm_to_wgs84 = transform_point_wgs84_utm(lon, lat)
+
+        # Project polygon to UTM
+        utm_polygon = transform(wgs84_to_utm.transform, polygon)
+        area = utm_polygon.area
+        num_points = int(area * self.management_planting_density)
+
+        points = []
+        minx, miny, maxx, maxy = utm_polygon.bounds
+
+        while len(points) < num_points:
+            x_utm = np.random.uniform(minx, maxx)
+            y_utm = np.random.uniform(miny, maxy)
+            point_utm = sg.Point(x_utm, y_utm)
+
+            if utm_polygon.contains(point_utm):
+                management_x_wgs84, management_y_wgs84 = utm_to_wgs84.transform(
+                    x_utm, y_utm
+                )
+                points.append((management_x_wgs84, management_y_wgs84))
+
+        return points
+
+    def update_metrics(self):
+        # Mean age
+        mean_age = self.agents.select(agent_type=JoshuaTreeAgent).agg("age", np.mean)
+        self.mean_age = mean_age
+
+        # Number of agents by life stage
+        count_dict = (
+            self.agents.select(agent_type=JoshuaTreeAgent).groupby("life_stage").count()
+        )
+        self.n_seeds = count_dict.get(LifeStage.SEED, 0)
+        self.n_seedlings = count_dict.get(LifeStage.SEEDLING, 0)
+        self.n_juveniles = count_dict.get(LifeStage.JUVENILE, 0)
+        self.n_adults = count_dict.get(LifeStage.ADULT, 0)
+        self.n_dead = count_dict.get(LifeStage.DEAD, 0)
+
+        # Number of agents (JoshuaTreeAgent)
+        n_agents = len(self.agents.select(agent_type=JoshuaTreeAgent))
+        self.n_agents = n_agents - self.n_dead
+
+        # Number of refugia cells occupied by JoshuaTreeAgents
+        count_dict = (
+            self.agents.select(agent_type=VegCell)
+            .select(filter_func=lambda agent: agent.refugia_status)
+            .groupby("occupied_by_jotr_agents")
+            .count()
+        )
+        self.pct_refugia_cells_occupied = count_dict.get(True, 0) / (
+            count_dict.get(True, 0) + count_dict.get(False, 0)
+        )
+
+    def step(self):
+        if not self._on_start_executed:
+            self._on_start()
+
+        self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
+
+        # Step agents
+        self.agents.shuffle_do("step")
+        self.update_metrics()
+
+        # Collect data
+        self.datacollector.collect(self)
