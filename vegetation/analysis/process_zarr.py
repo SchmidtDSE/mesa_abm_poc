@@ -3,6 +3,7 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import imageio
+from io import BytesIO
 
 ZARR_PATH = "vegetation.zarr"
 
@@ -23,12 +24,18 @@ def ingest_zarr(zarr_path, group_name=None):
         print(f"Error opening Zarr dataset: {e}")
 
 
-def create_gif_from_xarray(sim_xarray, output_path, fps=10, cmap="viridis"):
-    # Normalize data to 0-255 range (for RGB conversion)
-    vmin, vmax = sim_xarray.min(), sim_xarray.max()
+def create_gif_from_xarray(
+    aggregated_dict, output_path, fps=10, cmap="viridis", vmin=None, vmax=None
+):
+    sim_xarray = aggregated_dict["aggregated_xarray"]
+
+    if vmin is None:
+        vmin = sim_xarray.min().values
+    if vmax is None:
+        vmax = sim_xarray.max().values
+
     normalized = ((sim_xarray - vmin) * 255 / (vmax - vmin)).astype(np.uint8)
 
-    # Create frames using matplotlib colormap
     frames = []
     for timestep_idx in sim_xarray.timestep:
         # Convert to RGB using colormap
@@ -66,7 +73,8 @@ def binary_minimum_by_encoding(attribute_xarray, attribute_minimum_key):
         "description": description,
         "aggregation": f"Percent of simulations with at least {attribute_minimum_key}",
     }
-    return result, description
+
+    return result
 
 
 if __name__ == "__main__":
@@ -89,19 +97,31 @@ if __name__ == "__main__":
     jotr_max_life_stage_xarray = sim_xarray["jotr_max_life_stage"]
 
     pct_sim_at_least_seed = binary_minimum_by_encoding(
-        jotr_max_life_stage_xarray, "Seed"
+        jotr_max_life_stage_xarray,
+        "SEED",
     )
     pct_sim_at_least_seedling = binary_minimum_by_encoding(
-        jotr_max_life_stage_xarray, "Seedling"
+        jotr_max_life_stage_xarray,
+        "SEEDLING",
     )
     pct_sim_at_least_juvenile = binary_minimum_by_encoding(
-        jotr_max_life_stage_xarray, "Juvenile"
+        jotr_max_life_stage_xarray,
+        "JUVENILE",
     )
     pct_sim_at_least_adult = binary_minimum_by_encoding(
-        jotr_max_life_stage_xarray, "Adult"
+        jotr_max_life_stage_xarray,
+        "ADULT",
     )
 
-    create_gif_from_xarray(pct_sim_at_least_seed, "pct_at_least_seed.gif")
-    create_gif_from_xarray(pct_sim_at_least_seedling, "pct_at_least_seedling.gif")
-    create_gif_from_xarray(pct_sim_at_least_juvenile, "pct_at_least_juvenile.gif")
-    create_gif_from_xarray(pct_sim_at_least_adult, "pct_at_least_adult.gif")
+    create_gif_from_xarray(
+        pct_sim_at_least_seed, "pct_at_least_seed.gif", vmin=0, vmax=1
+    )
+    create_gif_from_xarray(
+        pct_sim_at_least_seedling, "pct_at_least_seedling.gif", vmin=0, vmax=1
+    )
+    create_gif_from_xarray(
+        pct_sim_at_least_juvenile, "pct_at_least_juvenile.gif", vmin=0, vmax=1
+    )
+    create_gif_from_xarray(
+        pct_sim_at_least_adult, "pct_at_least_adult.gif", vmin=0, vmax=1
+    )
