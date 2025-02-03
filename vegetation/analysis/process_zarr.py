@@ -96,6 +96,10 @@ if __name__ == "__main__":
 
     jotr_max_life_stage_xarray = sim_xarray["jotr_max_life_stage"]
 
+    print(
+        f"Aggregating {jotr_max_life_stage_xarray.name} (n = {sim_xarray.dims['replicate_id']})..."
+    )
+
     pct_sim_at_least_seed = binary_minimum_by_encoding(
         jotr_max_life_stage_xarray,
         "SEED",
