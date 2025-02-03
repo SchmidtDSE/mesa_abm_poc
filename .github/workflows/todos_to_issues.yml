@@ -1,5 +1,9 @@
 name: "Run TODO to Issue"
-on: ["push"]
+on:
+  push:
+    branches-ignore:
+      - main
+      - dev
 jobs:
   build:
     runs-on: "ubuntu-latest"
