@@ -3,12 +3,11 @@
     "jotr_max_life_stage": {
       "description": "the max life stage of any jotr agent within this VegCell",
       "encoding": {
-        "-1": "No JOTR",
-        "0": "Seed",
-        "1": "Seedling",
-        "2": "Juvenile",
-        "3": "Adult",
-        "4": "Breeding"
+        "ABSENT": -1,
+        "SEED": 0,
+        "SEEDLING": 1,
+        "JUVENILE": 2,
+        "ADULT": 3
       }
     },
     "test_attribute": {

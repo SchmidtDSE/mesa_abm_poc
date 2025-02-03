@@ -43,6 +43,10 @@ def create_gif_from_xarray(sim_xarray, output_path, fps=10, cmap="viridis"):
 
 def binary_minimum_by_encoding(attribute_xarray, attribute_minimum_key):
     attribute_encoding = attribute_xarray.attribute_encoding
+
+    description = attribute_encoding.get("description", None)
+    attribute_encoding = attribute_encoding.get("encoding", None)
+
     if attribute_encoding is None:
         raise ValueError(
             "Target attribute does not have an encoding, so it cannot be aggregated."
@@ -57,7 +61,12 @@ def binary_minimum_by_encoding(attribute_xarray, attribute_minimum_key):
     binary_result = (attribute_xarray >= min_threshold).astype(float)
     result = binary_result.mean(dim="replicate_id")
 
-    return result
+    result = {
+        "aggregated_xarray": result,
+        "description": description,
+        "aggregation": f"Percent of simulations with at least {attribute_minimum_key}",
+    }
+    return result, description
 
 
 if __name__ == "__main__":
@@ -77,11 +86,22 @@ if __name__ == "__main__":
     args = parser.parse_args()
     sim_xarray = ingest_zarr(zarr_path=args.zarr_path, group_name=args.group_name)
 
-    first_sim = sim_xarray["jotr_max_life_stage"]
+    jotr_max_life_stage_xarray = sim_xarray["jotr_max_life_stage"]
 
-    pct_sim_at_least_seed = binary_minimum_by_encoding(first_sim, "Seed")
-    pct_sim_at_least_seedling = binary_minimum_by_encoding(first_sim, "Seedling")
-    pct_sim_at_least_juvenile = binary_minimum_by_encoding(first_sim, "Juvenile")
-    pct_sim_at_least_adult = binary_minimum_by_encoding(first_sim, "Adult")
+    pct_sim_at_least_seed = binary_minimum_by_encoding(
+        jotr_max_life_stage_xarray, "Seed"
+    )
+    pct_sim_at_least_seedling = binary_minimum_by_encoding(
+        jotr_max_life_stage_xarray, "Seedling"
+    )
+    pct_sim_at_least_juvenile = binary_minimum_by_encoding(
+        jotr_max_life_stage_xarray, "Juvenile"
+    )
+    pct_sim_at_least_adult = binary_minimum_by_encoding(
+        jotr_max_life_stage_xarray, "Adult"
+    )
 
-    create_gif_from_xarray(first_sim, "tst.gif")
+    create_gif_from_xarray(pct_sim_at_least_seed, "pct_at_least_seed.gif")
+    create_gif_from_xarray(pct_sim_at_least_seedling, "pct_at_least_seedling.gif")
+    create_gif_from_xarray(pct_sim_at_least_juvenile, "pct_at_least_juvenile.gif")
+    create_gif_from_xarray(pct_sim_at_least_adult, "pct_at_least_adult.gif")
