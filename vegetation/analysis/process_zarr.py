@@ -41,6 +41,25 @@ def create_gif_from_xarray(sim_xarray, output_path, fps=10, cmap="viridis"):
     imageio.mimsave(output_path, frames, fps=fps)
 
 
+def binary_minimum_by_encoding(attribute_xarray, attribute_minimum_key):
+    attribute_encoding = attribute_xarray.attribute_encoding
+    if attribute_encoding is None:
+        raise ValueError(
+            "Target attribute does not have an encoding, so it cannot be aggregated."
+        )
+
+    if attribute_minimum_key not in attribute_encoding:
+        raise ValueError(
+            f"Minimum key {attribute_minimum_key} not found in attribute encoding."
+        )
+
+    min_threshold = attribute_encoding[attribute_minimum_key]
+    binary_result = (attribute_xarray >= min_threshold).astype(float)
+    result = binary_result.mean(dim="replicate_id")
+
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Ingest Zarr data")
     parser.add_argument(
@@ -58,6 +77,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     sim_xarray = ingest_zarr(zarr_path=args.zarr_path, group_name=args.group_name)
 
-    first_sim = sim_xarray["jotr_max_life_stage"][0]
+    first_sim = sim_xarray["jotr_max_life_stage"]
+
+    pct_sim_at_least_seed = binary_minimum_by_encoding(first_sim, "Seed")
+    pct_sim_at_least_seedling = binary_minimum_by_encoding(first_sim, "Seedling")
+    pct_sim_at_least_juvenile = binary_minimum_by_encoding(first_sim, "Juvenile")
+    pct_sim_at_least_adult = binary_minimum_by_encoding(first_sim, "Adult")
 
     create_gif_from_xarray(first_sim, "tst.gif")
