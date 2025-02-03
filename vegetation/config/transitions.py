@@ -1,4 +1,4 @@
-from config.stages import LifeStage
+from vegetation.config.life_stages import LifeStage
 
 JOTR_JUVENILE_AGE = 8
 JOTR_ADULT_AGE = 15

@@ -5,12 +5,54 @@
       "name": "Solara: Launch",
       "type": "debugpy",
       "request": "launch",
-      "cwd": "${workspaceFolder}/vegetation",
+      "cwd": "${workspaceFolder}",
       "module": "solara",
-      "args": ["run", "app.py"],
+      "args": ["run", "vegetation/app.py"],
       "console": "integratedTerminal",
       "justMyCode": false,
-      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python"
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
+      "envFile": "${workspaceFolder}/.devcontainer/.env"
+    },
+    {
+      "name": "Python: Mesa Batch Run (Interactive)",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "module": "vegetation.batch",
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
+      "args": ["--interactive"],
+      "envFile": "${workspaceFolder}/.devcontainer/.env"
+    },
+    {
+      "name": "Python: Mesa Batch Run (Config JSON)",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "module": "vegetation.batch",
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
+      "args": ["--attribute_encodings_json", "vegetation/config/attribute_encodings.json", "--aoi_bounds_json", "vegetation/config/aoi_bounds.json", "--batch_parameters_json", "vegetation/config/batch_parameters.json", "--name", "initial_test_from_config", "--overwrite"],
+      "envFile": "${workspaceFolder}/.devcontainer/.env"
+    },
+    {
+      "name": "Python: Build Cache",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "module": "vegetation.cache_manager",
+      "justMyCode": false,
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
+      "envFile": "${workspaceFolder}/.devcontainer/.env"
+    },
+    {
+      "name": "Python: Process Zarr",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "module": "vegetation.analysis.process_zarr",
+      "justMyCode": false,
+      "envFile": "${workspaceFolder}/.devcontainer/.env",
+      "args": ["--zarr_path", "/workspaces/mesa_abm_poc/vegetation.zarr", "--group_name", "initial_test_from_config"],
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
     }
   ]
 }

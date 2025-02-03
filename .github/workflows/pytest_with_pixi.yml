@@ -1,0 +1,28 @@
+name: "Run pytest with Pixi env"
+on: ["push"]
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Check out code for this commit
+        uses: actions/checkout@v4
+
+      - name: Get pixi and install environment
+        uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: v0.39.5
+          environments: default
+          activate-environment: true
+          frozen: true
+
+      - name: Get required assets for simulations
+        run: |
+          mkdir .local_dev_data
+          mv tests/assets/*.tif .local_dev_data/
+
+      - name: Run pytest
+        run: pytest -v tests/
+        env:
+          INITIAL_AGENTS_PATH: "/home/runner/work/mesa_abm_poc/mesa_abm_poc/vegetation/data/initial_agents.json"
+          LOCAL_STAC_CACHE_FSTRING: "/home/runner/work/mesa_abm_poc/mesa_abm_poc/.local_dev_data/{band_name}_{bounds_md5}.tif"
+          TEST_CONFIGS_DIR: "/home/runner/work/mesa_abm_poc/mesa_abm_poc/tests/assets/configs"

@@ -1,0 +1,26 @@
+{
+    "python.defaultInterpreterPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
+    "python.testing.pytestEnabled": true,
+    "remote.extensionKind": {
+        "esbenp.prettier-vscode": ["workspace"],
+        "charliermarsh.ruff": ["workspace"],
+        "ms-python.python": ["workspace"]
+    },
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "[javascript]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+}

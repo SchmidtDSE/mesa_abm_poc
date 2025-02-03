@@ -3,29 +3,23 @@ from __future__ import annotations
 import mesa
 import mesa_geo as mg
 import numpy as np
-import stackstac
-from pystac_client import Client as PystacClient
-import planetary_computer
 import random
 import os
 import hashlib
 import logging
-import time
 
-from config.stages import LifeStage
+from vegetation.config.life_stages import LifeStage
+from vegetation.config.global_paths import LOCAL_STAC_CACHE_FSTRING
 
 # from patch.model import JoshuaTreeAgent
 # import rioxarray as rxr
-
-DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
-LOCAL_STAC_CACHE_FSTRING = "/local_dev_data/{band_name}_{bounds_md5}.tif"
-SAVE_LOCAL_STAC_CACHE = True
 
 
 class VegCell(mg.Cell):
     elevation: int | None
     aridity: int | None
     refugia_status: bool = False
+    jotr_max_life_stage: int | None
 
     def __init__(
         self,
@@ -46,20 +40,32 @@ class VegCell(mg.Cell):
         # is that this will either not work or be very slow, but itll get us started
         self.jotr_agents = []
         self.occupied_by_jotr_agents = False
+        self.jotr_max_life_stage = 0
+
+        # DEBUG: Test attribute to see how this interacts with Zarr groups / datasets
+        self.test_attribute = 1
 
     def step(self):
-        # Right now, this cell is being updated by the JOTR agent step, but it probably shouldn't be
         self.update_occupancy()
-        pass
-    
+
     def update_occupancy(self):
-            # Very clunky way to exclude dead agents
-            alive_jotr_agents = [agent for agent in self.jotr_agents if agent.life_stage != LifeStage.DEAD]
-            self.occupied_by_jotr_agents = True if len(alive_jotr_agents) > 0 else False
+        # Very clunky way to exclude dead agents
+        alive_patch_life_stages = [
+            agent.life_stage
+            for agent in self.jotr_agents
+            if agent.life_stage != LifeStage.DEAD
+        ]
+        if alive_patch_life_stages:
+            self.jotr_max_life_stage = max(alive_patch_life_stages)
+            self.occupied_by_jotr_agents = True
+        else:
+            self.jotr_max_life_stage = None
+            self.occupied_by_jotr_agents = False
 
     def add_agent_link(self, jotr_agent):
         if jotr_agent.life_stage and jotr_agent not in self.jotr_agents:
             self.jotr_agents.append(jotr_agent)
+
 
 class StudyArea(mg.GeoSpace):
     def __init__(self, bounds, epsg, model):
@@ -72,66 +78,39 @@ class StudyArea(mg.GeoSpace):
         # have to download it every time. This hash is used to uniquely identify
         # the bounds of the study area, so that we can grab if we already have it
         self.bounds_md5 = hashlib.md5(str(bounds).encode()).hexdigest()
+        self.local_stac_cache_fstring = LOCAL_STAC_CACHE_FSTRING
 
-        self.pystac_client = None
-        if not LOCAL_STAC_CACHE_FSTRING:
-            self.pystac_client = PystacClient.open(
-                DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
-            )
+    @property
+    def _cache_paths(self) -> dict:
+        cache_dict = {
+            "elevation": self.local_stac_cache_fstring.format(
+                band_name="elevation",
+                bounds_md5=self.bounds_md5,
+            ),
+        }
+        return cache_dict
 
     def get_elevation(self):
+        elevation_cache_path = self._cache_paths["elevation"]
 
-        local_elevation_path = LOCAL_STAC_CACHE_FSTRING.format(
-            band_name="elevation",
-            bounds_md5=self.bounds_md5,
-        )
-
-        if os.path.exists(local_elevation_path):
-
-            print(f"Loading elevation from local cache: {local_elevation_path}")
+        if os.path.exists(elevation_cache_path):
+            logging.info(f"Loading elevation from local cache: {elevation_cache_path}")
 
             try:
                 elevation_layer = mg.RasterLayer.from_file(
-                    raster_file=local_elevation_path,
+                    raster_file=elevation_cache_path,
                     model=self.model,
                     cell_cls=VegCell,
                     attr_name="elevation",
                 )
             except Exception as e:
                 logging.warning(
-                    f"Failed to load elevation from local cache ({local_elevation_path}): {e}"
+                    f"Failed to load elevation from local cache ({elevation_cache_path}): {e}"
                 )
                 raise e
 
         else:
-
-            print("No local cache found, downloading elevation from STAC")
-            time_at_start = time.time()
-
-            elevation = self.get_elevation_from_stac()
-
-            __elevation_bands, elevation_height, elevation_width = elevation.shape
-
-            elevation_layer = mg.RasterLayer(
-                model=self.model,
-                height=elevation_height,
-                width=elevation_width,
-                # cell_cls=VegCell,
-                total_bounds=self.bounds,
-                # crs=f"epsg:{self.epsg}",
-                crs=self.crs,
-            )
-
-            elevation_layer.apply_raster(
-                data=elevation,
-                attr_name="elevation",
-            )
-
-            if SAVE_LOCAL_STAC_CACHE:
-                print(f"Saving elevation to local cache: {local_elevation_path}")
-                elevation_layer.to_file(local_elevation_path)
-
-            print(f"Downloaded elevation in {time.time() - time_at_start} seconds")
+            raise ValueError("No local cache found for elevation data")
 
         super().add_layer(elevation_layer)
 
@@ -161,45 +140,6 @@ class StudyArea(mg.GeoSpace):
             attr_name="refugia_status",
         )
         super().add_layer(self.raster_layer)
-
-    def get_elevation_from_stac(self):
-
-        print("Collecting STAC Items")
-        items_generator = self.pystac_client.search(
-            collections=["cop-dem-glo-30"],
-            bbox=self.bounds,
-        ).items()
-
-        items = [item for item in items_generator]
-        print(f"Found {len(items)} items")
-
-        print("Stacking STAC Items")
-        elevation = stackstac.stack(
-            items=items,
-            assets=["data"],
-            bounds=self.bounds,
-            epsg=self.epsg,
-        )
-
-        # TODO: It seems weird that we have duplicate time dimension, it seems like
-        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/15
-        # stackstac should automatically ignore the `id` dimension which is just
-        # is contains the cog name, which doesn't really matter to us. This check
-        # ensures that there aren't overlap issues where we introduce some kind of
-        # bias, but this seems like a code smell to me
-
-        print("Checking for duplicate elevation data")
-        n_not_nan = np.unique(elevation.count(dim="time"))
-        if not n_not_nan == [1]:
-            raise ValueError(
-                f"Some cells have no, or duplicate, elevation data. Unique number of non-nan values: {n_not_nan}"
-            )
-
-        # Collapse along time dimension, ignoring COG source
-        print("Collapsing time dimension")
-        elevation = elevation.median(dim="time")
-
-        return elevation
 
     @property
     def raster_layer(self):

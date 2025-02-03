@@ -2,16 +2,34 @@
   "name": "Dev Container",
   "build": {
     "dockerfile": "Dockerfile",
-    "context": "../"
+    "context": "../",
+    "options": [
+      "--platform=linux/amd64"
+    ]
   },
   "mounts": [
-    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind", // SSH keys
-    "source=/local_dev_data,target=/local_dev_data,type=bind" // Local development cache
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached", // SSH keys
+    "source=${localEnv:HOME}/local_dev_data,target=/local_dev_data,type=bind,consistency=cached", // Local development cache,
+    "source=${localWorkspaceFolderBasename}-pixi,target=${containerWorkspaceFolder}/.pixi,type=volume", // Pixi virtualenv (to address OSX filesystem issues)
+    "source=${localEnv:HOME}/.config/gcloud,target=/root/.config/gcloud,type=bind" // GCP credentials
   ],
   "extensions": [
     "ms-python.flake8",
     "ms-python.python",
     "ms-python.debugpy",
-    "ms-python.black-formatter"
-  ]
+    "ms-python.black-formatter",
+    "jjjermiah.pixi-vscode",
+    "github.vscode-github-actions",
+    "ms-azuretools.vscode-docker",
+    "charliermarsh.ruff",
+    "esbenp.prettier-vscode"
+  ],
+  "postCreateCommand": ".devcontainer/scripts/run_post_create.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.pixi/envs/default/bin/python"
+      }
+    }
+  }
 }

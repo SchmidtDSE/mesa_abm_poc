@@ -1,0 +1,19 @@
+
+{
+    "agent": {
+        "JoshuaTreeAgent": {
+            "on_create": "{VERY_WIDE_INDENT}🌱 Agent {agent.unique_id} created at {agent.indices}",
+            "on_survive": "{STD_INDENT}💪 Agent {agent.unique_id} survived! ({agent.life_stage} w/ survival rate {survival_rate:.2f})",
+            "on_death": "{STD_INDENT}💀 Agent {agent.unique_id} died! ({agent.life_stage} w/ survival rate {survival_rate:.2f})",
+            "on_transition": "{WIDE_INDENT}🔄 Agent {agent.unique_id} promoted to {agent.life_stage}",
+            "on_disperse": "{WIDE_INDENT}🌰 Agent {agent.unique_id} ({agent.life_stage}) is dispersing {n_seeds} seeds..."
+        }
+    },
+    "sim": {
+        "Vegetation": {
+            "on_start": "### 🌵 Simulation started (maximum number of steps: {sim.num_steps}) ###",
+            "on_step": "# 🕰️ Time passes. It is the year {sim.steps} #",
+            "on_manage": "# ⛏ Adding {n_agents} agents to the simulation..."
+        }
+    }
+}
