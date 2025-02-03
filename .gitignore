@@ -14,3 +14,6 @@ logs
 
 *.zarr
 *.zarr.sync
+
+.DS_Store
+*/.DS_Store
