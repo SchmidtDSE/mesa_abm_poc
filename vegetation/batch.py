@@ -74,8 +74,21 @@ def get_interactive_params(
             simulation_name = list(
                 k for k in batch_parameters.keys() if k != "__interactive_default"
             )[sim_idx]
-            simulation_parameters = batch_parameters[simulation_name]
-            break
+            print("Selected:", simulation_name)
+
+            parameters_dict = construct_model_run_parameters_from_file(
+                simulation_name=simulation_name,
+                batch_parameters_path=batch_parameters_path,
+                attribute_encodings_path=attribute_encodings_path,
+                aoi_bounds_path=aoi_bounds_path,
+            )
+
+            print(f"Running simulation {simulation_name} with batch parameters:")
+            for key, value in parameters_dict["model_run_parameters"].items():
+                print(f"{key}: {value}")
+
+            return parameters_dict
+
         except ValueError:
             # If not numeric, treat as new simulation name
             simulation_name = selection
@@ -158,7 +171,7 @@ def get_interactive_params(
 
     model_run_parameters["simulation_name"] = simulation_name
 
-    return {
+    parameters_dict = {
         "meta_parameters": meta_parameters,
         "model_run_parameters": model_run_parameters,
         "attribute_encodings": attribute_encodings,
@@ -166,6 +179,8 @@ def get_interactive_params(
         "cell_attributes_to_save": cell_attributes_to_save,
         "overwrite": overwrite,
     }
+
+    return parameters_dict
 
 
 # TODO: Implement early stopping when all the JOTR die off
@@ -308,6 +323,8 @@ if __name__ == "__main__":
         parameters_dict = get_interactive_params()
         simulation_name = parameters_dict["model_run_parameters"]["simulation_name"]
         overwrite = parameters_dict["overwrite"]
+        # simulation_name = parameters_dict["model_run_parameters"]["simulation_name"]
+        # overwrite = parameters_dict["overwrite"]
 
     else:
         simulation_name = arg_dict["run_name"]
