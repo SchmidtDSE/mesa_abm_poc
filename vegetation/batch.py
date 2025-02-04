@@ -150,9 +150,10 @@ def construct_model_run_parameters_from_file(
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/39
         #  (either provided at runtime or in  the config file, but since
         # the attrs are within the agent class, it seems like it in config)
-        assert all(
-            [attr in attribute_encodings.keys() for attr in cell_attributes_to_save]
-        )
+        if cell_attributes_to_save is not None:
+            assert all(
+                [attr in attribute_encodings.keys() for attr in cell_attributes_to_save]
+            )
 
     model_run_parameters["simulation_name"] = simulation_name
 

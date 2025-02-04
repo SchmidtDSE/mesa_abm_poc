@@ -32,7 +32,7 @@
       "module": "vegetation.batch",
       "justMyCode": false,
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
-      "args": ["--name", "test_run", "--attribute_encodings_json", "vegetation/config/attribute_encodings.json", "--aoi_bounds_json", "vegetation/config/aoi_bounds.json", "--batch_parameters_json", "vegetation/config/batch_parameters.json", "--overwrite"],
+      "args": ["--name", "test_run_no_zarr", "--attribute_encodings_json", "vegetation/config/attribute_encodings.json", "--aoi_bounds_json", "vegetation/config/aoi_bounds.json", "--batch_parameters_json", "vegetation/config/batch_parameters.json", "--overwrite"],
       "envFile": "${workspaceFolder}/.devcontainer/.env"
     },
     {

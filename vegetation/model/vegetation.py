@@ -44,10 +44,12 @@ class Vegetation(mesa.Model):
         log_config_path=None,
         log_level=None,
         simulation_name=None,
-        ignore_zarr=False,
-        ignore_attribute_encodings=False,
+        ignore_zarr_warning=False,
+        ignore_attribute_encodings_warning=False,
     ):
         super().__init__()
+        self._ignore_zarr_warning = ignore_zarr_warning
+        self._ignore_attribute_encodings_warning = ignore_attribute_encodings_warning
         self._verify_class_attributes()
 
         if log_config_path:
@@ -80,10 +82,11 @@ class Vegetation(mesa.Model):
 
         self.simulation_name = simulation_name
         self._zarr_manager = None
+        self._save_to_zarr = False
 
     @property
     def zarr_manager(self):
-        if self._zarr_manager is None:
+        if self._zarr_manager is None and self._save_to_zarr:
             self._zarr_manager = ZarrManager(
                 width=self.space.raster_layer.width,
                 height=self.space.raster_layer.height,
@@ -117,6 +120,7 @@ class Vegetation(mesa.Model):
     @classmethod
     def set_cell_attributes_to_save(cls, cell_attributes_to_save):
         cls._cell_attributes_to_save = cell_attributes_to_save
+        cls._save_to_zarr = True
 
     @classmethod
     def set_aoi_bounds(cls, aoi_bounds):
@@ -154,12 +158,18 @@ class Vegetation(mesa.Model):
         return points
 
     def _verify_class_attributes(self):
-        if not hasattr(self, "_attribute_encodings") and not ignore_attribute_encodings:
+        if (
+            not hasattr(self, "_attribute_encodings")
+            and not self._ignore_attribute_encodings_warning
+        ):
             Warning(
                 "Attribute encodings not set - consider passing attribute_encodings to Vegetation.set_attribute_encodings()."
             )
 
-        if not hasattr(self, "_cell_attributes_to_save") and not ignore_zarr:
+        if (
+            not hasattr(self, "_cell_attributes_to_save")
+            and not self._ignore_zarr_warning
+        ):
             Warning(
                 "Cell attributes to save not set - no Zarr output will be generated."
             )
@@ -266,7 +276,8 @@ class Vegetation(mesa.Model):
         )
 
     def cleanup(self):
-        self.zarr_manager.consolidate_metadata()
+        if self._save_to_zarr:
+            self.zarr_manager.consolidate_metadata()
 
     def step(self):
         if not self._on_start_executed:
