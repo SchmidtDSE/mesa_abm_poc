@@ -8,6 +8,7 @@ from vegetation.batch.routes import (
     get_interactive_params,
     construct_model_run_parameters_from_file,
 )
+from vegetation.batch.batchrunner import batch_run_serialized
 
 CELL_CLASS = "VegCell"
 DEFAULT_BATCH_PARAMETERS_PATH = os.getenv(
@@ -133,7 +134,7 @@ if __name__ == "__main__":
         cell_attributes_to_save=cell_attributes_to_save
     )
 
-    results = batch_run(
+    results = batch_run_serialized(
         Vegetation,
         parameters=model_run_parameters,
         iterations=meta_parameters["num_iterations_per_worker"],
