@@ -220,7 +220,10 @@ if __name__ == "__main__":
     )
 
     output_path = (
-        os.getenv("DOCKER_HOST_MESA_RESULTS_DIR", "vegetation/.local_dev_data/results")
+        os.getenv("MESA_RESULTS_DIR", "/local_dev_data/mesa_results/")
         + f"{run_name}.csv"
     )
+    if not os.path.exists(os.path.dirname(output_path)):
+        os.makedirs(os.path.dirname(output_path))
+
     pd.DataFrame(results).to_csv(output_path)
