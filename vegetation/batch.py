@@ -219,5 +219,8 @@ if __name__ == "__main__":
         display_progress=True,
     )
 
-    output_path = f"vegetation/.local_dev_data/results/{run_name}.csv"
+    output_path = (
+        os.getenv("DOCKER_HOST_MESA_RESULTS_DIR", "vegetation/.local_dev_data/results")
+        + f"{run_name}.csv"
+    )
     pd.DataFrame(results).to_csv(output_path)
