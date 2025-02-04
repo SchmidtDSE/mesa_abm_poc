@@ -86,7 +86,7 @@ class Vegetation(mesa.Model):
 
     @property
     def zarr_manager(self):
-        if self._zarr_manager is None and self._save_to_zarr:
+        if self._zarr_manager is None:
             self._zarr_manager = ZarrManager(
                 width=self.space.raster_layer.width,
                 height=self.space.raster_layer.height,
