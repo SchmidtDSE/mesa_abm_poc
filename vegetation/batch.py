@@ -18,6 +18,38 @@ DEFAULT_AOI_BOUNDS_PATH = os.getenv(
 )
 
 
+def convert_user_input(value: any, user_input: str) -> any:
+    """Convert user input to match the type of the original value."""
+    if not user_input.strip():
+        return value
+
+    original_type = type(value)
+    try:
+        if isinstance(value, list):
+            # Strip brackets and split on commas
+            cleaned_input = user_input.strip("[]() ").split(",")
+            # Convert each element to match type of first element in original list
+            if value:
+                return [
+                    convert_user_input(value[0], item.strip()) for item in cleaned_input
+                ]
+            return [
+                item.strip() for item in cleaned_input
+            ]  # If empty list, return strings
+
+        if isinstance(value, bool):
+            return user_input.lower() in ("true", "t", "yes", "y", "1")
+        elif isinstance(value, int):
+            return int(user_input)
+        elif isinstance(value, float):
+            return float(user_input)
+        else:
+            return user_input
+    except ValueError:
+        print(f"Invalid input. Expected type {original_type.__name__}")
+        return value
+
+
 def get_interactive_params(
     batch_parameters_path: Optional[str] = DEFAULT_BATCH_PARAMETERS_PATH,
     attribute_encodings_path: Optional[str] = DEFAULT_ATTRIBUTE_ENCODINGS_PATH,
@@ -26,6 +58,7 @@ def get_interactive_params(
     # Load configs first
     batch_parameters = json.load(open(batch_parameters_path, "r"))
     simulation_parameters = None
+    overwrite = False
 
     # Let user select simulation or enter new name
     print("\nAvailable simulations (or enter new name):")
@@ -36,8 +69,8 @@ def get_interactive_params(
     while True:
         selection = input("\nSelect simulation number or enter new name: ")
         try:
-            # Try numeric selection first
-            sim_idx = int(selection)
+            # Try numeric selection first (0-indexed)
+            sim_idx = int(selection) - 1
             simulation_name = list(
                 k for k in batch_parameters.keys() if k != "__interactive_default"
             )[sim_idx]
@@ -64,26 +97,43 @@ def get_interactive_params(
         if overwrite.lower() != "y":
             print("Exiting.")
             exit()
+        else:
+            overwrite = True
 
     if not simulation_parameters:
         simulation_parameters = batch_parameters[simulation_name]
     meta_parameters = simulation_parameters["meta_parameters"]
     model_run_parameters = simulation_parameters["model_run_params"]
-    cell_attributes_to_save = simulation_parameters["cell_attributes_to_save"]
+
+    # Interactive selection of cell attributes to save
+    cell_attributes_to_save = []
+    if attribute_encodings_path:
+        attribute_encodings = json.load(open(attribute_encodings_path, "r"))
+        veg_cell_attrs = attribute_encodings[CELL_CLASS]
+
+        print("\nSelect cell attributes to save (y/n for each):")
+        for attr, details in veg_cell_attrs.items():
+            desc = details.get("description", "No description available")
+            save_attr = input(f"{attr} ({desc}) [y/n]: ").lower()
+            if save_attr == "y":
+                cell_attributes_to_save.append(attr)
+
+        if not cell_attributes_to_save:
+            print("Warning: No attributes selected to save")
 
     # Interactive override of meta parameters
     print("\nMeta parameters (press Enter to keep default):")
     for key, value in meta_parameters.items():
         user_input = input(f"{key} [{value}]: ")
         if user_input.strip():
-            meta_parameters[key] = type(value)(user_input)
+            meta_parameters[key] = convert_user_input(value, user_input)
 
     # Interactive override of model parameters
     print("\nModel parameters (press Enter to keep default):")
     for key, value in model_run_parameters.items():
         user_input = input(f"{key} [{value}]: ")
         if user_input.strip():
-            model_run_parameters[key] = type(value)(user_input)
+            model_run_parameters[key] = convert_user_input(value, user_input)
 
     # Handle bounds
     aoi_bounds = None
@@ -114,6 +164,7 @@ def get_interactive_params(
         "attribute_encodings": attribute_encodings,
         "aoi_bounds": aoi_bounds,
         "cell_attributes_to_save": cell_attributes_to_save,
+        "overwrite": overwrite,
     }
 
 
@@ -256,10 +307,11 @@ if __name__ == "__main__":
     if arg_dict["interactive"]:
         parameters_dict = get_interactive_params()
         simulation_name = parameters_dict["model_run_parameters"]["simulation_name"]
+        overwrite = parameters_dict["overwrite"]
 
     else:
         simulation_name = arg_dict["run_name"]
-
+        overwrite = arg_dict["overwrite"]
         parameters_dict = construct_model_run_parameters_from_file(
             simulation_name=simulation_name,
             attribute_encodings_path=arg_dict["attribute_encodings_json"],
@@ -272,7 +324,7 @@ if __name__ == "__main__":
         + f"{simulation_name}.csv"
     )
 
-    if os.path.exists(output_path) and not arg_dict["overwrite"]:
+    if os.path.exists(output_path) and not overwrite:
         raise ValueError(
             f"Output path {output_path} exists. Use --overwrite to overwrite"
         )
