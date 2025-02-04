@@ -53,6 +53,7 @@ environments:
       - conda: https://conda.anaconda.org/main/linux-64/dbus-1.13.18-hb2f20db_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/debugpy-1.8.11-py311h6a678d5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/decorator-5.1.1-pyhd3eb1b0_0.tar.bz2
+      - conda: https://conda.anaconda.org/main/linux-64/dill-0.3.8-py311h06a4308_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/executing-0.8.3-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/expat-2.6.4-h6a678d5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/fasteners-0.16.3-pyhd3eb1b0_0.tar.bz2
@@ -408,6 +409,7 @@ environments:
       - conda: https://conda.anaconda.org/main/osx-64/dask-core-2024.12.1-py311hecd8cb5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-64/debugpy-1.8.11-py311h6d0c2b6_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/decorator-5.1.1-pyhd3eb1b0_0.tar.bz2
+      - conda: https://conda.anaconda.org/main/osx-64/dill-0.3.8-py311hecd8cb5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/executing-0.8.3-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-64/expat-2.6.4-h6d0c2b6_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/fasteners-0.16.3-pyhd3eb1b0_0.tar.bz2
@@ -747,6 +749,7 @@ environments:
       - conda: https://conda.anaconda.org/main/osx-arm64/dask-core-2024.12.1-py311hca03da5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-arm64/debugpy-1.8.11-py311h313beb8_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/decorator-5.1.1-pyhd3eb1b0_0.tar.bz2
+      - conda: https://conda.anaconda.org/main/osx-arm64/dill-0.3.8-py311hca03da5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/executing-0.8.3-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-arm64/expat-2.6.4-h313beb8_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/fasteners-0.16.3-pyhd3eb1b0_0.tar.bz2
@@ -1085,6 +1088,7 @@ environments:
       - conda: https://conda.anaconda.org/main/win-64/dask-core-2024.12.1-py311haa95532_0.tar.bz2
       - conda: https://conda.anaconda.org/main/win-64/debugpy-1.8.11-py311h5da7b33_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/decorator-5.1.1-pyhd3eb1b0_0.tar.bz2
+      - conda: https://conda.anaconda.org/main/win-64/dill-0.3.8-py311haa95532_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/executing-0.8.3-pyhd3eb1b0_0.tar.bz2
       - conda: https://conda.anaconda.org/main/win-64/expat-2.6.4-h8ddb27b_0.tar.bz2
       - conda: https://conda.anaconda.org/main/noarch/fasteners-0.16.3-pyhd3eb1b0_0.tar.bz2
@@ -3133,6 +3137,42 @@ packages:
   license_family: BSD
   size: 11936
   timestamp: 1643638345485
+- conda: https://conda.anaconda.org/main/linux-64/dill-0.3.8-py311h06a4308_0.tar.bz2
+  sha256: 4f5c74efb6a03ddab251a40a15774be379ffeb795aa91cd65eb81636a12736ec
+  md5: 162f64aba464121ffac5f9ca062c1be2
+  depends:
+  - python >=3.11,<3.12.0a0
+  license: BSD-3-Clause
+  license_family: BSD
+  size: 224644
+  timestamp: 1715094715600
+- conda: https://conda.anaconda.org/main/osx-64/dill-0.3.8-py311hecd8cb5_0.tar.bz2
+  sha256: a71f24d646bacf2c1e3c252938163ddaff872ddf344a5163ded4ebedee1bdfeb
+  md5: b13a0a30367582e4300912692da0a31a
+  depends:
+  - python >=3.11,<3.12.0a0
+  license: BSD-3-Clause
+  license_family: BSD
+  size: 226154
+  timestamp: 1715094891024
+- conda: https://conda.anaconda.org/main/osx-arm64/dill-0.3.8-py311hca03da5_0.tar.bz2
+  sha256: 60328ccb7226310a74f25af73b2f05ab8bba3c87e2e3e783cf38ae7fadbbd419
+  md5: d0a635120a8f2d9328944cdac7734c63
+  depends:
+  - python >=3.11,<3.12.0a0
+  license: BSD-3-Clause
+  license_family: BSD
+  size: 226187
+  timestamp: 1715094800697
+- conda: https://conda.anaconda.org/main/win-64/dill-0.3.8-py311haa95532_0.tar.bz2
+  sha256: c330e04ff7f272d94db3edc88fea797fdd5d7606a62455b385538f313d0816e6
+  md5: 40575fccaabdc9a88f3967f979d0ea48
+  depends:
+  - python >=3.11,<3.12.0a0
+  license: BSD-3-Clause
+  license_family: BSD
+  size: 296490
+  timestamp: 1715094912603
 - pypi: https://files.pythonhosted.org/packages/b5/fd/afcd0496feca3276f509df3dbd5dae726fcc756f1a08d9e25abe1733f962/executing-2.1.0-py2.py3-none-any.whl
   name: executing
   version: 2.1.0
