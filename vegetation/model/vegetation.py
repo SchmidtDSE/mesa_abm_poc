@@ -169,8 +169,7 @@ class Vegetation(mesa.Model):
             zarr_manager.set_group_name(self.simulation_name)
 
         self.replicate_idx = zarr_manager.resize_array_for_next_replicate()
-
-        return zarr_manager
+        self._zarr_manager = zarr_manager
 
     def _verify_class_attributes(self):
         if (
