@@ -24,6 +24,15 @@ def test_batch_run_basic():
 
     model_run_parameters = parameters_dict["model_run_parameters"]
     meta_parameters = parameters_dict["meta_parameters"]
+    attribute_encodings = parameters_dict["attribute_encodings"]
+    aoi_bounds = parameters_dict["aoi_bounds"]
+    cell_attributes_to_save = parameters_dict["cell_attributes_to_save"]
+
+    Vegetation.set_attribute_encodings(attribute_encodings=attribute_encodings)
+    Vegetation.set_aoi_bounds(aoi_bounds=aoi_bounds)
+    Vegetation.set_cell_attributes_to_save(
+        cell_attributes_to_save=cell_attributes_to_save
+    )
 
     # Run simulation with minimal parameters
     results = batch_run(
