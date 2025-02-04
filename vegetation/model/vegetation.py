@@ -38,19 +38,18 @@ class Vegetation(mesa.Model):
 
     def __init__(
         self,
-        bounds,
         num_steps=20,
         management_planting_density=0.01,
         epsg=4326,
         log_config_path=None,
         log_level=None,
-        cell_attributes_to_save=[],
-        attribute_encodings={},
         simulation_name=None,
+        ignore_zarr=False,
+        ignore_attribute_encodings=False,
     ):
         super().__init__()
+        self._verify_class_attributes()
 
-        # Initialize logging config first
         if log_config_path:
             LogConfig.initialize(log_config_path)
 
@@ -59,14 +58,13 @@ class Vegetation(mesa.Model):
         else:
             self.log_level = log_level
 
-        self.bounds = bounds
         self.num_steps = num_steps
         self.management_planting_density = management_planting_density
         self._on_start_executed = False
         self.sim_idx = 1
 
         # mesa setup
-        self.space = StudyArea(bounds, epsg=epsg, model=self)
+        self.space = StudyArea(self._aoi_bounds, epsg=epsg, model=self)
         self.datacollector = mesa.DataCollector(
             {
                 "Mean Age": "mean_age",
@@ -80,8 +78,6 @@ class Vegetation(mesa.Model):
             }
         )
 
-        self.cell_attributes_to_save = cell_attributes_to_save
-        self.attribute_encodings = attribute_encodings
         self.simulation_name = simulation_name
         self._zarr_manager = None
 
@@ -95,8 +91,8 @@ class Vegetation(mesa.Model):
                 crs=self.space.crs,
                 transformer_json=self.space.transformer.to_json(),
                 run_parameter_dict=TEST_RUN_PARAMETERS,
-                attribute_list=self.cell_attributes_to_save,
-                attribute_encodings=self.attribute_encodings,
+                attribute_list=self._cell_attributes_to_save,
+                attribute_encodings=self._attribute_encodings,
                 filename=ZARR_FILENAME,
             )
 
@@ -113,6 +109,18 @@ class Vegetation(mesa.Model):
             self.replicate_idx = self._zarr_manager.resize_array_for_next_replicate()
 
         return self._zarr_manager
+
+    @classmethod
+    def set_attribute_encodings(cls, attribute_encodings):
+        cls._attribute_encodings = attribute_encodings
+
+    @classmethod
+    def set_cell_attributes_to_save(cls, cell_attributes_to_save):
+        cls._cell_attributes_to_save = cell_attributes_to_save
+
+    @classmethod
+    def set_aoi_bounds(cls, aoi_bounds):
+        cls._aoi_bounds = aoi_bounds
 
     @classmethod
     def _generate_planting_points(self, geo_json):
@@ -144,6 +152,22 @@ class Vegetation(mesa.Model):
                 points.append((management_x_wgs84, management_y_wgs84))
 
         return points
+
+    def _verify_class_attributes(self):
+        if not hasattr(self, "_attribute_encodings") and not ignore_attribute_encodings:
+            Warning(
+                "Attribute encodings not set - consider passing attribute_encodings to Vegetation.set_attribute_encodings()."
+            )
+
+        if not hasattr(self, "_cell_attributes_to_save") and not ignore_zarr:
+            Warning(
+                "Cell attributes to save not set - no Zarr output will be generated."
+            )
+
+        if not hasattr(self, "_aoi_bounds"):
+            raise ValueError(
+                "Vegetation._aoi_bounds not set - call Vegetation.set_aoi_bounds() before initializing the model."
+            )
 
     def _on_start(self):
         self.sim_logger.log_sim_event(self, SimEventType.ON_START)
@@ -233,7 +257,7 @@ class Vegetation(mesa.Model):
     def _append_timestep_to_zarr(self):
         timestep_cell_attribute_dict = get_array_from_nested_cell_list(
             veg_cells=self.space.raster_layer.cells,
-            cell_attributes_to_get=self.cell_attributes_to_save,
+            cell_attributes_to_get=self._cell_attributes_to_save,
         )
 
         self.zarr_manager.append_synchronized_timestep(
@@ -255,7 +279,7 @@ class Vegetation(mesa.Model):
 
         self.datacollector.collect(self)
 
-        if len(self.cell_attributes_to_save) > 0:
+        if self._cell_attributes_to_save is not None:
             self._append_timestep_to_zarr()
 
         if self.steps >= self.num_steps:

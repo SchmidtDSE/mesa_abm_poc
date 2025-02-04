@@ -6,6 +6,8 @@ import argparse
 import pandas as pd
 from typing import Optional
 
+CELL_CLASS = "VegCell"
+
 
 def get_interactive_params() -> dict:
     run_steps = input("Please enter the number of steps you want to simulate: ")
@@ -119,50 +121,47 @@ def construct_model_run_parameters_from_file(
 ):
     # Read in the configs
     batch_parameters = json.load(open(batch_parameters_path, "r"))
+    simulation_parameters = batch_parameters[simulation_name]
     # Get meta parameters for this batch run (things not relevant to specific model runs)
-    meta_parameters = batch_parameters[simulation_name]["meta_parameters"]
+    meta_parameters = simulation_parameters["meta_parameters"]
 
     # Get the model parameters for this particular simulation
-    model_run_parameters = batch_parameters[simulation_name]["model_run_params"]
+    model_run_parameters = simulation_parameters["model_run_params"]
 
     # Get the cell-level attributes to save to zarr
-    cell_attributes_to_save = batch_parameters[simulation_name][
-        "cell_attributes_to_save"
-    ]
+    cell_attributes_to_save = simulation_parameters["cell_attributes_to_save"]
 
     # Replace the string key for bounds with the actual bounds, if provided
     if aoi_bounds_path is not None:
-        aoi_bounds = json.load(open(aoi_bounds_path, "r"))
-        model_run_parameters["bounds"] = [aoi_bounds[model_run_parameters["bounds"]]]
-    assert "bounds" in model_run_parameters
-    assert (
-        len(model_run_parameters["bounds"]) == 1
-    )  # pass a list of bounds, to match mesa
-    assert len(model_run_parameters["bounds"][0]) == 4
-    assert all([isinstance(x, float) for x in model_run_parameters["bounds"][0]])
+        aoi_bounds_options = json.load(open(aoi_bounds_path, "r"))
+        aoi_bounds_key = simulation_parameters["bounds_key"]
+        aoi_bounds = aoi_bounds_options[aoi_bounds_key]
+        del simulation_parameters["bounds_key"]
+
+    assert len(aoi_bounds) == 4
+    assert all([isinstance(x, float) for x in aoi_bounds])
 
     # Include the attribute encodings, for zarr to save within metadata, if provided
     if attribute_encodings_path is not None:
         attribute_encodings = json.load(open(attribute_encodings_path, "r"))
-        model_run_parameters["attribute_encodings"] = [attribute_encodings]
+        attribute_encodings = attribute_encodings[CELL_CLASS]
 
         # TODO: This might be worth enforcing for all simulations
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/39
         #  (either provided at runtime or in  the config file, but since
         # the attrs are within the agent class, it seems like it in config)
         assert all(
-            [
-                attr in model_run_parameters["attribute_encodings"][0]["VegCell"].keys()
-                for attr in cell_attributes_to_save[0]
-            ]
+            [attr in attribute_encodings.keys() for attr in cell_attributes_to_save]
         )
-        model_run_parameters["cell_attributes_to_save"] = cell_attributes_to_save
 
     model_run_parameters["simulation_name"] = simulation_name
 
     return {
         "meta_parameters": meta_parameters,
         "model_run_parameters": model_run_parameters,
+        "attribute_encodings": attribute_encodings,
+        "aoi_bounds": aoi_bounds,
+        "cell_attributes_to_save": cell_attributes_to_save,
     }
 
 
@@ -201,6 +200,15 @@ if __name__ == "__main__":
 
     model_run_parameters = parameters_dict["model_run_parameters"]
     meta_parameters = parameters_dict["meta_parameters"]
+    attribute_encodings = parameters_dict["attribute_encodings"]
+    aoi_bounds = parameters_dict["aoi_bounds"]
+    cell_attributes_to_save = parameters_dict["cell_attributes_to_save"]
+
+    Vegetation.set_attribute_encodings(attribute_encodings=attribute_encodings)
+    Vegetation.set_aoi_bounds(aoi_bounds=aoi_bounds)
+    Vegetation.set_cell_attributes_to_save(
+        cell_attributes_to_save=cell_attributes_to_save
+    )
 
     results = batch_run(
         Vegetation,
