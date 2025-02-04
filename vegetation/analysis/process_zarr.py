@@ -3,7 +3,6 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import imageio
-from io import BytesIO
 
 ZARR_PATH = "vegetation.zarr"
 

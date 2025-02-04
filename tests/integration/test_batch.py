@@ -1,4 +1,4 @@
-from vegetation.batch import batch_run, construct_model_run_parameters_from_file
+from vegetation.batch.run import batch_run, construct_model_run_parameters_from_file
 from vegetation.model.vegetation import Vegetation
 import pandas as pd
 import os
