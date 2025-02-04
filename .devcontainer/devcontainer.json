@@ -11,7 +11,7 @@
     "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached", // SSH keys
     "source=${localEnv:HOME}/local_dev_data,target=/local_dev_data,type=bind,consistency=cached", // Local development cache,
     "source=${localWorkspaceFolderBasename}-pixi,target=${containerWorkspaceFolder}/.pixi,type=volume", // Pixi virtualenv (to address OSX filesystem issues)
-    "source=${localEnv:HOME}/.config/gcloud,target=/root/.config/gcloud,type=bind" // GCP credentials
+    //"source=${localEnv:HOME}/.config/gcloud,target=/root/.config/gcloud,type=bind" // GCP credentials
   ],
   "extensions": [
     "ms-python.flake8",
