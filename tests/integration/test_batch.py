@@ -38,7 +38,7 @@ def test_batch_run_basic():
     results = batch_run(
         Vegetation,
         parameters=model_run_parameters,
-        iterations=meta_parameters["num_iterations_per_worker"],
+        iterations=meta_parameters["num_iterations_total"],
         number_processes=meta_parameters["num_workers"],
         data_collection_period=1,
         display_progress=False,

@@ -1,4 +1,3 @@
-from mesa.batchrunner import batch_run
 from vegetation.model.vegetation import Vegetation
 import os
 import argparse
@@ -8,7 +7,7 @@ from vegetation.batch.routes import (
     get_interactive_params,
     construct_model_run_parameters_from_file,
 )
-from vegetation.batch.batchrunner import batch_run_serialized
+from vegetation.batch.batchrunner import jotr_batch_run
 
 CELL_CLASS = "VegCell"
 DEFAULT_BATCH_PARAMETERS_PATH = os.getenv(
@@ -128,16 +127,23 @@ if __name__ == "__main__":
     aoi_bounds = parameters_dict["aoi_bounds"]
     cell_attributes_to_save = parameters_dict["cell_attributes_to_save"]
 
-    Vegetation.set_attribute_encodings(attribute_encodings=attribute_encodings)
-    Vegetation.set_aoi_bounds(aoi_bounds=aoi_bounds)
-    Vegetation.set_cell_attributes_to_save(
-        cell_attributes_to_save=cell_attributes_to_save
-    )
+    # Vegetation.set_attribute_encodings(attribute_encodings=attribute_encodings)
+    # Vegetation.set_aoi_bounds(aoi_bounds=aoi_bounds)
+    # Vegetation.set_cell_attributes_to_save(
+    #     cell_attributes_to_save=cell_attributes_to_save
+    # )
 
-    results = batch_run_serialized(
+    class_parameters_dict = {
+        "attribute_encodings": attribute_encodings,
+        "aoi_bounds": aoi_bounds,
+        "cell_attributes_to_save": cell_attributes_to_save,
+    }
+
+    results = jotr_batch_run(
         Vegetation,
-        parameters=model_run_parameters,
-        iterations=meta_parameters["num_iterations_per_worker"],
+        model_parameters=model_run_parameters,
+        class_parameters_dict=class_parameters_dict,
+        iterations=meta_parameters["num_iterations_total"],
         number_processes=meta_parameters["num_workers"],
         data_collection_period=1,
         display_progress=True,

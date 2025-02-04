@@ -6,7 +6,7 @@
     },
     "bounds_key": "TST_JOTR_BOUNDS",
     "meta_parameters": {
-      "num_iterations_per_worker": 1,
+      "num_iterations_total": 1,
       "num_workers": 1
     },
     "cell_attributes_to_save": null
@@ -18,7 +18,7 @@
     },
     "bounds_key": "TST_JOTR_BOUNDS",
     "meta_parameters": {
-      "num_iterations_per_worker": 100,
+      "num_iterations_total": 100,
       "num_workers": 1
     },
     "cell_attributes_to_save": ["jotr_max_life_stage"]
@@ -30,7 +30,7 @@
     },
     "bounds_key": "TST_JOTR_BOUNDS",
     "meta_parameters": {
-      "num_iterations_per_worker": 1,
+      "num_iterations_total": 1,
       "num_workers": 1
     },
     "cell_attributes_to_save": ["jotr_max_life_stage"]
@@ -42,7 +42,7 @@
     },
     "bounds_key": "TST_JOTR_BOUNDS",
     "meta_parameters": {
-      "num_iterations_per_worker": 1,
+      "num_iterations_total": 1,
       "num_workers": 1
     },
     "cell_attributes_to_save": null
