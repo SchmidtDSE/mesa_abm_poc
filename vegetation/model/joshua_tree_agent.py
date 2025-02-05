@@ -15,7 +15,9 @@ from vegetation.config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
     JOTR_SEED_DISPERSAL_DISTANCE,
-    JOTR_SEEDS_EXPECTED_VALUE,
+    JOTR_SEEDS_EXPECTED_VALUE_MAST,
+    JOTR_SEEDS_EXPECTED_VALUE_NORMAL,
+    JOTR_MAST_YEAR_PROB,
     JOTR_SEED_MAX_AGE,
     JOTR_BASE_GERMINATION_RATE,
     JOTR_BASE_SURVIVAL_SEEDLING,
@@ -113,7 +115,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             self.life_stage = LifeStage.DEAD
         elif age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
             # uncomment to debug
-            # print(f"stage is {self.life_stage} and age is {self.age}.")
+            print(f"stage is {self.life_stage} and age is {self.age}.")
             self.life_stage = LifeStage.JUVENILE
         elif age > JOTR_REPRODUCTIVE_AGE:
             self.life_stage = LifeStage.ADULT
@@ -203,7 +205,13 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # Disperse
         if self.life_stage == LifeStage.ADULT:
             if not self.flowering:
-                n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE)
+                # Roll the dice to see if mast year
+                dice_roll_zero_to_one = random.random()
+
+                if dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB:
+                    n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE_MAST)
+                else:
+                    n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE_NORMAL)
 
                 self.agent_logger.log_agent_event(
                     self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
