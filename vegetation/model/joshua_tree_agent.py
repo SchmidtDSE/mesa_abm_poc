@@ -106,15 +106,16 @@ class JoshuaTreeAgent(mg.GeoAgent):
         age = self.age if self.age else 0
 
         # update purely age-driven transitions
-        if age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
+        if age <= JOTR_SEED_MAX_AGE and self.life_stage != LifeStage.SEEDLING:
+            self.life_stage = LifeStage.SEED
+        elif age > JOTR_SEED_MAX_AGE and self.life_stage == LifeStage.SEED:
+            self.life_stage = LifeStage.DEAD
+        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
             # uncomment to debug
-            # print(f'stage is {self.life_stage} and age is {self.age}.')
+            # print(f"stage is {self.life_stage} and age is {self.age}.")
             self.life_stage = LifeStage.JUVENILE
         elif age > JOTR_REPRODUCTIVE_AGE:
             self.life_stage = LifeStage.ADULT
-        elif age == 0:
-            self.life_stage = LifeStage.SEED
-
         if initial_life_stage != self.life_stage:
             return True
         else:
@@ -167,13 +168,10 @@ class JoshuaTreeAgent(mg.GeoAgent):
         dice_roll_zero_to_one = random.random()
 
         if self.life_stage == LifeStage.SEED:
-            if self.age > JOTR_SEED_MAX_AGE:
-                self.life_stage = LifeStage.DEAD
-            else:
-                germination_rate = get_jotr_germination_rate()
+            germination_rate = get_jotr_germination_rate()
 
-                if dice_roll_zero_to_one < germination_rate:
-                    self.life_stage = LifeStage.SEEDLING
+            if dice_roll_zero_to_one < germination_rate:
+                self.life_stage = LifeStage.SEEDLING
 
         else:
             survival_rate = get_jotr_survival_rate(self.life_stage)
