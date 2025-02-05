@@ -83,6 +83,8 @@ def get_interactive_params(
             for key, value in parameters_dict["model_run_parameters"].items():
                 print(f"{key}: {value}")
 
+            # For now, assume we overwrite the output file when we re-run interactively
+            parameters_dict["overwrite"] = True
             return parameters_dict
 
         except ValueError:
