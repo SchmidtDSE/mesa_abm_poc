@@ -89,7 +89,7 @@ if __name__ == "__main__":
                 arg_dict["batch_parameters_json"],
             ]
         )
-        or not arg_dict["interactive"]
+        and not arg_dict["interactive"]
     ):
         raise ValueError(
             "Either use --interactive, or supply all of --attribute_encodings_json,"
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         overwrite = parameters_dict["overwrite"]
 
     else:
-        simulation_name = arg_dict["run_name"]
+        simulation_name = arg_dict["simulation_name"]
         overwrite = arg_dict["overwrite"]
         parameters_dict = construct_model_run_parameters_from_file(
             simulation_name=simulation_name,

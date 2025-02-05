@@ -307,7 +307,7 @@ class Vegetation(mesa.Model):
 
         self.datacollector.collect(self)
 
-        if self._cell_attributes_to_save is not None:
+        if self._save_to_zarr:
             self._append_timestep_to_zarr()
 
         if self.steps >= self.num_steps:

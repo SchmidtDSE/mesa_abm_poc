@@ -78,13 +78,18 @@ def _jotr_model_run_func(
     # attributes - at this point, it's a hack of a hack which was meant to
     # keep the vegetation run attributes seperate from higher level attributes that
     # don't affect the simulation. But this will be deprecated in the future.
-    vegetation_cls.set_attribute_encodings(
-        attribute_encodings=class_parameters_dict["attribute_encodings"]
-    )
+
     vegetation_cls.set_aoi_bounds(aoi_bounds=class_parameters_dict["aoi_bounds"])
-    vegetation_cls.set_cell_attributes_to_save(
-        cell_attributes_to_save=class_parameters_dict["cell_attributes_to_save"]
-    )
+
+    if class_parameters_dict["attribute_encodings"] is not None:
+        vegetation_cls.set_attribute_encodings(
+            attribute_encodings=class_parameters_dict["attribute_encodings"]
+        )
+
+    if class_parameters_dict["cell_attributes_to_save"] is not None:
+        vegetation_cls.set_cell_attributes_to_save(
+            cell_attributes_to_save=class_parameters_dict["cell_attributes_to_save"]
+        )
 
     vegetation = vegetation_cls(**kwargs)
 
