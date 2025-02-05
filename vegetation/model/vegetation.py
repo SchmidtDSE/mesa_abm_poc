@@ -302,7 +302,10 @@ class Vegetation(mesa.Model):
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
 
-        self.agents.shuffle_do("step")
+        self.agents.select(
+            agent_type=JoshuaTreeAgent,
+            filter_func=lambda agent: agent.life_stage != LifeStage.DEAD,
+        ).shuffle_do("step")
         self.update_metrics()
 
         self.datacollector.collect(self)
