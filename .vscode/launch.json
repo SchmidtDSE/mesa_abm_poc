@@ -41,7 +41,7 @@
       "module": "vegetation.analysis.process_zarr",
       "justMyCode": false,
       "envFile": "${workspaceFolder}/.devcontainer/.env",
-      "args": ["--zarr_path", "/workspaces/mesa_abm_poc/vegetation.zarr", "--group_name", "initial_test_from_config"],
+      "args": ["--zarr_path", "/workspaces/mesa_abm_poc/vegetation.zarr", "--group_name", "first_realish_run"],
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
     }
   ]
