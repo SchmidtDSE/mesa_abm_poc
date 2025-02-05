@@ -52,6 +52,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         self.age = age
         self.parent_id = parent_id
         self.life_stage = None
+        self.flowering = False
         # self.log_level = log_level
 
         # To get this set up, assume all agents have logging.INFO level
@@ -201,13 +202,17 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # Disperse
         if self.life_stage == LifeStage.ADULT:
-            n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE)
+            if not self.flowering:
+                n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE)
 
-            self.agent_logger.log_agent_event(
-                self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
-            )
+                self.agent_logger.log_agent_event(
+                    self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
+                )
 
-            self._disperse_seeds_in_landscape(n_seeds)
+                self._disperse_seeds_in_landscape(n_seeds)
+                self.flowering = True
+            else:
+                self.flowering = False
 
 
 class Vegetation(mesa.Model):
