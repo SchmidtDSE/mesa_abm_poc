@@ -127,8 +127,9 @@ def get_interactive_params(
             if save_attr == "y":
                 cell_attributes_to_save.append(attr)
 
-        if not cell_attributes_to_save:
+        if cell_attributes_to_save == []:
             print("Warning: No attributes selected to save")
+            cell_attributes_to_save = None
 
     # Interactive override of meta parameters
     print("\nMeta parameters (press Enter to keep default):")
