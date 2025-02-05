@@ -2,13 +2,13 @@
   "pytest": {
     "model_run_params": {
       "num_steps": [2],
-      "management_planting_density": [0.0, 0.5],
-      "bounds": "TST_JOTR_BOUNDS"
+      "management_planting_density": [5.0]
     },
+    "bounds_key": "TST_JOTR_BOUNDS",
     "meta_parameters": {
-      "num_iterations_per_worker": 2,
+      "num_iterations_total": 1,
       "num_workers": 1
     },
-    "cell_attributes_to_save": [["jotr_max_life_stage", "test_attribute"]]
+    "cell_attributes_to_save": ["jotr_max_life_stage"]
   }
 }

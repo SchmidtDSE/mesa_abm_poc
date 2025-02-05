@@ -18,7 +18,8 @@
       "type": "debugpy",
       "request": "launch",
       "cwd": "${workspaceFolder}",
-      "module": "vegetation.batch",
+      "module": "vegetation.batch.run",
+      "justMyCode": false,
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
       "args": ["--interactive"],
       "envFile": "${workspaceFolder}/.devcontainer/.env"
@@ -28,9 +29,10 @@
       "type": "debugpy",
       "request": "launch",
       "cwd": "${workspaceFolder}",
-      "module": "vegetation.batch",
+      "module": "vegetation.batch.run",
+      "justMyCode": false,
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
-      "args": ["--attribute_encodings_json", "vegetation/config/attribute_encodings.json", "--aoi_bounds_json", "vegetation/config/aoi_bounds.json", "--batch_parameters_json", "vegetation/config/batch_parameters.json", "--name", "first_realish_run", "--overwrite"],
+      "args": ["--simulation_name", "test_run_no_zarr", "--attribute_encodings_json", "vegetation/config/attribute_encodings.json", "--aoi_bounds_json", "vegetation/config/aoi_bounds.json", "--batch_parameters_json", "vegetation/config/batch_parameters.json", "--overwrite"],
       "envFile": "${workspaceFolder}/.devcontainer/.env"
     },
     {

@@ -14,7 +14,6 @@ from vegetation.space.veg_cell import VegCell
 ## For now we use this smelly Env var to look just at VegCell, since
 ## for now we have only one patch class. But this might not work in the
 ## future if we have multiple types of agents / cells we want to save
-CELL_CLASS = "VegCell"
 
 
 def get_array_from_nested_cell_list(
@@ -59,10 +58,8 @@ class ZarrManager:
 
         # See todo comment above with CELL_CLASS
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/48
-        self.attribute_encodings = attribute_encodings[CELL_CLASS]
-
+        self.attribute_encodings = attribute_encodings
         self.run_parameter_dict = self.normalize_dict_for_hash(run_parameter_dict)
-        self._attr_list = attribute_list
 
         self._group_name = None
         self._replicate_idx = None
@@ -157,7 +154,7 @@ class ZarrManager:
                 self.max_timestep + 1,  # dim needs to be 1 size larger than contents
                 self.width,
                 self.height,
-            ),  # 0 replicates
+            ),  # 0 replicates to start
             chunks=(1, self.width, self.height),
             dtype=np.int8,
             extendable=[True, False, False, False],
@@ -200,8 +197,8 @@ class ZarrManager:
         # since idx X would correspond to different replicates for different attributes
         replicate_idx = np.unique(all_next_replicate_idx)
         assert len(replicate_idx) == 1
+        self.replicate_idx = int(replicate_idx[0])
 
-        self.replicate_idx = replicate_idx[0]
         return self.replicate_idx
 
     def add_to_zarr_root_group(self, name: str):

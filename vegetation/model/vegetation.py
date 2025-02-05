@@ -30,27 +30,22 @@ TEST_RUN_PARAMETERS = {
 
 
 class Vegetation(mesa.Model):
-    @property
-    def sim_logger(self):
-        if not hasattr(self, "_sim_logger"):
-            self._sim_logger = SimLogger()
-        return self._sim_logger
-
     def __init__(
         self,
-        bounds,
         num_steps=20,
         management_planting_density=0.01,
         epsg=4326,
         log_config_path=None,
         log_level=None,
-        cell_attributes_to_save=[],
-        attribute_encodings={},
         simulation_name=None,
+        ignore_zarr_warning=False,
+        ignore_attribute_encodings_warning=False,
     ):
         super().__init__()
+        self._ignore_zarr_warning = ignore_zarr_warning
+        self._ignore_attribute_encodings_warning = ignore_attribute_encodings_warning
+        self._verify_class_attributes()
 
-        # Initialize logging config first
         if log_config_path:
             LogConfig.initialize(log_config_path)
 
@@ -59,14 +54,18 @@ class Vegetation(mesa.Model):
         else:
             self.log_level = log_level
 
-        self.bounds = bounds
         self.num_steps = num_steps
         self.management_planting_density = management_planting_density
         self._on_start_executed = False
-        self.sim_idx = 1
+
+        # Set to None until zarr_manager is initialized - if None when df is saved,
+        # we assume we didn't save any cell rasters to zarr. If a proper index,
+        # we assume we grab that simulation raster using composite key of
+        # (simulation_name x replicate_idx)
+        self.replicate_idx = None
 
         # mesa setup
-        self.space = StudyArea(bounds, epsg=epsg, model=self)
+        self.space = StudyArea(self._aoi_bounds, epsg=epsg, model=self)
         self.datacollector = mesa.DataCollector(
             {
                 "Mean Age": "mean_age",
@@ -77,42 +76,43 @@ class Vegetation(mesa.Model):
                 "N Adults": "n_adults",
                 "N Breeding": "n_breeding",
                 "% Refugia Cells Occupied": "pct_refugia_cells_occupied",
+                "replicate_idx": "replicate_idx",
             }
         )
 
-        self.cell_attributes_to_save = cell_attributes_to_save
-        self.attribute_encodings = attribute_encodings
         self.simulation_name = simulation_name
         self._zarr_manager = None
+
+        # TODO: Using class setters to subvert mesa collecting certain attributes
+        # This is a weird / smelly use of class variables and a bit of a hack,
+        # but we will likely address this differently when we do our own aggregation
+        # without mesa `batch_run`
+        self._save_to_zarr = getattr(self.__class__, "_save_to_zarr", False)
+
+    @property
+    def sim_logger(self):
+        if not hasattr(self, "_sim_logger"):
+            self._sim_logger = SimLogger()
+        return self._sim_logger
 
     @property
     def zarr_manager(self):
         if self._zarr_manager is None:
-            self._zarr_manager = ZarrManager(
-                width=self.space.raster_layer.width,
-                height=self.space.raster_layer.height,
-                max_timestep=self.num_steps,
-                crs=self.space.crs,
-                transformer_json=self.space.transformer.to_json(),
-                run_parameter_dict=TEST_RUN_PARAMETERS,
-                attribute_list=self.cell_attributes_to_save,
-                attribute_encodings=self.attribute_encodings,
-                filename=ZARR_FILENAME,
-            )
-
-            if self.simulation_name is None:
-                self.simulation_name = (
-                    self._zarr_manager.set_group_name_by_run_parameter_hash()
-                )
-                logging.info(
-                    "Setting simulation name (zarr group name) by run parameter hash"
-                )
-            else:
-                self._zarr_manager.set_group_name(self.simulation_name)
-
-            self.replicate_idx = self._zarr_manager.resize_array_for_next_replicate()
-
+            self._zarr_manager = self._initialize_zarr_manager()
         return self._zarr_manager
+
+    @classmethod
+    def set_attribute_encodings(cls, attribute_encodings):
+        cls._attribute_encodings = attribute_encodings
+
+    @classmethod
+    def set_cell_attributes_to_save(cls, cell_attributes_to_save):
+        cls._cell_attributes_to_save = cell_attributes_to_save
+        cls._save_to_zarr = True
+
+    @classmethod
+    def set_aoi_bounds(cls, aoi_bounds):
+        cls._aoi_bounds = aoi_bounds
 
     @classmethod
     def _generate_planting_points(self, geo_json):
@@ -145,6 +145,54 @@ class Vegetation(mesa.Model):
 
         return points
 
+    def _initialize_zarr_manager(self):
+        zarr_manager = ZarrManager(
+            width=self.space.raster_layer.width,
+            height=self.space.raster_layer.height,
+            max_timestep=self.num_steps,
+            crs=self.space.crs,
+            transformer_json=self.space.transformer.to_json(),
+            run_parameter_dict=TEST_RUN_PARAMETERS,
+            attribute_list=self._cell_attributes_to_save,
+            attribute_encodings=self._attribute_encodings,
+            filename=ZARR_FILENAME,
+        )
+
+        if self.simulation_name is None:
+            self.simulation_name = (
+                self._zarr_manager.set_group_name_by_run_parameter_hash()
+            )
+            logging.info(
+                "Setting simulation name (zarr group name) by run parameter hash"
+            )
+        else:
+            zarr_manager.set_group_name(self.simulation_name)
+
+        self.replicate_idx = zarr_manager.resize_array_for_next_replicate()
+        self._zarr_manager = zarr_manager
+
+    def _verify_class_attributes(self):
+        if (
+            not hasattr(self, "_attribute_encodings")
+            and not self._ignore_attribute_encodings_warning
+        ):
+            Warning(
+                "Attribute encodings not set - consider passing attribute_encodings to Vegetation.set_attribute_encodings()."
+            )
+
+        if (
+            not hasattr(self, "_cell_attributes_to_save")
+            and not self._ignore_zarr_warning
+        ):
+            Warning(
+                "Cell attributes to save not set - no Zarr output will be generated."
+            )
+
+        if not hasattr(self, "_aoi_bounds"):
+            raise ValueError(
+                "Vegetation._aoi_bounds not set - call Vegetation.set_aoi_bounds() before initializing the model."
+            )
+
     def _on_start(self):
         self.sim_logger.log_sim_event(self, SimEventType.ON_START)
 
@@ -155,6 +203,9 @@ class Vegetation(mesa.Model):
             initial_agents_geojson = json.loads(f.read())
 
         self._add_agents_from_geojson(initial_agents_geojson)
+
+        if self._save_to_zarr:
+            self._initialize_zarr_manager()
 
         self._on_start_executed = True
 
@@ -233,7 +284,7 @@ class Vegetation(mesa.Model):
     def _append_timestep_to_zarr(self):
         timestep_cell_attribute_dict = get_array_from_nested_cell_list(
             veg_cells=self.space.raster_layer.cells,
-            cell_attributes_to_get=self.cell_attributes_to_save,
+            cell_attributes_to_get=self._cell_attributes_to_save,
         )
 
         self.zarr_manager.append_synchronized_timestep(
@@ -242,7 +293,8 @@ class Vegetation(mesa.Model):
         )
 
     def cleanup(self):
-        self.zarr_manager.consolidate_metadata()
+        if self._save_to_zarr:
+            self.zarr_manager.consolidate_metadata()
 
     def step(self):
         if not self._on_start_executed:
@@ -255,7 +307,7 @@ class Vegetation(mesa.Model):
 
         self.datacollector.collect(self)
 
-        if len(self.cell_attributes_to_save) > 0:
+        if self._save_to_zarr:
             self._append_timestep_to_zarr()
 
         if self.steps >= self.num_steps:

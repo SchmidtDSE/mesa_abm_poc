@@ -12,7 +12,8 @@ from vegetation.space.veg_cell import VegCell
 
 class StudyArea(mg.GeoSpace):
     def __init__(self, bounds, epsg, model):
-        super().__init__(crs=f"epsg:{epsg}")
+        # TODO: Investigate CRS 'EPSG:4326' to 'EPSG:4326' warning
+        super().__init__(crs=f"epsg:{epsg}", warn_crs_conversion=False)
         self.bounds = bounds
         self.model = model
         self.epsg = epsg

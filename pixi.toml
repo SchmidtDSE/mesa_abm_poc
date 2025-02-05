@@ -34,6 +34,7 @@ zarr = ">=2.13.3,<3"
 xarray = ">=2024.11.0,<2025"
 gcsfs = ">=2024.12.0,<2025"
 imageio = ">=2.37.0,<3"
+dill = ">=0.3.8,<0.4"
 
 [pypi-dependencies]
 mesa = { version = "==3.1.1" }

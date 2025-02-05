@@ -1,4 +1,7 @@
-from vegetation.batch import batch_run, construct_model_run_parameters_from_file
+from vegetation.batch.run import (
+    jotr_batch_run,
+    construct_model_run_parameters_from_file,
+)
 from vegetation.model.vegetation import Vegetation
 import pandas as pd
 import os
@@ -24,12 +27,28 @@ def test_batch_run_basic():
 
     model_run_parameters = parameters_dict["model_run_parameters"]
     meta_parameters = parameters_dict["meta_parameters"]
+    attribute_encodings = parameters_dict["attribute_encodings"]
+    aoi_bounds = parameters_dict["aoi_bounds"]
+    cell_attributes_to_save = parameters_dict["cell_attributes_to_save"]
+
+    # Vegetation.set_attribute_encodings(attribute_encodings=attribute_encodings)
+    # Vegetation.set_aoi_bounds(aoi_bounds=aoi_bounds)
+    # Vegetation.set_cell_attributes_to_save(
+    #     cell_attributes_to_save=cell_attributes_to_save
+    # )
+
+    class_parameters_dict = {
+        "attribute_encodings": attribute_encodings,
+        "aoi_bounds": aoi_bounds,
+        "cell_attributes_to_save": cell_attributes_to_save,
+    }
 
     # Run simulation with minimal parameters
-    results = batch_run(
+    results = jotr_batch_run(
         Vegetation,
-        parameters=model_run_parameters,
-        iterations=meta_parameters["num_iterations_per_worker"],
+        model_parameters=model_run_parameters,
+        class_parameters_dict=class_parameters_dict,
+        iterations=meta_parameters["num_iterations_total"],
         number_processes=meta_parameters["num_workers"],
         data_collection_period=1,
         display_progress=False,
