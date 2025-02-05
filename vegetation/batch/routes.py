@@ -83,6 +83,8 @@ def get_interactive_params(
             for key, value in parameters_dict["model_run_parameters"].items():
                 print(f"{key}: {value}")
 
+            # For now, assume we overwrite the output file when we re-run interactively
+            parameters_dict["overwrite"] = True
             return parameters_dict
 
         except ValueError:
@@ -127,8 +129,9 @@ def get_interactive_params(
             if save_attr == "y":
                 cell_attributes_to_save.append(attr)
 
-        if not cell_attributes_to_save:
+        if cell_attributes_to_save == []:
             print("Warning: No attributes selected to save")
+            cell_attributes_to_save = None
 
     # Interactive override of meta parameters
     print("\nMeta parameters (press Enter to keep default):")
