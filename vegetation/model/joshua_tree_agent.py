@@ -83,6 +83,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         )
 
         self.agent_logger.log_agent_event(self, AgentEventType.ON_CREATE)
+        self._link_underlying_cell()
 
         # TODO: Figure out how to set the life stage on init
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/3
@@ -93,13 +94,14 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # self._update_life_stage()
 
-        # Find the underlying cell - it must exist, else raise an error
+    def _link_underlying_cell(self):
         intersecting_cell_filter = self.model.space.raster_layer.iter_neighbors(
             self.indices, moore=False, include_center=True, radius=0
         )
         self.intersecting_cell = next(intersecting_cell_filter)
         if not self.intersecting_cell:
             raise ValueError("No intersecting cell found")
+        self.intersecting_cell.add_agent_link(self)
 
     def _update_life_stage(self):
         initial_life_stage = self.life_stage
@@ -194,9 +196,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         if life_stage_promotion:
             self.agent_logger.log_agent_event(self, AgentEventType.ON_TRANSITION)
-
-        # Update underlying patch
-        self.intersecting_cell.add_agent_link(self)
 
         # Disperse
         if self.life_stage == LifeStage.ADULT:

@@ -157,7 +157,6 @@ class ZarrManager:
             ),  # 0 replicates to start
             chunks=(1, self.width, self.height),
             dtype=np.int8,
-            extendable=[True, False, False, False],
         )
 
         # Xarray needs to know the dimensions of the array, so we store them as
