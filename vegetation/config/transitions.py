@@ -6,6 +6,14 @@ JOTR_REPRODUCTIVE_AGE = 30
 JOTR_SEED_DISPERSAL_DISTANCE = 30
 JOTR_SEEDS_EXPECTED_VALUE = 100
 JOTR_SEED_MAX_AGE = 1
+JOTR_BASE_GERMINATION_RATE = 0.004
+JOTR_BASE_SURVIVAL_SEEDLING = (
+    0.45 + 0.31
+) / 2  # calculate mean of year 1 and year to from Esque et al (2015)
+JOTR_BASE_SURVIVAL_JUVENILE = (
+    1 - 0.025
+)  # mortality of 2.5% each year (Esque et al, 2015)
+JOTR_BASE_SURVIVAL_ADULT = 0.97
 
 # TODO: Refactor to be more like a config
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/14
@@ -22,17 +30,15 @@ def get_jotr_number_seeds(expected_value) -> float:
 
 def get_jotr_germination_rate() -> float:
     """germination of cached seeds"""
-    rate = 0.004  # including the effects of rodents and climate (van der Wall, 2006)
+    rate = JOTR_BASE_GERMINATION_RATE  # including the effects of rodents and climate (van der Wall, 2006)
     return rate
 
 
 def get_jotr_survival_rate(life_stage):
     if life_stage == LifeStage.SEEDLING:
-        rate = (
-            0.45 + 0.31
-        ) / 2  # calculate mean of year 1 and year to from Esque et al (2015)
+        rate = JOTR_BASE_SURVIVAL_SEEDLING
     if life_stage == LifeStage.JUVENILE:
-        rate = 1 - 0.025  # mortality of 2.5% each year (Esque et al, 2015)
+        rate = JOTR_BASE_SURVIVAL_JUVENILE
     if life_stage == LifeStage.ADULT:
-        rate = 0.97
+        rate = JOTR_BASE_SURVIVAL_ADULT
     return rate
