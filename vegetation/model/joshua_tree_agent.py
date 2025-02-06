@@ -161,9 +161,15 @@ class JoshuaTreeAgent(mg.GeoAgent):
         intersecting_cell_filter = self.model.space.raster_layer.iter_neighbors(
             self.indices, moore=False, include_center=True, radius=0
         )
-        intersecting_cell = next(intersecting_cell_filter)
-        if not intersecting_cell:
-            raise ValueError("No intersecting cell found")
+        # intersecting_cell = next(intersecting_cell_filter)
+        # if not intersecting_cell:
+        #     raise ValueError("No intersecting cell found")
+        try:
+            intersecting_cell = next(intersecting_cell_filter)
+        except StopIteration:
+            # raise ValueError("No intersecting cell found")
+            self.remove()
+            return
 
         # Roll the dice to see if the agent survives
         dice_roll_zero_to_one = random.random()
