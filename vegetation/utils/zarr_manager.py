@@ -126,13 +126,32 @@ class ZarrManager:
     def set_group_name_by_run_parameter_hash(self) -> None:
         self._group_name = self._get_run_parameter_hash()
 
+    def _initialize_group_coords(self, sim_group) -> zarr.hierarchy.Group:
+        sim_group.create_dataset("x", data=np.arange(self.width), dtype=np.int32)
+        sim_group["x"].attrs["_ARRAY_DIMENSIONS"] = ["x"]
+        sim_group["x"].attrs["units"] = "grid_cells"
+
+        sim_group.create_dataset("y", data=np.arange(self.height), dtype=np.int32)
+        sim_group["y"].attrs["_ARRAY_DIMENSIONS"] = ["y"]
+        sim_group["y"].attrs["units"] = "grid_cells"
+
+        sim_group.create_dataset(
+            "timestep", data=np.arange(self.max_timestep + 1), dtype=np.int32
+        )
+        sim_group["timestep"].attrs["_ARRAY_DIMENSIONS"] = ["timestep"]
+        sim_group["timestep"].attrs["units"] = "years"
+
+        return sim_group
+
     def _get_or_create_sim_group(self) -> zarr.hierarchy.Group:
         if self._group_name not in self._zarr_root_group:
             sim_group = self._zarr_root_group.create_group(self._group_name)
+            sim_group.attrs["run_parameters"] = self.run_parameter_dict
+            sim_group = self._initialize_group_coords(sim_group)
+
         else:
             sim_group = self._zarr_root_group[self._group_name]
 
-        sim_group.attrs["run_parameters"] = self.run_parameter_dict
         return sim_group
 
     def _get_or_create_attribute_dataset(self, attribute_name: str) -> zarr.core.Array:
