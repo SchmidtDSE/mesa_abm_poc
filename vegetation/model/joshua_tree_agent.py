@@ -98,10 +98,15 @@ class JoshuaTreeAgent(mg.GeoAgent):
         intersecting_cell_filter = self.model.space.raster_layer.iter_neighbors(
             self.indices, moore=False, include_center=True, radius=0
         )
-        self.intersecting_cell = next(intersecting_cell_filter)
-        if not self.intersecting_cell:
-            raise ValueError("No intersecting cell found")
-        self.intersecting_cell.add_agent_link(self)
+        try:
+            self.intersecting_cell = next(intersecting_cell_filter)
+            self.intersecting_cell.add_agent_link(self)
+
+        except StopIteration:
+            Warning(
+                f"Agent is outside the boundary of the base raster layers ({self.model.space.bounds}) and will be removed: {self.geometry}"
+            )
+            self.remove()
 
     def _update_life_stage(self):
         initial_life_stage = self.life_stage
