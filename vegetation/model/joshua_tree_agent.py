@@ -115,7 +115,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             self.life_stage = LifeStage.DEAD
         elif age >= JOTR_JUVENILE_AGE and age <= JOTR_REPRODUCTIVE_AGE:
             # uncomment to debug
-            print(f"stage is {self.life_stage} and age is {self.age}.")
+            # print(f"stage is {self.life_stage} and age is {self.age}.")
             self.life_stage = LifeStage.JUVENILE
         elif age > JOTR_REPRODUCTIVE_AGE:
             self.life_stage = LifeStage.ADULT
@@ -210,17 +210,17 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
                 if dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB:
                     n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE_MAST)
-                else:
-                    n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE_NORMAL)
+                    self.flowering = True
 
-                self.agent_logger.log_agent_event(
-                    self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
-                )
+                    self.agent_logger.log_agent_event(
+                        self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
+                    )
 
-                self._disperse_seeds_in_landscape(n_seeds)
-                self.flowering = True
+                    self._disperse_seeds_in_landscape(n_seeds)
+
             else:
                 self.flowering = False
+                print("no flowering")
 
 
 class Vegetation(mesa.Model):
