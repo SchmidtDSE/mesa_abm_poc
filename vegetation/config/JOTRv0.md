@@ -23,12 +23,12 @@ The central model function us the `step()` function within `joshua_tree_agent.py
 
     a. If the agent is a `SEED`
 
-        - Convert to `SEEDLING` with germination probability $p_G$, remain `SEED` otherwise
+        * Convert to `SEEDLING` with germination probability $p_G$, remain `SEED` otherwise
 
     b. If agent is a tree
 
-        - Calculate survival probabilty $p_S$ for life stage
-        - Kill agent with probability $(1 - p_S)$
+        * Calculate survival probabilty $p_S$ for life stage
+        * Kill agent with probability $(1 - p_S)$
 
 4.  Increment age by one
 5.  Update life stages based on age as specified above. Note that age classes for Seeds and Seedlings do overlap, here the life stage is determined by germination process
