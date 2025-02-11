@@ -35,24 +35,22 @@ The `step()` function is somewhat ecosystem-agnostic. Parametrization of the Jos
 
 ## Parameters
 
-| **Parameter**                      | **Current value** | **Sources, Justification** |
-| ---------------------------------- | ----------------- | -------------------------- |
-| `JOTR_JUVENILE_AGE`                | 3                 |
-| `JOTR_REPRODUCTIVE_AGE`            | 30                |
-| `JOTR_SEED_DISPERSAL_DISTANCE`     | 30                |
-| `JOTR_SEEDS_EXPECTED_VALUE_MAST`   | 4000              |
-| `JOTR_SEEDS_EXPECTED_VALUE_NORMAL` | 40                |
-| `JOTR_MAST_YEAR_PROB`              | 0.2               |
-| `JOTR_SEED_MAX_AGE`                | 2                 |
-| `JOTR_BASE_GERMINATION_RATE`       | 0.004             |
-| `JOTR_BASE_SURVIVAL_SEEDLING`      | (                 |
+@mzomer This is something where you could fill in the blanks to document these values
 
-    0.45 + 0.31
-
-) / 2 | calculate mean of year 1 and year to from Esque et al (2015)
-| `JOTR_BASE_SURVIVAL_JUVENILE` | (
-1 - 0.025
-) | mortality of 2.5% each year (Esque et al, 2015)
-| `JOTR_BASE_SURVIVAL_ADULT` | 0.97 |
+| **Parameter**                      | **Current value**      | **Sources, Justification**                                   |
+| ---------------------------------- | ---------------------- | ------------------------------------------------------------ |
+| `JOTR_JUVENILE_AGE`                | 3                      |                                                              |
+| `JOTR_REPRODUCTIVE_AGE`            | 30                     |                                                              |
+| `JOTR_SEED_DISPERSAL_DISTANCE`     | 30                     |                                                              |
+| `JOTR_SEEDS_EXPECTED_VALUE_MAST`   | 4000                   |                                                              |
+| `JOTR_SEEDS_EXPECTED_VALUE_NORMAL` | 40                     |                                                              |
+| `JOTR_MAST_YEAR_PROB`              | 0.2                    |                                                              |
+| `JOTR_SEED_MAX_AGE`                | 2                      |                                                              |
+| `JOTR_BASE_GERMINATION_RATE`       | 0.004                  |                                                              |
+| `JOTR_BASE_SURVIVAL_SEEDLING`      | $ \frac{.45 + .31}{2}$ | calculate mean of year 1 and year to from Esque et al (2015) |
+| `JOTR_BASE_SURVIVAL_JUVENILE`      | 0.975                  | mortality of 2.5% each year (Esque et al, 2015)              |
+| `JOTR_BASE_SURVIVAL_ADULT`         | 0.97                   |                                                              |
 
 ## Functions
+
+_At this point I feel these functions are self-explanatory, so I won't explain them any further_
