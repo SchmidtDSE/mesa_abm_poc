@@ -17,22 +17,22 @@ The agents are organised on a grid. Note that agends are not explicit in space w
 
 The central model function us the `step()` function within `joshua_tree_agent.py`. A model step represents a year and the `step()` function is executed for each agent each model step. It consits of the following steps:
 
-1. Check if the agent is alive. If the agent is dead, proceed to the next agent
-2. Check in which grid cell the agent lives
-3. Check if the agent is a `SEED` or a tree (`SEEDLING`, `JUVENILE` or `ADULT`).
+1.  Check if the agent is alive. If the agent is dead, proceed to the next agent
+2.  Check in which grid cell the agent lives
+3.  Check if the agent is a `SEED` or a tree (`SEEDLING`, `JUVENILE` or `ADULT`).
 
-   a. If the agent is a `SEED`
+    a. If the agent is a `SEED`
 
-   - Convert to `SEEDLING` with germination probability $p_G, remain `SEED` otherwise
+        - Convert to `SEEDLING` with germination probability $p_G$, remain `SEED` otherwise
 
-     b. If agent is a tree
+    b. If agent is a tree
 
-   - Calculate survival probabilty $p_S$ for life stage
-   - Kill agent with probability $(1 - p_S)$
+        - Calculate survival probabilty $p_S$ for life stage
+        - Kill agent with probability $(1 - p_S)$
 
-4. Increment age by one
-5. Update life stages based on age as specified above. Note that age classes for Seeds and Seedlings do overlap, here the life stage is determined by germination process
-6. If agent is an `ADULT` tree that has not flowered the year before (`flowering == 0`), disperse seeds with a flowering probabily $p_F$.
+4.  Increment age by one
+5.  Update life stages based on age as specified above. Note that age classes for Seeds and Seedlings do overlap, here the life stage is determined by germination process
+6.  If agent is an `ADULT` tree that has not flowered the year before (`flowering == 0`), disperse seeds with a flowering probabily $p_F$.
 
 # Parametrization
 
