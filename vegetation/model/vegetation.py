@@ -17,7 +17,8 @@ from vegetation.logging.logging import (
     SimEventType,
 )
 from vegetation.utils.zarr_manager import (
-    get_array_from_nested_cell_list,
+    get_attributes_from_nested_cell_list,
+    get_geometry_from_nested_cell_list,
 )
 from vegetation.model.joshua_tree_agent import JoshuaTreeAgent
 from vegetation.utils.zarr_manager import ZarrManager
@@ -206,6 +207,7 @@ class Vegetation(mesa.Model):
 
         if self._save_to_zarr:
             self._initialize_zarr_manager()
+            self._initialize_coords_to_zarr()
 
         self._on_start_executed = True
 
@@ -281,8 +283,20 @@ class Vegetation(mesa.Model):
             count_dict.get(True, 0) + count_dict.get(False, 0)
         )
 
+    def _initialize_coords_to_zarr(self):
+        geometry_attribute_dict = get_geometry_from_nested_cell_list(
+            veg_cells=self.space.raster_layer.cells,
+            transform=self.space.raster_layer._transform,
+        )
+
+        self.zarr_manager.initialize_sim_group_coords(
+            max_timestep=self.num_steps,
+            geometry_attribute_dict=geometry_attribute_dict,
+            crs=self.space.crs.to_string(),
+        )
+
     def _append_timestep_to_zarr(self):
-        timestep_cell_attribute_dict = get_array_from_nested_cell_list(
+        timestep_cell_attribute_dict = get_attributes_from_nested_cell_list(
             veg_cells=self.space.raster_layer.cells,
             cell_attributes_to_get=self._cell_attributes_to_save,
         )

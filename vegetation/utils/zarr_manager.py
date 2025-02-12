@@ -1,6 +1,8 @@
 import hashlib
 import json
 import os
+import affine
+
 from typing import Any, Dict, List
 
 import numpy as np
@@ -16,7 +18,7 @@ from vegetation.space.veg_cell import VegCell
 ## future if we have multiple types of agents / cells we want to save
 
 
-def get_array_from_nested_cell_list(
+def get_attributes_from_nested_cell_list(
     veg_cells: List[List[VegCell]], cell_attributes_to_get: List[str]
 ) -> Dict[str, np.ndarray]:
     def safe_get_attr(cell: VegCell, attr: str) -> int:
@@ -32,6 +34,18 @@ def get_array_from_nested_cell_list(
         for attr in cell_attributes_to_get
     }
     return veg_arrays
+
+
+def get_geometry_from_nested_cell_list(
+    veg_cells: List[List[VegCell]], transform: affine.Affine
+):
+    geometry = [[cell.geometry for cell in row] for row in veg_cells]
+    geometry = np.array(geometry)
+
+    x_span = geometry[:, 0, 0]
+    y_span = geometry[0, :, 1]
+
+    return {"x_span": x_span, "y_span": y_span}
 
 
 class ZarrManager:
@@ -62,6 +76,7 @@ class ZarrManager:
         self.run_parameter_dict = self.normalize_dict_for_hash(run_parameter_dict)
 
         self._group_name = None
+        self._sim_group = None
         self._replicate_idx = None
 
         self._initialize_zarr_store(filename, type=zarr_store_type)
@@ -84,6 +99,12 @@ class ZarrManager:
             return _normalize_value(param_dict)
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON string: {e}")
+
+    @property
+    def sim_group(self) -> zarr.hierarchy.Group:
+        if not self._sim_group:
+            self._initialize_sim_group()
+        return self._sim_group
 
     def _get_run_parameter_hash(self) -> str:
         run_parameter_str = json.dumps(self.run_parameter_dict, sort_keys=True)
@@ -126,38 +147,18 @@ class ZarrManager:
     def set_group_name_by_run_parameter_hash(self) -> None:
         self._group_name = self._get_run_parameter_hash()
 
-    def _initialize_group_coords(self, sim_group) -> zarr.hierarchy.Group:
-        sim_group.create_dataset("x", data=np.arange(self.width), dtype=np.int32)
-        sim_group["x"].attrs["_ARRAY_DIMENSIONS"] = ["x"]
-        sim_group["x"].attrs["units"] = "grid_cells"
-
-        sim_group.create_dataset("y", data=np.arange(self.height), dtype=np.int32)
-        sim_group["y"].attrs["_ARRAY_DIMENSIONS"] = ["y"]
-        sim_group["y"].attrs["units"] = "grid_cells"
-
-        sim_group.create_dataset(
-            "timestep", data=np.arange(self.max_timestep + 1), dtype=np.int32
-        )
-        sim_group["timestep"].attrs["_ARRAY_DIMENSIONS"] = ["timestep"]
-        sim_group["timestep"].attrs["units"] = "years"
-
-        return sim_group
-
-    def _get_or_create_sim_group(self) -> zarr.hierarchy.Group:
+    def _initialize_sim_group(self) -> zarr.hierarchy.Group:
         if self._group_name not in self._zarr_root_group:
             sim_group = self._zarr_root_group.create_group(self._group_name)
             sim_group.attrs["run_parameters"] = self.run_parameter_dict
-            sim_group = self._initialize_group_coords(sim_group)
 
         else:
             sim_group = self._zarr_root_group[self._group_name]
 
-        return sim_group
+        self._sim_group = sim_group
 
     def _get_or_create_attribute_dataset(self, attribute_name: str) -> zarr.core.Array:
-        sim_group = self._get_or_create_sim_group()
-
-        if attribute_name not in sim_group:
+        if attribute_name not in self.sim_group:
             self._initialize_attribute_dataset(attribute_name=attribute_name)
 
         attribute_dataset = self._zarr_root_group[self._group_name][attribute_name]
@@ -188,6 +189,31 @@ class ZarrManager:
         self._zarr_root_group[self._group_name][attribute_name].attrs[
             "attribute_encoding"
         ] = attribute_encoding
+
+    def initialize_sim_group_coords(self, geometry_attribute_dict, crs):
+        if not self._sim_group:
+            raise ValueError("Sim group not initialized yet!")
+
+        x_span = geometry_attribute_dict["x_span"]
+        y_span = geometry_attribute_dict["y_span"]
+
+        self._sim_group.create_dataset("x", data=x_span, dtype=np.float64)
+        self._sim_group["x"].attrs["_ARRAY_DIMENSIONS"] = ["x"]
+        self._sim_group["x"].attrs["units"] = "grid_cells"
+        self._sim_group["x"].attrs["crs"] = crs
+
+        self._sim_group.create_dataset("y", data=y_span, dtype=np.float64)
+        self._sim_group["y"].attrs["_ARRAY_DIMENSIONS"] = ["y"]
+        self._sim_group["y"].attrs["units"] = "grid_cells"
+        self._sim_group["y"].attrs["crs"] = crs
+
+        self._sim_group.create_dataset(
+            "timestep", data=np.arange(self.max_timestep + 1), dtype=np.int32
+        )
+        self._sim_group["timestep"].attrs["_ARRAY_DIMENSIONS"] = ["timestep"]
+        self._sim_group["timestep"].attrs["units"] = "years"
+
+        return self._sim_group
 
     def resize_array_for_next_replicate(self) -> int:
         all_next_replicate_idx = []

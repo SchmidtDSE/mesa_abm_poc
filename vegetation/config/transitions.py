@@ -31,8 +31,10 @@ def get_jotr_survival_rate(life_stage):
         rate = (
             0.45 + 0.31
         ) / 2  # calculate mean of year 1 and year to from Esque et al (2015)
-    if life_stage == LifeStage.JUVENILE:
+    elif life_stage == LifeStage.JUVENILE:
         rate = 1 - 0.025  # mortality of 2.5% each year (Esque et al, 2015)
-    if life_stage == LifeStage.ADULT:
+    elif life_stage == LifeStage.ADULT:
         rate = 0.97
+    else:
+        rate = 0
     return rate

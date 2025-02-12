@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import mesa
 import mesa_geo as mg
+from shapely.geometry import Point
 
 from vegetation.config.life_stages import LifeStage
 
@@ -18,6 +19,8 @@ class VegCell(mg.Cell):
         indices: mesa.space.Coordinate | None = None,
     ):
         super().__init__(model, pos, indices)
+        self._geometry = None
+
         self.elevation = None
 
         # TODO: Improve patch level tracking of JOTR agents
@@ -33,6 +36,12 @@ class VegCell(mg.Cell):
 
         # DEBUG: Test attribute to see how this interacts with Zarr groups / datasets
         self.test_attribute = 1
+
+    @property
+    def geometry(self):
+        if not self._geometry:
+            self._geometry = Point(self.indices * self.space.raster_layer._transform)
+        return self._geometry
 
     def step(self):
         self.update_occupancy()
