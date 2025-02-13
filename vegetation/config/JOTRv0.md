@@ -40,7 +40,6 @@ The `step()` function is somewhat ecosystem-agnostic. Parametrization of the Jos
 
 ## Parameters
 
-@mzomer This is something where you could fill in the blanks to document these values
 
 | **Parameter**                    | **Current value** | **Sources, Justification**                                   |
 | -------------------------------- | ----------------- | ------------------------------------------------------------ |
@@ -48,7 +47,7 @@ The `step()` function is somewhat ecosystem-agnostic. Parametrization of the Jos
 | `JOTR_REPRODUCTIVE_AGE`          | 30                | U.S. Fish and Wildlife Service, 2023 (page 11), Input by Todd Esque (2015, 2022, pers comm.)|
 | `JOTR_SEED_DISPERSAL_DISTANCE`   | 30                | mean maximum dispersal distance was 30.0 ± 16.8 m (Vander Wall et al., 2006, page 541)|
 |  secondary dispersal distance    | 10                | transport distance between primary and secondary caches averaged 6-13 m (Vander Wall et al., 2006, page 541)|
-| `JOTR_SEEDS_EXPECTED_VALUE_MAST` | 4000              | calculate mean number of seeds/tree from two sites in JTNP in 2013 high flowering year (4703.5, St. Clair & Hoines, 2018), and calculate predispersal moth predation (19.5% in 2013, but different site, Borchert & Defalco 2016 )|
+| `JOTR_SEEDS_EXPECTED_VALUE_MAST` | 4000              |High flowering year 2013 with 80% trees in bloom. calculate mean number of seeds/tree from two sites in JTNP (4703.5, St. Clair & Hoines, 2018), and calculate predispersal moth predation (19.5% in same year, but different site, Borchert & Defalco 2016 ). In non-mast years, large possibility that all seeds are foraged by rodents (Borchert and DeFalco 2016, p. 833). Trees need at least 1 - 2 years between flowering events to replenish resources (U.S. Fish and Wildlife Service, 2023, page 13: Borchert and DeFalco 2016, p. 831; Smith 2022, pers. comm.)|
 | `JOTR_MAST_YEAR_PROB`            | 0.2               | 2 large flowering events each decade (Borchert & Defalco 2016, page 831)|
 | `JOTR_SEED_MAX_AGE`              | 3                 |(Reynolds et al. 2012, page 1651)|
 |  soil seed viability             | 0.05 yr 1, 0.25 yr 2, 0.003 yr 3 | twelve months in the soil reduced germination to 50-68%, and it dropped to less than 1-3% after 40 mo in the soil (Reynolds et al. 2012, page 1651)|
