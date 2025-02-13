@@ -226,6 +226,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pystac-1.11.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pystac-client-0.8.5-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/main/linux-64/pytest-7.4.4-py311h06a4308_0.tar.bz2
+      - conda: https://conda.anaconda.org/conda-forge/noarch/pytest-dotenv-0.5.2-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/main/linux-64/python-3.11.11-he870216_0.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/python-dateutil-2.9.0post0-py311h06a4308_2.tar.bz2
       - conda: https://conda.anaconda.org/main/linux-64/python-dotenv-0.21.0-py311h06a4308_0.tar.bz2
@@ -565,6 +566,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pystac-1.11.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pystac-client-0.8.5-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/main/osx-64/pytest-7.4.4-py311hecd8cb5_0.tar.bz2
+      - conda: https://conda.anaconda.org/conda-forge/noarch/pytest-dotenv-0.5.2-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/main/osx-64/python-3.11.11-h4d6d9e5_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-64/python-dateutil-2.9.0post0-py311hecd8cb5_2.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-64/python-dotenv-0.21.0-py311hecd8cb5_0.tar.bz2
@@ -902,6 +904,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pystac-1.11.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pystac-client-0.8.5-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/main/osx-arm64/pytest-7.4.4-py311hca03da5_0.tar.bz2
+      - conda: https://conda.anaconda.org/conda-forge/noarch/pytest-dotenv-0.5.2-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/main/osx-arm64/python-3.11.11-hb885b13_0.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-arm64/python-dateutil-2.9.0post0-py311hca03da5_2.tar.bz2
       - conda: https://conda.anaconda.org/main/osx-arm64/python-dotenv-0.21.0-py311hca03da5_0.tar.bz2
@@ -1232,6 +1235,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pystac-1.11.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pystac-client-0.8.5-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/main/win-64/pytest-7.4.4-py311haa95532_0.tar.bz2
+      - conda: https://conda.anaconda.org/conda-forge/noarch/pytest-dotenv-0.5.2-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/main/win-64/python-3.11.11-h4607a30_0.tar.bz2
       - conda: https://conda.anaconda.org/main/win-64/python-dateutil-2.9.0post0-py311haa95532_2.tar.bz2
       - conda: https://conda.anaconda.org/main/win-64/python-dotenv-0.21.0-py311haa95532_0.tar.bz2
@@ -11697,6 +11701,19 @@ packages:
   license_family: MIT
   size: 1219050
   timestamp: 1717793700954
+- conda: https://conda.anaconda.org/conda-forge/noarch/pytest-dotenv-0.5.2-pyhd8ed1ab_1.conda
+  sha256: e4b891f95db6518befc72fe3136dfdcc0b97cf23aff012d1f69a49761dba56c7
+  md5: 1cb1c9f0c6da0017157084138d05c4ca
+  depends:
+  - pytest >=5.0.0
+  - python >=3.9
+  - python-dotenv >=0.9.1
+  license: MIT
+  license_family: MIT
+  purls:
+  - pkg:pypi/pytest-dotenv?source=hash-mapping
+  size: 9831
+  timestamp: 1735306343133
 - conda: https://conda.anaconda.org/main/linux-64/python-3.11.11-he870216_0.tar.bz2
   sha256: aced5b9158e4839247dcf76bd5197650803f9db116ccdc451a79d1c0da5f2354
   md5: bc33687df04e0cfeebd12f682bec6b22
