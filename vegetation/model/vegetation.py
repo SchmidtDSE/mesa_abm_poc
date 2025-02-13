@@ -160,9 +160,7 @@ class Vegetation(mesa.Model):
         )
 
         if self.simulation_name is None:
-            self.simulation_name = (
-                self._zarr_manager.set_group_name_by_run_parameter_hash()
-            )
+            self.simulation_name = zarr_manager.set_group_name_by_run_parameter_hash()
             logging.info(
                 "Setting simulation name (zarr group name) by run parameter hash"
             )
