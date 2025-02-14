@@ -30,7 +30,7 @@ def base_model(test_parameters_dict):
     Vegetation.set_attribute_encodings(test_attribute_encodings)
     Vegetation.set_cell_attributes_to_save(test_cell_attributes_to_save)
 
-    return Vegetation(num_steps=10, ignore_zarr_warning=True)
+    return Vegetation(simulation_name="pytest", num_steps=10, ignore_zarr_warning=True)
 
 
 @pytest.fixture
