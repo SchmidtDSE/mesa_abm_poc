@@ -5,7 +5,6 @@ from vegetation.batch.routes import (
     construct_model_run_parameters_from_file,
 )
 from pathlib import Path
-import json
 import os
 
 

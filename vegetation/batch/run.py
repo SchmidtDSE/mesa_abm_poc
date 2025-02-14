@@ -118,7 +118,7 @@ if __name__ == "__main__":
     )
     output_path_zarr = f"vegetation.zarr/{simulation_name}"
 
-    if os.path.exists(output_path_csv) or os.path.exists(output_path_zarr):
+    if os.path.exists(output_path_csv):
         if not overwrite:
             raise ValueError(
                 f"Output paths for {simulation_name} exist already. Use --overwrite to overwrite"
@@ -127,6 +127,12 @@ if __name__ == "__main__":
             Warning(f"Overwriting existing results at {output_path_csv}")
             os.remove(output_path_csv)
 
+    if os.path.exists(output_path_zarr):
+        if not overwrite:
+            raise ValueError(
+                f"Output paths for {simulation_name} exist already. Use --overwrite to overwrite"
+            )
+        else:
             Warning(f"Overwriting existing results at {output_path_zarr}")
             shutil.rmtree(output_path_zarr)
 
