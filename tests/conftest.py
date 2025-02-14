@@ -6,6 +6,26 @@ from vegetation.batch.routes import (
 )
 from pathlib import Path
 import os
+import shutil
+
+
+@pytest.fixture(autouse=True)
+def clean_test_environment():
+    mesa_csv_dir = os.getenv("MESA_RESULTS_DIR")
+    mesa_csv_dir_pytest = Path(mesa_csv_dir) / "pytest.csv"
+    if mesa_csv_dir_pytest.exists():
+        mesa_csv_dir_pytest.unlink()
+
+    mesa_zarr_dir = "vegetation.zarr/pytest"
+    mesa_zarr_dir_pytest = Path(mesa_zarr_dir)
+    if mesa_zarr_dir_pytest.exists():
+        shutil.rmtree(mesa_zarr_dir_pytest)
+
+    # Run the test
+    yield
+
+    # Clean up after the test
+    pass
 
 
 @pytest.fixture
