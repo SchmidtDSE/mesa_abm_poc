@@ -40,7 +40,9 @@ class VegCell(mg.Cell):
     @property
     def geometry(self):
         if not self._geometry:
-            self._geometry = Point(self.indices * self.space.raster_layer._transform)
+            self._geometry = Point(
+                self.indices * self.model.space.raster_layer._transform
+            )
         return self._geometry
 
     def step(self):

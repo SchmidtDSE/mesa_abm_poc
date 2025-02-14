@@ -18,7 +18,7 @@ from vegetation.logging.logging import (
 )
 from vegetation.utils.zarr_manager import (
     get_attributes_from_nested_cell_list,
-    get_geometry_from_nested_cell_list,
+    get_xy_span_from_nested_cell_list,
 )
 from vegetation.model.joshua_tree_agent import JoshuaTreeAgent
 from vegetation.utils.zarr_manager import ZarrManager
@@ -146,11 +146,19 @@ class Vegetation(mesa.Model):
 
         return points
 
+    def _construct_zarr_dims_dict(self):
+        dims_dict = get_xy_span_from_nested_cell_list(
+            veg_cells=self.space.raster_layer.cells,
+        )
+        dims_dict["max_timesteps"] = np.arange(self.num_steps)
+        return dims_dict
+
     def _initialize_zarr_manager(self):
+        dims_dict = self._construct_zarr_dims_dict()
         zarr_manager = ZarrManager(
             width=self.space.raster_layer.width,
             height=self.space.raster_layer.height,
-            max_timestep=self.num_steps,
+            dims_dict=dims_dict,
             crs=self.space.crs,
             transformer_json=self.space.transformer.to_json(),
             run_parameter_dict=TEST_RUN_PARAMETERS,
@@ -205,7 +213,6 @@ class Vegetation(mesa.Model):
 
         if self._save_to_zarr:
             self._initialize_zarr_manager()
-            self._initialize_coords_to_zarr()
 
         self._on_start_executed = True
 
@@ -282,13 +289,7 @@ class Vegetation(mesa.Model):
         )
 
     def _initialize_coords_to_zarr(self):
-        geometry_attribute_dict = get_geometry_from_nested_cell_list(
-            veg_cells=self.space.raster_layer.cells,
-            transform=self.space.raster_layer._transform,
-        )
-
         self.zarr_manager.initialize_sim_group_coords(
-            max_timestep=self.num_steps,
             geometry_attribute_dict=geometry_attribute_dict,
             crs=self.space.crs.to_string(),
         )

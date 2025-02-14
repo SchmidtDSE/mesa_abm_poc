@@ -36,14 +36,12 @@ def get_attributes_from_nested_cell_list(
     return veg_arrays
 
 
-def get_geometry_from_nested_cell_list(
-    veg_cells: List[List[VegCell]], transform: affine.Affine
-):
+def get_xy_span_from_nested_cell_list(veg_cells: List[List[VegCell]]):
     geometry = [[cell.geometry for cell in row] for row in veg_cells]
     geometry = np.array(geometry)
 
-    x_span = geometry[:, 0, 0]
-    y_span = geometry[0, :, 1]
+    x_span = [point.x for point in geometry[0, :]]
+    y_span = [point.y for point in geometry[:, 0]]
 
     return {"x_span": x_span, "y_span": y_span}
 
@@ -53,7 +51,7 @@ class ZarrManager:
         self,
         width,
         height,
-        max_timestep,
+        dims_dict,
         filename,
         attribute_list,
         attribute_encodings,
@@ -64,7 +62,7 @@ class ZarrManager:
     ):
         self.width, self.height = width, height
 
-        self.max_timestep = max_timestep
+        self.dims_dict = dims_dict
         self.filename = filename
         self.crs = crs
         self.transformer_json = transformer_json
@@ -194,6 +192,10 @@ class ZarrManager:
         if not self._sim_group:
             raise ValueError("Sim group not initialized yet!")
 
+        if not self.dims_dict:
+            raise ValueError("Dimensions not provided!")
+
+        timestep_span = self.dims_dict["timestep_span"]
         x_span = geometry_attribute_dict["x_span"]
         y_span = geometry_attribute_dict["y_span"]
 
@@ -207,9 +209,7 @@ class ZarrManager:
         self._sim_group["y"].attrs["units"] = "grid_cells"
         self._sim_group["y"].attrs["crs"] = crs
 
-        self._sim_group.create_dataset(
-            "timestep", data=np.arange(self.max_timestep + 1), dtype=np.int32
-        )
+        self._sim_group.create_dataset("timestep", data=timestep_span, dtype=np.int32)
         self._sim_group["timestep"].attrs["_ARRAY_DIMENSIONS"] = ["timestep"]
         self._sim_group["timestep"].attrs["units"] = "years"
 
