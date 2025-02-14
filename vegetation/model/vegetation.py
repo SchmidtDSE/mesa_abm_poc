@@ -150,7 +150,7 @@ class Vegetation(mesa.Model):
         dims_dict = get_xy_span_from_nested_cell_list(
             veg_cells=self.space.raster_layer.cells,
         )
-        dims_dict["max_timesteps"] = np.arange(self.num_steps)
+        dims_dict["timestep_span"] = np.arange(self.num_steps)
         return dims_dict
 
     def _initialize_zarr_manager(self):
@@ -300,8 +300,11 @@ class Vegetation(mesa.Model):
             cell_attributes_to_get=self._cell_attributes_to_save,
         )
 
+        # steps are 1-indexed in mesa, but 0-indexed in zarr
+        timestep_idx = self.steps - 1
+
         self.zarr_manager.append_synchronized_timestep(
-            timestep_idx=self.steps,
+            timestep_idx=timestep_idx,
             timestep_array_dict=timestep_cell_attribute_dict,
         )
 
@@ -313,11 +316,6 @@ class Vegetation(mesa.Model):
         if not self._on_start_executed:
             self._on_start()
 
-        self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
-
-        self.agents.shuffle_do("step")
-        self.update_metrics()
-
         self.datacollector.collect(self)
 
         if self._save_to_zarr:
@@ -326,3 +324,8 @@ class Vegetation(mesa.Model):
         if self.steps >= self.num_steps:
             self.running = False
             self.cleanup()
+
+        self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
+
+        self.agents.shuffle_do("step")
+        self.update_metrics()

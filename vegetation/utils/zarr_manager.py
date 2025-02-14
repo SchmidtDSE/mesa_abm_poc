@@ -30,9 +30,10 @@ def get_attributes_from_nested_cell_list(
     veg_arrays = {
         attr: np.array(
             [[safe_get_attr(cell, attr) for cell in row] for row in veg_cells]
-        )
+        ).T  # Transpose to match the x, y order elsewhere
         for attr in cell_attributes_to_get
     }
+
     return veg_arrays
 
 
@@ -168,11 +169,11 @@ class ZarrManager:
         self._zarr_root_group[self._group_name].create_dataset(
             attribute_name,
             shape=(
-                0,
-                self.max_timestep + 1,  # dim needs to be 1 size larger than contents
-                self.width,
-                self.height,
-            ),  # 0 replicates to start
+                0,  # O replicates to start
+                len(self.dims_dict["timestep_span"]),
+                len(self.dims_dict["x_span"]),
+                len(self.dims_dict["y_span"]),
+            ),
             chunks=(1, self.width, self.height),
             dtype=np.int8,
         )
