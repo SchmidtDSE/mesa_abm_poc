@@ -288,12 +288,6 @@ class Vegetation(mesa.Model):
             count_dict.get(True, 0) + count_dict.get(False, 0)
         )
 
-    def _initialize_coords_to_zarr(self):
-        self.zarr_manager.initialize_sim_group_coords(
-            geometry_attribute_dict=geometry_attribute_dict,
-            crs=self.space.crs.to_string(),
-        )
-
     def _append_timestep_to_zarr(self):
         timestep_cell_attribute_dict = get_attributes_from_nested_cell_list(
             veg_cells=self.space.raster_layer.cells,

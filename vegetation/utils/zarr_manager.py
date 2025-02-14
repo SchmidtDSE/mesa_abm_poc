@@ -178,6 +178,8 @@ class ZarrManager:
             dtype=np.int8,
         )
 
+        self._initialize_sim_group_coords()
+
         # Xarray needs to know the dimensions of the array, so we store them as
         # `_ARRAY_DIMENSIONS` attribute - see
         # https://docs.xarray.dev/en/latest/internals/zarr-encoding-spec.html
@@ -189,7 +191,7 @@ class ZarrManager:
             "attribute_encoding"
         ] = attribute_encoding
 
-    def initialize_sim_group_coords(self, geometry_attribute_dict, crs):
+    def _initialize_sim_group_coords(self):
         if not self._sim_group:
             raise ValueError("Sim group not initialized yet!")
 
@@ -197,18 +199,18 @@ class ZarrManager:
             raise ValueError("Dimensions not provided!")
 
         timestep_span = self.dims_dict["timestep_span"]
-        x_span = geometry_attribute_dict["x_span"]
-        y_span = geometry_attribute_dict["y_span"]
+        x_span = self.dims_dict["x_span"]
+        y_span = self.dims_dict["y_span"]
 
         self._sim_group.create_dataset("x", data=x_span, dtype=np.float64)
         self._sim_group["x"].attrs["_ARRAY_DIMENSIONS"] = ["x"]
-        self._sim_group["x"].attrs["units"] = "grid_cells"
-        self._sim_group["x"].attrs["crs"] = crs
+        self._sim_group["x"].attrs["units"] = "degrees"
+        self._sim_group["x"].attrs["crs"] = self.crs.to_string()
 
         self._sim_group.create_dataset("y", data=y_span, dtype=np.float64)
         self._sim_group["y"].attrs["_ARRAY_DIMENSIONS"] = ["y"]
-        self._sim_group["y"].attrs["units"] = "grid_cells"
-        self._sim_group["y"].attrs["crs"] = crs
+        self._sim_group["y"].attrs["units"] = "degrees"
+        self._sim_group["y"].attrs["crs"] = self.crs.to_string()
 
         self._sim_group.create_dataset("timestep", data=timestep_span, dtype=np.int32)
         self._sim_group["timestep"].attrs["_ARRAY_DIMENSIONS"] = ["timestep"]

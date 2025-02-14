@@ -2,6 +2,7 @@ from vegetation.model.vegetation import Vegetation
 import os
 import argparse
 import pandas as pd
+import shutil
 
 from vegetation.batch.routes import (
     get_interactive_params,
@@ -111,15 +112,23 @@ if __name__ == "__main__":
             batch_parameters_path=arg_dict["batch_parameters_json"],
         )
 
-    output_path = (
+    output_path_csv = (
         os.getenv("MESA_RESULTS_DIR", "/local_dev_data/mesa_results/")
         + f"{simulation_name}.csv"
     )
+    output_path_zarr = f"vegetation.zarr/{simulation_name}"
 
-    if os.path.exists(output_path) and not overwrite:
-        raise ValueError(
-            f"Output path {output_path} exists. Use --overwrite to overwrite"
-        )
+    if os.path.exists(output_path_csv) or os.path.exists(output_path_zarr):
+        if not overwrite:
+            raise ValueError(
+                f"Output paths for {simulation_name} exist already. Use --overwrite to overwrite"
+            )
+        else:
+            Warning(f"Overwriting existing results at {output_path_csv}")
+            os.remove(output_path_csv)
+
+            Warning(f"Overwriting existing results at {output_path_zarr}")
+            shutil.rmtree(output_path_zarr)
 
     model_run_parameters = parameters_dict["model_run_parameters"]
     meta_parameters = parameters_dict["meta_parameters"]
@@ -149,7 +158,7 @@ if __name__ == "__main__":
         display_progress=True,
     )
 
-    if not os.path.exists(os.path.dirname(output_path)):
-        os.makedirs(os.path.dirname(output_path))
+    if not os.path.exists(os.path.dirname(output_path_csv)):
+        os.makedirs(os.path.dirname(output_path_csv))
 
-    pd.DataFrame(results).to_csv(output_path)
+    pd.DataFrame(results).to_csv(output_path_csv)
