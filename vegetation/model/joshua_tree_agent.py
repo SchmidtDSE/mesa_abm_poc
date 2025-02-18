@@ -54,7 +54,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         self.age = age
         self.parent_id = parent_id
         self.life_stage = None
-        self.flowering = False
+        self.has_flowered_previous_year = False
         # self.log_level = log_level
 
         # To get this set up, assume all agents have logging.INFO level
@@ -204,13 +204,13 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # Disperse
         if self.life_stage == LifeStage.ADULT:
-            if not self.flowering:
+            if not self.has_flowered_previous_year:
                 # Roll the dice to see if mast year
                 dice_roll_zero_to_one = random.random()
 
                 if dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB:
                     n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE_MAST)
-                    self.flowering = True
+                    self.has_flowered_previous_year = True
 
                     self.agent_logger.log_agent_event(
                         self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
@@ -219,8 +219,8 @@ class JoshuaTreeAgent(mg.GeoAgent):
                     self._disperse_seeds_in_landscape(n_seeds)
 
             else:
-                self.flowering = False
-                print("no flowering")
+                self.has_flowered_previous_year = False
+                print("no flowering happened that year")
 
 
 class Vegetation(mesa.Model):
