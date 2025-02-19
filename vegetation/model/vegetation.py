@@ -5,10 +5,12 @@ import shapely.geometry as sg
 from shapely.ops import transform
 import json
 import logging
+import random
 
 from vegetation.config.life_stages import LifeStage
+from vegetation.config.transitions import JOTR_MAST_YEAR_PROB
 from vegetation.space.veg_cell import VegCell
-from vegetation.space.study_area import StudyArea
+from vegetation.space.study_area import StudyArea, FLOWERING_YEAR
 from vegetation.utils.spatial import transform_point_wgs84_utm
 from vegetation.config.global_paths import INITIAL_AGENTS_PATH
 from vegetation.logging.logging import (
@@ -301,6 +303,10 @@ class Vegetation(mesa.Model):
             self._on_start()
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
+
+        dice_roll_zero_to_one = random.random()
+        if dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB:
+            FLOWERING_YEAR = True
 
         self.agents.shuffle_do("step")
         self.update_metrics()

@@ -8,7 +8,7 @@ import mesa
 from shapely.ops import transform
 
 from vegetation.space.veg_cell import VegCell
-from vegetation.space.study_area import StudyArea
+from vegetation.space.study_area import StudyArea, FLOWERING_YEAR
 from vegetation.config.life_stages import LifeStage
 from vegetation.utils.spatial import transform_point_wgs84_utm, generate_point_in_utm
 from vegetation.config.transitions import (
@@ -18,6 +18,7 @@ from vegetation.config.transitions import (
     JOTR_SEEDS_EXPECTED_VALUE_MAST,
     JOTR_SEEDS_EXPECTED_VALUE_NORMAL,
     JOTR_MAST_YEAR_PROB,
+    JOTR_AGENT_FLOWERING_PROB,
     JOTR_SEED_MAX_AGE,
     JOTR_BASE_GERMINATION_RATE,
     JOTR_BASE_SURVIVAL_SEEDLING,
@@ -203,24 +204,17 @@ class JoshuaTreeAgent(mg.GeoAgent):
         intersecting_cell.add_agent_link(self)
 
         # Disperse
-        if self.life_stage == LifeStage.ADULT:
-            if not self.has_flowered_previous_year:  # to vegetation/landscape level
-                # Roll the dice to see if mast year
-                dice_roll_zero_to_one = random.random()
-                # if vegetation.mast_year == True:
-                # if dice_roll_zero_to_one < JOTR_TREE_FLOWER_PROB: |  JOTR_TREE_FLOWER_PROB = 0.8
-                if (
-                    dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB
-                ):  # to vegetation level/landscape, JOTR_MAST_YEAR_PROB = 0.2
-                    n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE_MAST)
-                    self.has_flowered_previous_year = True  # to vegetation level
+        if (self.life_stage == LifeStage.ADULT) and FLOWERING_YEAR:
+            # Roll the dice to see if mast year
+            dice_roll_zero_to_one = random.random()
 
-                    self.agent_logger.log_agent_event(
-                        self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
-                    )
+            if (
+                dice_roll_zero_to_one < JOTR_AGENT_FLOWERING_PROB
+            ):  # to vegetation level/landscape, JOTR_MAST_YEAR_PROB = 0.2
+                n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE_MAST)
 
-                    self._disperse_seeds_in_landscape(n_seeds)
+                self.agent_logger.log_agent_event(
+                    self, AgentEventType.ON_DISPERSE, context={"n_seeds": n_seeds}
+                )
 
-            else:
-                self.has_flowered_previous_year = False
-                print("no flowering happened that year")
+                self._disperse_seeds_in_landscape(n_seeds)

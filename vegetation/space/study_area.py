@@ -9,6 +9,8 @@ import logging
 from vegetation.config.global_paths import LOCAL_STAC_CACHE_FSTRING
 from vegetation.space.veg_cell import VegCell
 
+FLOWERING_YEAR = False
+
 
 class StudyArea(mg.GeoSpace):
     def __init__(self, bounds, epsg, model):
