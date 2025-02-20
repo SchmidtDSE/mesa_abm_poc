@@ -8,7 +8,7 @@ import mesa
 from shapely.ops import transform
 
 from vegetation.space.veg_cell import VegCell
-from vegetation.space.study_area import StudyArea, FLOWERING_YEAR
+from vegetation.space.study_area import StudyArea
 from vegetation.config.life_stages import LifeStage
 from vegetation.utils.spatial import transform_point_wgs84_utm, generate_point_in_utm
 from vegetation.config.transitions import (
@@ -24,6 +24,7 @@ from vegetation.config.transitions import (
     JOTR_BASE_SURVIVAL_SEEDLING,
     JOTR_BASE_SURVIVAL_JUVENILE,
     JOTR_BASE_SURVIVAL_ADULT,
+    JOTR_SEED_VIABILITY_LOSS,
     get_jotr_survival_rate,
     get_jotr_number_seeds,
     get_jotr_germination_rate,
@@ -176,6 +177,12 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
             if dice_roll_zero_to_one < germination_rate:
                 self.life_stage = LifeStage.SEEDLING
+
+            else:
+                dice_roll_zero_to_one = random.random()
+
+                if dice_roll_zero_to_one < JOTR_SEED_VIABILITY_LOSS:
+                    self.life_stage = LifeStage.DEAD
 
         else:
             survival_rate = get_jotr_survival_rate(self.life_stage)
