@@ -9,6 +9,17 @@ import os
 import shutil
 
 
+@pytest.fixture()
+def reset_class_attributes():
+    """Reset Vegetation class attributes before each test"""
+
+    # Reset attributes
+    Vegetation._attribute_encodings = None
+    Vegetation._aoi_bounds = None
+
+    yield
+
+
 @pytest.fixture(autouse=True)
 def clean_test_environment():
     mesa_csv_dir = os.getenv("MESA_RESULTS_DIR")
