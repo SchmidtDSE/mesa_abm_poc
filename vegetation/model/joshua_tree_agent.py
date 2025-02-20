@@ -204,13 +204,11 @@ class JoshuaTreeAgent(mg.GeoAgent):
         intersecting_cell.add_agent_link(self)
 
         # Disperse
-        if (self.life_stage == LifeStage.ADULT) and FLOWERING_YEAR:
+        if (self.life_stage == LifeStage.ADULT) and self.model.flowering_year:
             # Roll the dice to see if mast year
             dice_roll_zero_to_one = random.random()
 
-            if (
-                dice_roll_zero_to_one < JOTR_AGENT_FLOWERING_PROB
-            ):  # to vegetation level/landscape, JOTR_MAST_YEAR_PROB = 0.2
+            if dice_roll_zero_to_one < JOTR_AGENT_FLOWERING_PROB:
                 n_seeds = get_jotr_number_seeds(JOTR_SEEDS_EXPECTED_VALUE_MAST)
 
                 self.agent_logger.log_agent_event(

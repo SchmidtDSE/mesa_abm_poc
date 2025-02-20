@@ -304,9 +304,11 @@ class Vegetation(mesa.Model):
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
 
+        # Determine if this year is a mast year
         dice_roll_zero_to_one = random.random()
-        if dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB:
-            FLOWERING_YEAR = True
+
+        # Store FLOWERING_YEAR inside the model
+        self.flowering_year = dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB
 
         self.agents.shuffle_do("step")
         self.update_metrics()
