@@ -1,6 +1,8 @@
 import hashlib
 import json
 import os
+import affine
+
 from typing import Any, Dict, List
 
 import numpy as np
@@ -16,7 +18,7 @@ from vegetation.space.veg_cell import VegCell
 ## future if we have multiple types of agents / cells we want to save
 
 
-def get_array_from_nested_cell_list(
+def get_attributes_from_nested_cell_list(
     veg_cells: List[List[VegCell]], cell_attributes_to_get: List[str]
 ) -> Dict[str, np.ndarray]:
     def safe_get_attr(cell: VegCell, attr: str) -> int:
@@ -28,10 +30,21 @@ def get_array_from_nested_cell_list(
     veg_arrays = {
         attr: np.array(
             [[safe_get_attr(cell, attr) for cell in row] for row in veg_cells]
-        )
+        ).T  # Transpose to match the x, y order elsewhere
         for attr in cell_attributes_to_get
     }
+
     return veg_arrays
+
+
+def get_xy_span_from_nested_cell_list(veg_cells: List[List[VegCell]]):
+    geometry = [[cell.geometry for cell in row] for row in veg_cells]
+    geometry = np.array(geometry)
+
+    x_span = [point.x for point in geometry[0, :]]
+    y_span = [point.y for point in geometry[:, 0]]
+
+    return {"x_span": x_span, "y_span": y_span}
 
 
 class ZarrManager:
@@ -39,7 +52,7 @@ class ZarrManager:
         self,
         width,
         height,
-        max_timestep,
+        dims_dict,
         filename,
         attribute_list,
         attribute_encodings,
@@ -50,7 +63,7 @@ class ZarrManager:
     ):
         self.width, self.height = width, height
 
-        self.max_timestep = max_timestep
+        self.dims_dict = dims_dict
         self.filename = filename
         self.crs = crs
         self.transformer_json = transformer_json
@@ -62,6 +75,7 @@ class ZarrManager:
         self.run_parameter_dict = self.normalize_dict_for_hash(run_parameter_dict)
 
         self._group_name = None
+        self._sim_group = None
         self._replicate_idx = None
 
         self._initialize_zarr_store(filename, type=zarr_store_type)
@@ -84,6 +98,12 @@ class ZarrManager:
             return _normalize_value(param_dict)
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON string: {e}")
+
+    @property
+    def sim_group(self) -> zarr.hierarchy.Group:
+        if not self._sim_group:
+            self._initialize_sim_group()
+        return self._sim_group
 
     def _get_run_parameter_hash(self) -> str:
         run_parameter_str = json.dumps(self.run_parameter_dict, sort_keys=True)
@@ -126,19 +146,18 @@ class ZarrManager:
     def set_group_name_by_run_parameter_hash(self) -> None:
         self._group_name = self._get_run_parameter_hash()
 
-    def _get_or_create_sim_group(self) -> zarr.hierarchy.Group:
+    def _initialize_sim_group(self) -> zarr.hierarchy.Group:
         if self._group_name not in self._zarr_root_group:
             sim_group = self._zarr_root_group.create_group(self._group_name)
+            sim_group.attrs["run_parameters"] = self.run_parameter_dict
+
         else:
             sim_group = self._zarr_root_group[self._group_name]
 
-        sim_group.attrs["run_parameters"] = self.run_parameter_dict
-        return sim_group
+        self._sim_group = sim_group
 
     def _get_or_create_attribute_dataset(self, attribute_name: str) -> zarr.core.Array:
-        sim_group = self._get_or_create_sim_group()
-
-        if attribute_name not in sim_group:
+        if attribute_name not in self.sim_group:
             self._initialize_attribute_dataset(attribute_name=attribute_name)
 
         attribute_dataset = self._zarr_root_group[self._group_name][attribute_name]
@@ -150,14 +169,16 @@ class ZarrManager:
         self._zarr_root_group[self._group_name].create_dataset(
             attribute_name,
             shape=(
-                0,
-                self.max_timestep + 1,  # dim needs to be 1 size larger than contents
-                self.width,
-                self.height,
-            ),  # 0 replicates to start
+                0,  # O replicates to start
+                len(self.dims_dict["timestep_span"]),
+                len(self.dims_dict["x_span"]),
+                len(self.dims_dict["y_span"]),
+            ),
             chunks=(1, self.width, self.height),
             dtype=np.int8,
         )
+
+        self._initialize_sim_group_coords()
 
         # Xarray needs to know the dimensions of the array, so we store them as
         # `_ARRAY_DIMENSIONS` attribute - see
@@ -169,6 +190,33 @@ class ZarrManager:
         self._zarr_root_group[self._group_name][attribute_name].attrs[
             "attribute_encoding"
         ] = attribute_encoding
+
+    def _initialize_sim_group_coords(self):
+        if not self._sim_group:
+            raise ValueError("Sim group not initialized yet!")
+
+        if not self.dims_dict:
+            raise ValueError("Dimensions not provided!")
+
+        timestep_span = self.dims_dict["timestep_span"]
+        x_span = self.dims_dict["x_span"]
+        y_span = self.dims_dict["y_span"]
+
+        self._sim_group.create_dataset("x", data=x_span, dtype=np.float64)
+        self._sim_group["x"].attrs["_ARRAY_DIMENSIONS"] = ["x"]
+        self._sim_group["x"].attrs["units"] = "degrees"
+        self._sim_group["x"].attrs["crs"] = self.crs.to_string()
+
+        self._sim_group.create_dataset("y", data=y_span, dtype=np.float64)
+        self._sim_group["y"].attrs["_ARRAY_DIMENSIONS"] = ["y"]
+        self._sim_group["y"].attrs["units"] = "degrees"
+        self._sim_group["y"].attrs["crs"] = self.crs.to_string()
+
+        self._sim_group.create_dataset("timestep", data=timestep_span, dtype=np.int32)
+        self._sim_group["timestep"].attrs["_ARRAY_DIMENSIONS"] = ["timestep"]
+        self._sim_group["timestep"].attrs["units"] = "years"
+
+        return self._sim_group
 
     def resize_array_for_next_replicate(self) -> int:
         all_next_replicate_idx = []

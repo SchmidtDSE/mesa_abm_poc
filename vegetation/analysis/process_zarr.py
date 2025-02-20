@@ -16,6 +16,7 @@ def ingest_zarr(zarr_path, group_name=None):
             group=group_name,
             consolidated=True,
             chunks="auto",
+            decode_cf=True,
         )
         return sim_xarray
 
