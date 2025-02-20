@@ -195,7 +195,7 @@ class Vegetation(mesa.Model):
                 "Cell attributes to save not set - no Zarr output will be generated."
             )
 
-        if not hasattr(self, "_aoi_bounds"):
+        if not hasattr(self, "_aoi_bounds") or self._aoi_bounds is None:
             raise ValueError(
                 "Vegetation._aoi_bounds not set - call Vegetation.set_aoi_bounds() before initializing the model."
             )
