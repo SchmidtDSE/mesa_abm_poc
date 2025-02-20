@@ -91,6 +91,10 @@ class Vegetation(mesa.Model):
         # without mesa `batch_run`
         self._save_to_zarr = getattr(self.__class__, "_save_to_zarr", False)
 
+        # Initialize variables
+        self.flowering_year = False
+        self.has_flowered_previous_year = False
+
     @property
     def sim_logger(self):
         if not hasattr(self, "_sim_logger"):
@@ -303,6 +307,22 @@ class Vegetation(mesa.Model):
             self._on_start()
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
+
+        # print(f"Step {self.steps}: previous -> {self.has_flowered_previous_year}")
+
+        # Ensure mast years do not occur consecutively
+        if self.has_flowered_previous_year:
+            # getattr(self, "has_flowered_previous_year", False):
+            self.flowering_year = False  #  Force a non-mast year
+            self.has_flowered_previous_year = False  # Reset for next year
+        else:
+            # Determine if this year is a mast year
+            dice_roll_zero_to_one = random.random()
+            self.flowering_year = dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB
+            self.has_flowered_previous_year = self.flowering_year  # Track mast year
+
+        # uncomment to debug
+        # print(f"Step {self.steps}: Mast year status -> {self.flowering_year}")
 
         # Determine if this year is a mast year
         dice_roll_zero_to_one = random.random()
