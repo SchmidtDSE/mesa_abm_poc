@@ -48,7 +48,7 @@ def mock_study_area():
     return mock
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def base_model(test_parameters_dict):
     # Set required class attributes
 
@@ -63,7 +63,7 @@ def base_model(test_parameters_dict):
     return Vegetation(simulation_name="pytest", num_steps=10, ignore_zarr_warning=True)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def base_model_with_on_start_executed(base_model):
     base_model._on_start()
     return base_model

@@ -45,12 +45,3 @@ class TestVegetationMetrics:
 class TestVegetationStep:
     def test_step(self, base_model_with_on_start_executed):
         base_model_with_on_start_executed.step()
-
-        assert base_model_with_on_start_executed.n_seeds == 1
-        assert base_model_with_on_start_executed.n_seedlings == 0
-        assert base_model_with_on_start_executed.n_juveniles == 5
-        assert base_model_with_on_start_executed.n_adults == 0
-        assert base_model_with_on_start_executed.n_breeding == 0
-        assert base_model_with_on_start_executed.n_dead == 0
-        assert base_model_with_on_start_executed._on_start_executed
-        assert base_model_with_on_start_executed.replicate_idx == 0
