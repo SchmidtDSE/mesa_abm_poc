@@ -94,7 +94,7 @@ class Vegetation(mesa.Model):
 
         # Initialize variables
 
-        self.time_since_flower = ?
+        self.time_since_flower = 0
 
     @property
     def sim_logger(self):
@@ -318,6 +318,9 @@ class Vegetation(mesa.Model):
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
 
+        self.time_since_flower += 1
+        print(self.time_since_flower)
+
         # Ensure mast years do not occur consecutively and determine if current year is flowering
         self.flowering_year = False
         if self.time_since_flower > MIN_TIME_BETWEEN_FLOWER:
@@ -325,8 +328,7 @@ class Vegetation(mesa.Model):
             if dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB:
                 self.flowering_year = True
                 self.time_since_flower = 0
-            else:
-                self.time_since_flower += 1
+                
 
         # uncomment to debug
         print(f"Step {self.steps}: time since flower  -> {self.time_since_flower}")
