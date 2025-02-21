@@ -19,7 +19,8 @@ from vegetation.logging.logging import (
     SimEventType,
 )
 from vegetation.utils.zarr_manager import (
-    get_array_from_nested_cell_list,
+    get_attributes_from_nested_cell_list,
+    get_xy_span_from_nested_cell_list,
 )
 from vegetation.model.joshua_tree_agent import JoshuaTreeAgent
 from vegetation.utils.zarr_manager import ZarrManager
@@ -151,11 +152,19 @@ class Vegetation(mesa.Model):
 
         return points
 
+    def _construct_zarr_dims_dict(self):
+        dims_dict = get_xy_span_from_nested_cell_list(
+            veg_cells=self.space.raster_layer.cells,
+        )
+        dims_dict["timestep_span"] = np.arange(self.num_steps)
+        return dims_dict
+
     def _initialize_zarr_manager(self):
+        dims_dict = self._construct_zarr_dims_dict()
         zarr_manager = ZarrManager(
             width=self.space.raster_layer.width,
             height=self.space.raster_layer.height,
-            max_timestep=self.num_steps,
+            dims_dict=dims_dict,
             crs=self.space.crs,
             transformer_json=self.space.transformer.to_json(),
             run_parameter_dict=TEST_RUN_PARAMETERS,
@@ -165,9 +174,7 @@ class Vegetation(mesa.Model):
         )
 
         if self.simulation_name is None:
-            self.simulation_name = (
-                self._zarr_manager.set_group_name_by_run_parameter_hash()
-            )
+            self.simulation_name = zarr_manager.set_group_name_by_run_parameter_hash()
             logging.info(
                 "Setting simulation name (zarr group name) by run parameter hash"
             )
@@ -194,7 +201,7 @@ class Vegetation(mesa.Model):
                 "Cell attributes to save not set - no Zarr output will be generated."
             )
 
-        if not hasattr(self, "_aoi_bounds"):
+        if not hasattr(self, "_aoi_bounds") or self._aoi_bounds is None:
             raise ValueError(
                 "Vegetation._aoi_bounds not set - call Vegetation.set_aoi_bounds() before initializing the model."
             )
@@ -288,13 +295,16 @@ class Vegetation(mesa.Model):
         )
 
     def _append_timestep_to_zarr(self):
-        timestep_cell_attribute_dict = get_array_from_nested_cell_list(
+        timestep_cell_attribute_dict = get_attributes_from_nested_cell_list(
             veg_cells=self.space.raster_layer.cells,
             cell_attributes_to_get=self._cell_attributes_to_save,
         )
 
+        # steps are 1-indexed in mesa, but 0-indexed in zarr
+        timestep_idx = self.steps - 1
+
         self.zarr_manager.append_synchronized_timestep(
-            timestep_idx=self.steps,
+            timestep_idx=timestep_idx,
             timestep_array_dict=timestep_cell_attribute_dict,
         )
 
@@ -341,3 +351,8 @@ class Vegetation(mesa.Model):
         if self.steps >= self.num_steps:
             self.running = False
             self.cleanup()
+
+        self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
+
+        self.agents.shuffle_do("step")
+        self.update_metrics()
