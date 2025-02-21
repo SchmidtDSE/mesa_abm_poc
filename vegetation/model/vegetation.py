@@ -5,8 +5,10 @@ import shapely.geometry as sg
 from shapely.ops import transform
 import json
 import logging
+import random
 
 from vegetation.config.life_stages import LifeStage
+from vegetation.config.transitions import JOTR_MAST_YEAR_PROB, MIN_TIME_BETWEEN_FLOWER
 from vegetation.space.veg_cell import VegCell
 from vegetation.space.study_area import StudyArea
 from vegetation.utils.spatial import transform_point_wgs84_utm
@@ -89,6 +91,10 @@ class Vegetation(mesa.Model):
         # but we will likely address this differently when we do our own aggregation
         # without mesa `batch_run`
         self._save_to_zarr = getattr(self.__class__, "_save_to_zarr", False)
+
+        # Initialize variables
+
+        self.time_since_flower = 0
 
     @property
     def sim_logger(self):
@@ -309,6 +315,27 @@ class Vegetation(mesa.Model):
     def step(self):
         if not self._on_start_executed:
             self._on_start()
+
+        self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
+
+        self.time_since_flower += 1
+        print(self.time_since_flower)
+
+        # Ensure mast years do not occur consecutively and determine if current year is flowering
+        self.flowering_year = False
+        if self.time_since_flower > MIN_TIME_BETWEEN_FLOWER:
+            dice_roll_zero_to_one = random.random()
+            if dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB:
+                self.flowering_year = True
+                self.time_since_flower = 0
+                
+
+        # uncomment to debug
+        print(f"Step {self.steps}: time since flower  -> {self.time_since_flower}")
+        print(f"Step {self.steps}: Mast year  -> {self.flowering_year}")
+
+        self.agents.shuffle_do("step")
+        self.update_metrics()
 
         self.datacollector.collect(self)
 
