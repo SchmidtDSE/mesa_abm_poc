@@ -47,6 +47,13 @@ The central model function is the `JoshuaTreeAgent.step()` function within `josh
 
 The `step()` function is somewhat ecosystem-agnostic. Parametrization of the Joshua Tree model happens in the `transitions.py` file. `transitions.py` contains a section of global parameters at the top and functions below
 
+| Item              | In Stock | Price |
+| :---------------- | :------: | ----: |
+| Python Hat        |   True   | 23.99 |
+| SQL Hat           |   True   | 23.99 |
+| Codecademy Tee    |  False   | 19.99 |
+| Codecademy Hoodie |  False   | 42.99 |
+
 ## Parameters
 
 | `JOTR_JUVENILE_AGE` | 3 | U.S. Fish and Wildlife Service, 2023 (page 11), Input by Todd Esque (2015, 2022, pers comm.) |
