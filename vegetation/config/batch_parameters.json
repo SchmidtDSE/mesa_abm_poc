@@ -25,7 +25,7 @@
   },
   "test_run": {
     "model_run_params": {
-      "num_steps": [2],
+      "num_steps": [100],
       "management_planting_density": [5.0]
     },
     "bounds_key": "TST_JOTR_BOUNDS",
