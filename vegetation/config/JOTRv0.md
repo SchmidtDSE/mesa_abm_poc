@@ -32,7 +32,7 @@ The central model function is the `JoshuaTreeAgent.step()` function within `josh
     a. If the agent is a `SEED`
 
     - Convert to `SEEDLING` with germination probability $p_G$, remain `SEED` otherwise
-    - If not germinate, kill with $p = 0.5$. This represent depletion of seeds by rodents and other biotic factors
+    - If not germinate, kill with $p = 0.5$. This represents loss of seed germinability due to low capacity for seed dormancy
 
     b. If agent is a tree
 
