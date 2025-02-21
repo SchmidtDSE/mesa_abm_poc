@@ -18,6 +18,7 @@ JOTR_BASE_SURVIVAL_JUVENILE = (
 )  # mortality of 2.5% each year (Esque et al, 2015)
 JOTR_BASE_SURVIVAL_ADULT = 0.97
 JOTR_SEED_VIABILITY_LOSS = 0.50
+MIN_TIME_BETWEEN_FLOWER = 1
 
 # TODO: Refactor to be more like a config
 # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/14

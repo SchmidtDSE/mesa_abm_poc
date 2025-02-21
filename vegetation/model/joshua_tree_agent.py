@@ -217,7 +217,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # Disperse
         if (self.life_stage == LifeStage.ADULT) and self.model.flowering_year:
-            # Roll the dice to see if mast year
+            # Roll the dice to see if tree flowers
             dice_roll_zero_to_one = random.random()
 
             if dice_roll_zero_to_one < JOTR_AGENT_FLOWERING_PROB:

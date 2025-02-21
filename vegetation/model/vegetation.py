@@ -8,7 +8,7 @@ import logging
 import random
 
 from vegetation.config.life_stages import LifeStage
-from vegetation.config.transitions import JOTR_MAST_YEAR_PROB
+from vegetation.config.transitions import JOTR_MAST_YEAR_PROB, MIN_TIME_BETWEEN_FLOWER
 from vegetation.space.veg_cell import VegCell
 from vegetation.space.study_area import StudyArea
 from vegetation.utils.spatial import transform_point_wgs84_utm
@@ -93,8 +93,8 @@ class Vegetation(mesa.Model):
         self._save_to_zarr = getattr(self.__class__, "_save_to_zarr", False)
 
         # Initialize variables
-        self.flowering_year = False
-        self.has_flowered_previous_year = False
+
+        self.time_since_flower = ?
 
     @property
     def sim_logger(self):
@@ -318,27 +318,19 @@ class Vegetation(mesa.Model):
 
         self.sim_logger.log_sim_event(self, SimEventType.ON_STEP)
 
-        # print(f"Step {self.steps}: previous -> {self.has_flowered_previous_year}")
-
-        # Ensure mast years do not occur consecutively
-        if self.has_flowered_previous_year:
-            # getattr(self, "has_flowered_previous_year", False):
-            self.flowering_year = False  #  Force a non-mast year
-            self.has_flowered_previous_year = False  # Reset for next year
-        else:
-            # Determine if this year is a mast year
+        # Ensure mast years do not occur consecutively and determine if current year is flowering
+        self.flowering_year = False
+        if self.time_since_flower > MIN_TIME_BETWEEN_FLOWER:
             dice_roll_zero_to_one = random.random()
-            self.flowering_year = dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB
-            self.has_flowered_previous_year = self.flowering_year  # Track mast year
+            if dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB:
+                self.flowering_year = True
+                self.time_since_flower = 0
+            else:
+                self.time_since_flower += 1
 
         # uncomment to debug
-        # print(f"Step {self.steps}: Mast year status -> {self.flowering_year}")
-
-        # Determine if this year is a mast year
-        dice_roll_zero_to_one = random.random()
-
-        # Store FLOWERING_YEAR inside the model
-        self.flowering_year = dice_roll_zero_to_one < JOTR_MAST_YEAR_PROB
+        print(f"Step {self.steps}: time since flower  -> {self.time_since_flower}")
+        print(f"Step {self.steps}: Mast year  -> {self.flowering_year}")
 
         self.agents.shuffle_do("step")
         self.update_metrics()
