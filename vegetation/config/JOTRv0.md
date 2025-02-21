@@ -41,7 +41,7 @@ The central model function is the `JoshuaTreeAgent.step()` function within `josh
 
 4.  Increment age by one
 5.  Update life stages based on age as specified above. Note that age classes for Seeds and Seedlings do overlap, here the life stage is determined by germination process
-6.  If agent is an `ADULT` tree and we are in a mast flowering event, disperse seeds with a flowering probability $p_F$. Number of seeds is drawn from a Poisson distribution with expected value $\lamba$
+6.  If agent is an `ADULT` tree and we are in a mast flowering event, disperse seeds with a flowering probability $p_F$. Number of seeds is drawn from a Poisson distribution with expected value $\lambda$
 
 # Parametrization
 
