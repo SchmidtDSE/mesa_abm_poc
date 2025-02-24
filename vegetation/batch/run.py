@@ -20,6 +20,9 @@ DEFAULT_ATTRIBUTE_ENCODINGS_PATH = os.getenv(
 DEFAULT_AOI_BOUNDS_PATH = os.getenv(
     "DEFAULT_AOI_BOUNDS_PATH", "vegetation/config/aoi_bounds.json"
 )
+DEFAULT_AGENT_INITIALIZATION_PATH = os.getenv(
+    "DEFAULT_AGENT_INITIALIZATION_PATH", "vegetation/config/agent_initializations.json"
+)
 
 
 def parse_args() -> dict:
@@ -58,7 +61,13 @@ def parse_args() -> dict:
         "--aoi_bounds_json",
         type=str,
         default=DEFAULT_AOI_BOUNDS_PATH,
-        help="Path to AOI bounds JSON file",
+        help="Path to AOI bounds options JSON file",
+    )
+    parser.add_argument(
+        "--agent_initialization_json",
+        type=str,
+        default=DEFAULT_AGENT_INITIALIZATION_PATH,
+        help="Path to initial agent initialization options JSON file",
     )
     parser.add_argument(
         "--zarr_store",
@@ -76,6 +85,7 @@ def parse_args() -> dict:
         "batch_parameters_json": parsed.batch_parameters_json,
         "attribute_encodings_json": parsed.attribute_encodings_json,
         "aoi_bounds_json": parsed.aoi_bounds_json,
+        "agent_initialization_json": parsed.agent_initialization_json,
     }
 
 
@@ -110,6 +120,7 @@ if __name__ == "__main__":
             attribute_encodings_path=arg_dict["attribute_encodings_json"],
             aoi_bounds_path=arg_dict["aoi_bounds_json"],
             batch_parameters_path=arg_dict["batch_parameters_json"],
+            agent_initialization_path=arg_dict["agent_initialization_json"],
         )
 
     output_path_csv = (
@@ -141,7 +152,7 @@ if __name__ == "__main__":
     attribute_encodings = parameters_dict["attribute_encodings"]
     aoi_bounds = parameters_dict["aoi_bounds"]
     cell_attributes_to_save = parameters_dict["cell_attributes_to_save"]
-    initial_conditions_path = parameters_dict["initial_conditions_path"]
+    initial_agents_geojson = parameters_dict["initial_agents_geojson"]
 
     # Vegetation.set_attribute_encodings(attribute_encodings=attribute_encodings)
     # Vegetation.set_aoi_bounds(aoi_bounds=aoi_bounds)
@@ -153,6 +164,7 @@ if __name__ == "__main__":
         "attribute_encodings": attribute_encodings,
         "aoi_bounds": aoi_bounds,
         "cell_attributes_to_save": cell_attributes_to_save,
+        "initial_agents_geojson": initial_agents_geojson,
     }
 
     results = jotr_batch_run(

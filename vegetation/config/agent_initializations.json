@@ -1,0 +1,5 @@
+{
+  "TEST_FIVE_AGENTS": "vegetation/data/initialization/initialization_test_five_agents.geojson",
+  "DENSITY_10": "vegetation/data/initialization/initialization_density_10.geojson",
+  "DENSITY_100": "vegetation/data/initialization/initialization_density_100.geojson"
+}
