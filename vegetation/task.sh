@@ -11,7 +11,7 @@ mkdir -p /tmp
 
 # Modify JSON template with env var (INITIAL_AGENTS_KEY)
 jq --arg key "$INITIAL_AGENTS_KEY" '.k8s_run.initial_agents_key = $key' \
-/etc/config/batch_parameters.json > /tmp/modified_params.json
+vegetation/config/batch_parameters.json > /tmp/modified_params.json
 
 # Run the simulation, using the modified batch json
 python -m vegetation.batch.run \
