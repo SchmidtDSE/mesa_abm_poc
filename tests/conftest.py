@@ -81,12 +81,14 @@ def test_parameters_dict():
     test_attribute_encodings_path = (
         Path(test_assets_dir) / "configs" / "test_attribute_encodings.json"
     )
+    test_initial_agents_dir = Path(test_assets_dir) / "initial_agents"
 
     parameters_dict = construct_model_run_parameters_from_file(
         simulation_name="pytest",
         batch_parameters_path=test_batch_parameters_path,
         aoi_bounds_path=test_aoi_bounds_path,
         attribute_encodings_path=test_attribute_encodings_path,
+        initial_agents_dir=test_initial_agents_dir,
     )
 
     return parameters_dict
