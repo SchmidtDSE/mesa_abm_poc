@@ -32,7 +32,8 @@
       "module": "vegetation.batch.run",
       "justMyCode": false,
       "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python",
-      "args": ["--simulation_name", "feb_24_zarr_struct", "--attribute_encodings_json", "vegetation/config/attribute_encodings.json", "--aoi_bounds_json", "vegetation/config/aoi_bounds.json", "--batch_parameters_json", "vegetation/config/batch_parameters.json", "--overwrite"],
+      // "args": ["--simulation_name", "feb_24_zarr_struct", "--attribute_encodings_json", "vegetation/config/attribute_encodings.json", "--aoi_bounds_json", "vegetation/config/aoi_bounds.json", "--batch_parameters_json", "vegetation/config/batch_parameters.json", "--overwrite"],
+      "args": ["--simulation_name", "feb_24_zarr_struct", "--overwrite"],
       "envFile": "${workspaceFolder}/.devcontainer/.env"
     },
     {
