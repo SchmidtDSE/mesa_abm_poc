@@ -42,7 +42,6 @@ class Vegetation(mesa.Model):
         simulation_name=None,
         ignore_zarr_warning=False,
         ignore_attribute_encodings_warning=False,
-        initial_agents_path=None,
     ):
         super().__init__()
         self._ignore_zarr_warning = ignore_zarr_warning
@@ -122,6 +121,11 @@ class Vegetation(mesa.Model):
     @classmethod
     def set_aoi_bounds(cls, aoi_bounds):
         cls._aoi_bounds = aoi_bounds
+
+    @classmethod
+    def set_initial_agents_geojson_path(cls, initial_agents_path):
+        with open(initial_agents_path, "r") as f:
+            cls._initial_agents_geojson = json.loads(f.read())
 
     @classmethod
     def _generate_planting_points(self, geo_json):
@@ -208,16 +212,21 @@ class Vegetation(mesa.Model):
                 "Vegetation._aoi_bounds not set - call Vegetation.set_aoi_bounds() before initializing the model."
             )
 
+        if (
+            not hasattr(self, "_initial_agents_geojson")
+            or self._initial_agents_geojson is None
+        ):
+            raise ValueError(
+                "Vegetation._initial_agents_geojson not set - call Vegetation.set_initial_agents_geojson_path() before initializing the model."
+            )
+
     def _on_start(self):
         self.sim_logger.log_sim_event(self, SimEventType.ON_START)
 
         self.space.get_elevation()
         self.space.get_refugia_status()
 
-        with open(self.initial_agents_path, "r") as f:
-            initial_agents_geojson = json.loads(f.read())
-
-        self._add_agents_from_geojson(initial_agents_geojson)
+        self._add_agents_from_geojson(self._initial_agents_geojson)
 
         if self._save_to_zarr:
             self._initialize_zarr_manager()
