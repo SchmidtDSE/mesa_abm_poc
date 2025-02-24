@@ -17,5 +17,5 @@ vegetation/config/batch_parameters.json > /tmp/modified_params.json
 python -m vegetation.batch.run \
 --batch_parameters_json /tmp/modified_params.json \
 --simulation_name k8s_run \
---zarr_store_type gcp \
+--zarr_store_type directory \
 --overwrite
