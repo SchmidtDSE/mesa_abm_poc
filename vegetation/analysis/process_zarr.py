@@ -38,6 +38,11 @@ def create_gif_from_xarray(
 
     frames = []
     for timestep_idx in sim_xarray.timestep:
+        # Hack to get around first index being NaN
+        if np.isnan(timestep_idx):
+            timestep_idx = 0
+        timestep_idx = int(timestep_idx)
+
         # Convert to RGB using colormap
         frame = plt.get_cmap(cmap)(normalized[timestep_idx].values)
         # Convert to 0-255 uint8

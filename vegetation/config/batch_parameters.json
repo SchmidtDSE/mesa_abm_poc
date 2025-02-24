@@ -46,5 +46,17 @@
       "num_workers": 1
     },
     "cell_attributes_to_save": null
+  },
+  "feb_24_zarr_struct": {
+    "model_run_params": {
+      "num_steps": [30],
+      "management_planting_density": [5.0]
+    },
+    "bounds_key": "TST_JOTR_BOUNDS",
+    "meta_parameters": {
+      "num_iterations_total": 20,
+      "num_workers": 4
+    },
+    "cell_attributes_to_save": ["jotr_max_life_stage"]
   }
 }
