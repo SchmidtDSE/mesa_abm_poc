@@ -195,6 +195,7 @@ def construct_model_run_parameters_from_file(
     batch_parameters_path: str,
     attribute_encodings_path: Optional[str],
     aoi_bounds_path: Optional[str],
+    initial_agents_dir: Optional[str],
 ):
     # Read in the configs
     batch_parameters = json.load(open(batch_parameters_path, "r"))
@@ -214,6 +215,12 @@ def construct_model_run_parameters_from_file(
         aoi_bounds_key = simulation_parameters["bounds_key"]
         aoi_bounds = aoi_bounds_options[aoi_bounds_key]
         del simulation_parameters["bounds_key"]
+
+    if initial_agents_dir is not None:
+        inital_agents_options = os.listdir(initial_agents_dir)
+        initial_agents_key = simulation_parameters["initial_agents_key"]
+        initial_agents_path = inital_agents_options[initial_agents_key]
+        del simulation_parameters["initial_agents_key"]
 
     assert len(aoi_bounds) == 4
     assert all([isinstance(x, float) for x in aoi_bounds])
@@ -240,4 +247,5 @@ def construct_model_run_parameters_from_file(
         "attribute_encodings": attribute_encodings,
         "aoi_bounds": aoi_bounds,
         "cell_attributes_to_save": cell_attributes_to_save,
+        "initial_agents_path": initial_agents_path,
     }

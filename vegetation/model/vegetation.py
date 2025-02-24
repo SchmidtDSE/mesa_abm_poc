@@ -12,7 +12,6 @@ from vegetation.config.transitions import JOTR_MAST_YEAR_PROB
 from vegetation.space.veg_cell import VegCell
 from vegetation.space.study_area import StudyArea
 from vegetation.utils.spatial import transform_point_wgs84_utm
-from vegetation.config.global_paths import INITIAL_AGENTS_PATH
 from vegetation.logging.logging import (
     LogConfig,
     SimLogger,
@@ -43,11 +42,14 @@ class Vegetation(mesa.Model):
         simulation_name=None,
         ignore_zarr_warning=False,
         ignore_attribute_encodings_warning=False,
+        initial_agents_path=None,
     ):
         super().__init__()
         self._ignore_zarr_warning = ignore_zarr_warning
         self._ignore_attribute_encodings_warning = ignore_attribute_encodings_warning
         self._verify_class_attributes()
+
+        self.initial_agents_path = initial_agents_path
 
         if log_config_path:
             LogConfig.initialize(log_config_path)
@@ -212,7 +214,7 @@ class Vegetation(mesa.Model):
         self.space.get_elevation()
         self.space.get_refugia_status()
 
-        with open(INITIAL_AGENTS_PATH, "r") as f:
+        with open(self.initial_agents_path, "r") as f:
             initial_agents_geojson = json.loads(f.read())
 
         self._add_agents_from_geojson(initial_agents_geojson)

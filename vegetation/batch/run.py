@@ -141,6 +141,7 @@ if __name__ == "__main__":
     attribute_encodings = parameters_dict["attribute_encodings"]
     aoi_bounds = parameters_dict["aoi_bounds"]
     cell_attributes_to_save = parameters_dict["cell_attributes_to_save"]
+    initial_conditions_path = parameters_dict["initial_conditions_path"]
 
     # Vegetation.set_attribute_encodings(attribute_encodings=attribute_encodings)
     # Vegetation.set_aoi_bounds(aoi_bounds=aoi_bounds)
