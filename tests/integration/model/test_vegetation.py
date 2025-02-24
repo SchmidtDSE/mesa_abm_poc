@@ -33,6 +33,10 @@ class TestVegetationClassMethods:
         Vegetation.set_initial_agents_geojson_path(test_initial_agents_geojson)
         assert isinstance(Vegetation._initial_agents_geojson, dict)
 
+    def test_set_zarr_store_type(self):
+        Vegetation.set_zarr_store_type("directory")
+        assert Vegetation._zarr_store_type == "directory"
+
 
 class TestVegetationMetrics:
     def test_update_metrics(self, base_model_with_on_start_executed):

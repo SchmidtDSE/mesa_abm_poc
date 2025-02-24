@@ -90,6 +90,7 @@ class Vegetation(mesa.Model):
         # but we will likely address this differently when we do our own aggregation
         # without mesa `batch_run`
         self._save_to_zarr = getattr(self.__class__, "_save_to_zarr", False)
+        self._zarr_store_type = getattr(self.__class__, "_zarr_store_type", "directory")
 
         # Initialize variables
         self.flowering_year = False
@@ -106,6 +107,10 @@ class Vegetation(mesa.Model):
         if self._zarr_manager is None:
             self._zarr_manager = self._initialize_zarr_manager()
         return self._zarr_manager
+
+    @classmethod
+    def set_zarr_store_type(cls, zarr_store_type):
+        cls._zarr_store_type = zarr_store_type
 
     @classmethod
     def set_attribute_encodings(cls, attribute_encodings):
@@ -175,6 +180,7 @@ class Vegetation(mesa.Model):
             attribute_list=self._cell_attributes_to_save,
             attribute_encodings=self._attribute_encodings,
             filename=ZARR_FILENAME,
+            zarr_store_type=self._zarr_store_type,
         )
 
         if self.simulation_name is None:

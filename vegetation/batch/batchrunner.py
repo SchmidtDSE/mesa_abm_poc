@@ -94,6 +94,11 @@ def _jotr_model_run_func(
             cell_attributes_to_save=class_parameters_dict["cell_attributes_to_save"]
         )
 
+    if class_parameters_dict["zarr_store_type"] is not None:
+        vegetation_cls.set_zarr_store_type(
+            zarr_store_type=class_parameters_dict["zarr_store_type"]
+        )
+
     vegetation = vegetation_cls(**kwargs)
 
     while vegetation.running and vegetation.steps <= max_steps:

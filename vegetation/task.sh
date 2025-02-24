@@ -16,4 +16,6 @@ vegetation/config/batch_parameters.json > /tmp/modified_params.json
 # Run the simulation, using the modified batch json
 python -m vegetation.batch.run \
 --batch_parameters_json /tmp/modified_params.json \
---simulation_name k8s_run
+--simulation_name k8s_run \
+--zarr_store_type gcp \
+--overwrite

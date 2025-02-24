@@ -200,6 +200,7 @@ def construct_model_run_parameters_from_file(
     # Read in the configs
     batch_parameters = json.load(open(batch_parameters_path, "r"))
     simulation_parameters = batch_parameters[simulation_name]
+
     # Get meta parameters for this batch run (things not relevant to specific model runs)
     meta_parameters = simulation_parameters["meta_parameters"]
 
@@ -216,6 +217,7 @@ def construct_model_run_parameters_from_file(
         aoi_bounds = aoi_bounds_options[aoi_bounds_key]
         del simulation_parameters["bounds_key"]
 
+    # Replace the string key for initial agents with the actual geojson path, if provided
     if agent_initialization_path is not None:
         inital_agents_options = json.load(open(agent_initialization_path, "r"))
         initial_agents_key = simulation_parameters["initial_agents_key"]

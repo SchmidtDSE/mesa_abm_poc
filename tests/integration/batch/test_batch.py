@@ -46,6 +46,7 @@ def test_batch_run_basic():
         "aoi_bounds": aoi_bounds,
         "cell_attributes_to_save": cell_attributes_to_save,
         "initial_agents_geojson": initial_agents_geojson,
+        "zarr_store_type": "directory",
     }
 
     # Run simulation with minimal parameters

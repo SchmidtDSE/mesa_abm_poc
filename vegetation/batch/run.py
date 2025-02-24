@@ -70,7 +70,7 @@ def parse_args() -> dict:
         help="Path to initial agent initialization options JSON file",
     )
     parser.add_argument(
-        "--zarr_store",
+        "--zarr_store_type",
         type=str,
         default="directory",
         help="Type of Zarr store for saving artifacts ('directory' or 'gcp')",
@@ -86,6 +86,7 @@ def parse_args() -> dict:
         "attribute_encodings_json": parsed.attribute_encodings_json,
         "aoi_bounds_json": parsed.aoi_bounds_json,
         "agent_initialization_json": parsed.agent_initialization_json,
+        "zarr_store_type": parsed.zarr_store_type,
     }
 
 
@@ -115,6 +116,7 @@ if __name__ == "__main__":
     else:
         simulation_name = arg_dict["simulation_name"]
         overwrite = arg_dict["overwrite"]
+        zarr_store_type = arg_dict["zarr_store_type"]
         parameters_dict = construct_model_run_parameters_from_file(
             simulation_name=simulation_name,
             attribute_encodings_path=arg_dict["attribute_encodings_json"],
@@ -165,6 +167,7 @@ if __name__ == "__main__":
         "aoi_bounds": aoi_bounds,
         "cell_attributes_to_save": cell_attributes_to_save,
         "initial_agents_geojson": initial_agents_geojson,
+        "zarr_store_type": zarr_store_type,
     }
 
     results = jotr_batch_run(
