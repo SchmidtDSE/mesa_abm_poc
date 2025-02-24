@@ -80,6 +80,9 @@ def _jotr_model_run_func(
     # don't affect the simulation. But this will be deprecated in the future.
 
     vegetation_cls.set_aoi_bounds(aoi_bounds=class_parameters_dict["aoi_bounds"])
+    vegetation_cls.set_initial_agents_geojson_path(
+        class_parameters_dict["initial_agents_geojson"]
+    )
 
     if class_parameters_dict["attribute_encodings"] is not None:
         vegetation_cls.set_attribute_encodings(

@@ -23,6 +23,9 @@ def test_batch_run_basic():
             "test_attribute_encodings.json"
         ),
         aoi_bounds_path=test_configs_dir.joinpath("test_aoi_bounds.json"),
+        agent_initialization_path=test_configs_dir.joinpath(
+            "test_agent_initializations.json"
+        ),
     )
 
     model_run_parameters = parameters_dict["model_run_parameters"]
@@ -30,6 +33,7 @@ def test_batch_run_basic():
     attribute_encodings = parameters_dict["attribute_encodings"]
     aoi_bounds = parameters_dict["aoi_bounds"]
     cell_attributes_to_save = parameters_dict["cell_attributes_to_save"]
+    initial_agents_geojson = parameters_dict["initial_agents_geojson"]
 
     # Vegetation.set_attribute_encodings(attribute_encodings=attribute_encodings)
     # Vegetation.set_aoi_bounds(aoi_bounds=aoi_bounds)
@@ -41,6 +45,7 @@ def test_batch_run_basic():
         "attribute_encodings": attribute_encodings,
         "aoi_bounds": aoi_bounds,
         "cell_attributes_to_save": cell_attributes_to_save,
+        "initial_agents_geojson": initial_agents_geojson,
     }
 
     # Run simulation with minimal parameters

@@ -48,8 +48,6 @@ class Vegetation(mesa.Model):
         self._ignore_attribute_encodings_warning = ignore_attribute_encodings_warning
         self._verify_class_attributes()
 
-        self.initial_agents_path = initial_agents_path
-
         if log_config_path:
             LogConfig.initialize(log_config_path)
 

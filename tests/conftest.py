@@ -55,9 +55,7 @@ def base_model(test_parameters_dict):
     test_aoi_bounds = test_parameters_dict["aoi_bounds"]
     test_attribute_encodings = test_parameters_dict["attribute_encodings"]
     test_cell_attributes_to_save = test_parameters_dict["cell_attributes_to_save"]
-    test_initial_agents_geojson_path = test_parameters_dict[
-        "initial_agents_geojson_path"
-    ]
+    test_initial_agents_geojson_path = test_parameters_dict["initial_agents_geojson"]
 
     Vegetation.set_aoi_bounds(test_aoi_bounds)
     Vegetation.set_attribute_encodings(test_attribute_encodings)
