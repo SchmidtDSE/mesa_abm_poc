@@ -55,10 +55,14 @@ def base_model(test_parameters_dict):
     test_aoi_bounds = test_parameters_dict["aoi_bounds"]
     test_attribute_encodings = test_parameters_dict["attribute_encodings"]
     test_cell_attributes_to_save = test_parameters_dict["cell_attributes_to_save"]
+    test_initial_agents_geojson_path = test_parameters_dict[
+        "initial_agents_geojson_path"
+    ]
 
     Vegetation.set_aoi_bounds(test_aoi_bounds)
     Vegetation.set_attribute_encodings(test_attribute_encodings)
     Vegetation.set_cell_attributes_to_save(test_cell_attributes_to_save)
+    Vegetation.set_initial_agents_geojson_path(test_initial_agents_geojson_path)
 
     return Vegetation(simulation_name="pytest", num_steps=10, ignore_zarr_warning=True)
 
@@ -81,14 +85,16 @@ def test_parameters_dict():
     test_attribute_encodings_path = (
         Path(test_assets_dir) / "configs" / "test_attribute_encodings.json"
     )
-    test_initial_agents_dir = Path(test_assets_dir) / "initial_agents"
+    test_agent_initialization_path = (
+        Path(test_assets_dir) / "configs" / "test_agent_initializations.json"
+    )
 
     parameters_dict = construct_model_run_parameters_from_file(
         simulation_name="pytest",
         batch_parameters_path=test_batch_parameters_path,
         aoi_bounds_path=test_aoi_bounds_path,
         attribute_encodings_path=test_attribute_encodings_path,
-        initial_agents_dir=test_initial_agents_dir,
+        agent_initialization_path=test_agent_initialization_path,
     )
 
     return parameters_dict

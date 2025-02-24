@@ -5,6 +5,7 @@
       "management_planting_density": [5.0]
     },
     "bounds_key": "TST_JOTR_BOUNDS",
+    "initial_agents_key": "PYTEST_INITIALIZATION",
     "meta_parameters": {
       "num_iterations_total": 1,
       "num_workers": 1

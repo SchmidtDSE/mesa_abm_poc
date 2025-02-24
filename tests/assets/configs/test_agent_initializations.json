@@ -1,0 +1,3 @@
+{
+  "PYTEST_INITIALIZATION": "tests/assets/data/initial_agents.json"
+}

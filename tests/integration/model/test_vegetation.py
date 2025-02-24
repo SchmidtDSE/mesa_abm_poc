@@ -28,6 +28,11 @@ class TestVegetationClassMethods:
         Vegetation.set_aoi_bounds(test_aoi_bounds)
         assert Vegetation._aoi_bounds == test_aoi_bounds
 
+    def test_set_initial_agents_path(self, test_parameters_dict):
+        test_initial_agents_geojson = test_parameters_dict["initial_agents_geojson"]
+        Vegetation.set_initial_agents_geojson_path(test_initial_agents_geojson)
+        assert isinstance(Vegetation._initial_agents_geojson, dict)
+
 
 class TestVegetationMetrics:
     def test_update_metrics(self, base_model_with_on_start_executed):
