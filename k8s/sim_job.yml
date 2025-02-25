@@ -1,0 +1,16 @@
+# sim_job.yml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vegetation-batch
+spec:
+  completions: 4
+  parallelism: 4
+  template:
+    spec:
+      containers:
+      - name: vegetation
+        image: us-west1-docker.pkg.dev/dse-nps/mesa-abm-poc/mesa-abm-poc:latest
+        env:
+        - name: INITIAL_AGENTS_KEY
+          value: "TEST_FIVE_AGENTS"
