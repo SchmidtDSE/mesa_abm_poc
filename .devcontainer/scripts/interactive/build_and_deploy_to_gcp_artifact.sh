@@ -4,7 +4,7 @@
 # It is included here for reference - this will need to be run on your local machine. As such, it is not executable.
 
 # Build and tag the image
-docker build   -t us-west1-docker.pkg.dev/dse-nps/mesa-abm-poc/mesa-abm-poc:latest \
+docker build -t us-west1-docker.pkg.dev/dse-nps/mesa-abm-poc/mesa-abm-poc:latest \
   -f .devcontainer/Dockerfile \
   --build-arg IS_DEVCONTAINER=False \
   .
